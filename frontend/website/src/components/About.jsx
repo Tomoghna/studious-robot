@@ -1,65 +1,112 @@
 import React from "react";
-import PropTypes from "prop-types";
-
-const stories = [
-    {
-        title: "The Journey to relaxation.",
-        description: "Finding a hammock you can truly relax in didn't happen overnight. it started with a chance discovery while on vacation, and took a lot of hanging around to bring the softest, most comfortable,and thoughtfully crafted hammocks to your backyard.",
-        image: "/product-1.jpg",
-    },
-    {
-        title: "The way to heaven.",
-        description: "More off this less hello salamander lied porpoise much over tightly circa horse taped so innocently outside crud mightly rigorous megative one inside opaquely. Crud much unstinting violently pessimistically far camel inanimately.",
-        image: "/product-1.jpg",
-    },
-];
-
-const StoryItem = ({item, index}) => {
-    const {title, description, image} = item;
-    return (
-        <>
-            <div className={`col-span-12 md:col-span-5 ${index % 2 === 0 ? "order-1 md:order-2 md:col-start-7" : "order-2 md:order-1 md:col-start-2"}`}>
-                <div className={`flex flex-col justify-center ${index % 2 === 0 ? "lg:pl-14" : "lg:pr-14"}`}>
-                    <h4 className="text-2xl font-bold mb-4">{title}</h4>
-                    <p className="text-base leading-relaxed text-justify opacity-70 mb-0 md:pr-6">{description}</p>
-                </div>
-            </div>
-            <div className={`${index % 2 === 0 ? "order-1 md:col-start-2" : "order-2 md:order-2 md:col-start-7"} col-span-12 md:col-span-5 mb-6 md:mb-0 mt-6 md:mt-0`}>
-                <div>
-                    <img src={image} alt={title} className="max-w-full h-auto rounded-2xl"/>
-                </div>
-            </div>
-        </>
-    );
-};
-
-StoryItem.propTypes = {
-    item: PropTypes.object.isRequired,
-    index: PropTypes.number.isRequired,
-};
 
 const AboutUs6 = () => {
-    return (
-        <section className="ezy_about6 light py-14 md:py-24 bg-white dark:bg-[#0b1727] text-zinc-900 dark:text-white">
-            <div className="container px-4">
-                <div className="grid grid-cols-12 justify-center text-center mb-12">
-                    <div className="col-span-12 md:col-span-8 md:col-start-3">
-                        <h2 className="text-4xl leading-snug md:text-5xl md:leading-snug font-bold mb-6">Our Story</h2>
-                        <p className="text-xl opacity-80 mb-4">
-                            We not only make the world's most comfortable hammocks, but
-                            through training and sustainable job creation, we empower our
-                            weavers and their families to break the cycle of poverty and build
-                            a brighter future.
-                        </p>
-                    </div>
-                </div>
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Hero Section */}
+      <section className="relative h-[40vh] sm:h-[50vh] lg:h-[60vh]">
+        <img
+          src="/banner-2.jpg"
+          alt="About Us Banner"
+          className="w-full h-full object-cover"
+        />
+      </section>
 
-                {stories.map((item, i) => (
-                    <div className="grid grid-cols-12 justify-center items-center mt-12" key={i}>
-                        <StoryItem item={item} index={i + 1}/>
-                    </div>
-                ))}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Mission Statement */}
+          <section className="text-center mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6">
+              Our Mission
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+              At MAYUR HAMSA, we are dedicated to preserving and promoting the rich heritage 
+              of traditional Indian art and craftsmanship while bringing its beauty to homes 
+              around the world.
+            </p>
+          </section>
+
+          {/* Values Grid */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Artisanal Excellence
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Each piece in our collection is carefully handcrafted by skilled artisans, 
+                ensuring the highest quality and attention to detail.
+              </p>
             </div>
-        </section>
-    );
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Sustainable Practices
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                We are committed to eco-friendly practices, using sustainable materials 
+                and supporting local communities.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Cultural Heritage
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Our designs draw inspiration from India's rich cultural heritage, 
+                bringing traditional art forms into contemporary spaces.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Customer Experience
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                We strive to provide an exceptional shopping experience, from product 
+                selection to delivery and after-sales support.
+              </p>
+            </div>
+          </section>
+
+          {/* Team Section */}
+          <section className="mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
+              Meet Our Team
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="text-center">
+                <img
+                  src="/products/product-16.jpg"
+                  alt="Team Member"
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+                />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  ParamShantim Das
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">Founder & Artist</p>
+              </div>
+              {/* Add more team members as needed */}
+            </div>
+          </section>
+
+          {/* Contact Section */}
+          <section className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6">
+              Get in Touch
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              Have questions or want to collaborate? We'd love to hear from you.
+            </p>
+            <a
+              href="mailto:info@mayurhamsa.com"
+              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Contact Us
+            </a>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+export default AboutUs6;

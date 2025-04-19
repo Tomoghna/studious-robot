@@ -1,8 +1,14 @@
 import React, {useState, useEffect} from "react";
+import { Link } from "react-router-dom";
+import { FaHeart, FaStar, FaStarHalf } from "react-icons/fa";
+import { useWishlist } from "../contexts/WishlistContext";
+import { useCart } from "../contexts/CartContext";
 
 const ProductCard = ({product}) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
 
     useEffect(() => {
         let interval;
@@ -14,22 +20,101 @@ const ProductCard = ({product}) => {
         return () => clearInterval(interval);
     }, [isHovered, product.images.length]);
 
-    return (
-        <div className="relative bg-white shadow-md rounded-lg overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-lg w-72 mx-auto" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-            <div className="w-full h-64 overflow-hidden">
-                <img src={product.images[currentImageIndex]} alt={product.name} className="w-full h-full object-cover"/>
-            </div>
-            <div className="p-4">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-600 text-sm mt-2">{product.description}</p>
-                <p className="text-lg font-bold text-green-600 mt-2">${product.price}</p>
+    const handleWishlistToggle = (e) => {
+        e.preventDefault(); // Prevent card navigation
+        if (isInWishlist(product.id)) {
+            removeFromWishlist(product.id);
+        } else {
+            addToWishlist(product);
+        }
+    };
 
-                <div className="flex justify-between mt-4">
-                    <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Buy Now</button>
-                    <button className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Add to Bag</button>
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        addToCart(product, 1);
+    };
+
+    const isWishlisted = isInWishlist(product.id);
+
+    const renderRating = (rating = 4.5) => {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 !== 0;
+        
+        return (
+            <div className="flex items-center gap-1">
+                {[...Array(fullStars)].map((_, i) => (
+                    <FaStar key={i} className="text-yellow-400 w-3 h-3 sm:w-4 sm:h-4" />
+                ))}
+                {hasHalfStar && <FaStarHalf className="text-yellow-400 w-3 h-3 sm:w-4 sm:h-4" />}
+                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1">({rating})</span>
+            </div>
+        );
+    };
+
+    return (
+        <Link to={`/product/${product.id}`} className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+            <div 
+                onMouseEnter={() => setIsHovered(true)} 
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                {/* Image container with wishlist button */}
+                <div className="relative w-full pt-[100%]">
+                    <img 
+                        src={product.images[currentImageIndex]} 
+                        alt={product.name} 
+                        className="absolute top-0 left-0 w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                    />
+                    <button
+                        onClick={handleWishlistToggle}
+                        className={`absolute top-2 right-2 p-1.5 rounded-full ${
+                            isWishlisted 
+                                ? 'bg-red-500 text-white' 
+                                : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'
+                        } hover:scale-110 transition-all duration-200`}
+                        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                    >
+                        <FaHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                    {product.isNew && (
+                        <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 text-xs font-medium rounded-full">
+                            New
+                        </span>
+                    )}
+                </div>
+                
+                <div className="p-2 sm:p-3 flex flex-col flex-grow">
+                    {/* Product Title */}
+                    <h3 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white line-clamp-2 mb-1">{product.name}</h3>
+                    
+                    {/* Rating */}
+                    <div className="mb-2">
+                        {renderRating(product.rating)}
+                    </div>
+
+                    <div className="mt-auto">
+                        {/* Price */}
+                        <p className="text-sm sm:text-base font-bold text-green-600 dark:text-green-400 mb-2">${product.price}</p>
+                        
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <Link 
+                                to={`/product/${product.id}`}
+                                className="h-8 sm:h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-center rounded transition-colors duration-200 text-xs sm:text-sm font-medium"
+                            >
+                                Buy Now
+                            </Link>
+                            <button 
+                                className="h-8 sm:h-9 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 text-gray-800 dark:text-white rounded transition-colors duration-200 text-xs sm:text-sm font-medium"
+                                onClick={handleAddToCart}
+                            >
+                                Add to Bag
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 };
 
