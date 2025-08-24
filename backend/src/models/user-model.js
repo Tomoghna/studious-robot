@@ -20,13 +20,16 @@ const addressSchema =  new Schema({
         type: Boolean,
         default: false
     }
-})
+},{_id: false})
 
 const userSchema = new Schema({
+    _id:{
+        type: String,
+        required: true
+    },
     name:{
         type: String,
-        required: [true, 'Name is required'],
-        unique: true,   
+        required: [true, 'Name is required'], 
         trim: true,
     },
     email:{
@@ -34,13 +37,7 @@ const userSchema = new Schema({
         required: [true, 'Email is required'], 
         unique: true,
         trim: true,
-    },
-    password:{
-        type: password,
-        required: [true, 'Password is required'],
-        trim: true,
-        minLength: [4, 'Password must be at least 4 characters long'],
-        select: false
+        lowercase: true,
     },
     role:{
         type: String,
