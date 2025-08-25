@@ -47,6 +47,9 @@ const userSchema = new Schema({
     phone:{
         type: String
     },
+    refreshToken:{
+        type: String
+    },
     address:[addressSchema],
     whislist:[
         {
