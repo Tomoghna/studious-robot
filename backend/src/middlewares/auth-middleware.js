@@ -1,20 +1,24 @@
 import { admin } from "../../configs/firebase.js";
 import apiError from "../utils/apiError.js";
+import { User } from "../models/user-model.js";
 
 
 export const authMiddleware = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        const token = req.cookies?.token || req.header("Authorization").replace("Bearer ", "");
         if(!token){
             throw new apiError(401, "Unauthorized request!!");
         }
         const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log(decodedToken);
-
         if(!decodedToken){
             throw new apiError(401, "Unauthorized, token failed");
         }
-        req.user = decodedToken;
+        
+        const user = await User.findById(decodedToken.uid).select("-refreshToken");
+        if(!user){  
+            throw new apiError(401, "No user found with this token");
+        }
+        req.user = user;
         next();
     } catch (error) {
         throw new apiError(401, "Not authorized, token failed");

@@ -102,11 +102,41 @@ const loginUser = asyncHandler(async (req, res) => {
                 )
             )
     } catch (error) {
-        throw new apiError(500, error.message || "Something went wrong");
+        throw new apiError(500, "Something went wrong");
     }
 })
 
+const logoutUser = asyncHandler(async (req, res) => {   
+    await User.findByIdAndUpdate(req.user._id, 
+        {
+            $set:{
+                refreshToken: undefined
+            }
+        },{
+            new: true
+        }
+    );
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    return res
+        .status(200)
+        .cookie("token", "", options)
+        .cookie("refreshToken", "", options)
+        .json(
+            new apiResponse(
+                200, 
+                [],
+                "User logged out successfully!!!"
+            )
+        );
+});
+
 export {
     signupUser,
-    loginUser
+    loginUser,
+    logoutUser
 }
