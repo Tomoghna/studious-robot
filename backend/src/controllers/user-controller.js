@@ -54,7 +54,7 @@ const signupUser = asyncHandler(async (req, res) => {
                 )
             )
     } catch (error) {
-        throw new apiError(500, error.message || "Something went wrong");
+        throw new apiError(400, "Invalid credentials, please try again");
     }
 });
 
@@ -63,8 +63,8 @@ const loginUser = asyncHandler(async (req, res) => {
     if ([email, password].some((field) => field?.trim === "")) {
         throw new apiError(400, "All fields are required");
     }
+    const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
     try {
-        const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
         const firebaseRes = await axios.post(
             `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
             {
@@ -73,9 +73,8 @@ const loginUser = asyncHandler(async (req, res) => {
                 returnSecureToken: true
             }
         );
-
         const { localId, refreshToken, idToken } = firebaseRes.data;
-        
+
         const user = await User.findById(localId).select("-refreshToken");
         if (!user) {
             throw new apiError(400, "User with this email does not exist");
@@ -102,19 +101,19 @@ const loginUser = asyncHandler(async (req, res) => {
                 )
             )
     } catch (error) {
-        throw new apiError(500, "Something went wrong");
+        throw new apiError(400, "Invalid credentials");
     }
 })
 
-const logoutUser = asyncHandler(async (req, res) => {   
-    await User.findByIdAndUpdate(req.user._id, 
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id,
         {
-            $set:{
+            $set: {
                 refreshToken: undefined
             }
-        },{
-            new: true
-        }
+        }, {
+        new: true
+    }
     );
 
     const options = {
@@ -128,9 +127,130 @@ const logoutUser = asyncHandler(async (req, res) => {
         .cookie("refreshToken", "", options)
         .json(
             new apiResponse(
-                200, 
+                200,
                 [],
                 "User logged out successfully!!!"
+            )
+        );
+});
+
+const loggedInUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id).select("-refreshToken");
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "User fetched successfully!!!"
+            )
+        );
+});
+
+const updateProfile = asyncHandler(async (req, res) => {
+    const { name, newAddress, phone } = req.body;
+    if ([newAddress, phone].some((field) => field?.trim === "")) {
+        throw new apiError(400, "All fields are required");
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                name,
+                phone,
+                address: [...req.user.address, newAddress]
+            }
+        }, {
+        new: true
+    }
+    ).select("-refreshToken");
+
+    console.log(user);
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "Profile updated successfully!!!"
+            )
+        );
+});
+
+const updateAddess = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { address } = req.body;
+    if (!id) {
+        throw new apiError(400, "Address id is required");
+    }
+    if (!address || Object.keys(address).length === 0) {
+        throw new apiError(400, "Address data is required");
+    }
+    const user = await User.findById(req.user._id).select("-refreshToken");
+    const addressIndex = user.address.findIndex((addr) => addr._id.toString() === id);
+
+    if (addressIndex === -1) {
+        throw new apiError(404, "Address not found");
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+        {
+            _id: req.user._id,
+            "address._id": id
+        },
+        {
+            $set:
+            {
+                "address.$.street": address.street,
+                "address.$.city": address.city,
+                "address.$.state": address.state,
+                "address.$.zip": address.zip
+            }
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                updatedUser,
+                "Address updated successfully!!!"
+            )
+        );
+});
+
+const deleteAddress = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+        throw new apiError(400, "Address id is required");
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $pull: {
+                address: { _id: id }
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-refreshToken");
+
+    if (!user) {
+        throw new apiError(404, "Address not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "Address deleted successfully!!!"
             )
         );
 });
@@ -138,5 +258,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 export {
     signupUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    loggedInUser,
+    updateProfile,
+    updateAddess,
+    deleteAddress
 }
