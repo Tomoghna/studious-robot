@@ -57,7 +57,7 @@ const Navbar = () => {
             MAYUR HAMSA
           </Link>
 
-          {/* Search bar - hidden on mobile */}
+          {/* Search bar hidden on mobile */}
           <form onSubmit={handleSearch} className="hidden lg:flex items-center flex-1 max-w-xl mx-8">
             <div className="relative flex-1">
               <select 
@@ -89,7 +89,7 @@ const Navbar = () => {
             </div>
           </form>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-7">
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-300"
@@ -126,7 +126,7 @@ const Navbar = () => {
             
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={toggleMenu}
               aria-label="Toggle menu"
             >
@@ -192,7 +192,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setIsOpen(false)}>
           <div
-            className="fixed top-0 right-0 w-64 h-full bg-white dark:bg-gray-900 shadow-lg p-4"
+            className={`fixed top-0 right-0 w-64 h-full bg-white dark:bg-gray-900 shadow-lg p-4 transition-transform duration-900 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
             onClick={(e) => e.stopPropagation()}
           >
             <button

@@ -53,7 +53,7 @@ export default function App() {
                           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
                             Shop by Categories
                           </h2>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 bg-gray-400 dark:bg-cyan-950 p-4 rounded-xl">
                             {categories.map((category) => (
                               <Link
                                 key={category.id}
