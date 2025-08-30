@@ -20,7 +20,7 @@ const addressSchema =  new Schema({
         type: Boolean,
         default: false
     }
-},{_id: false})
+});
 
 const userSchema = new Schema({
     _id:{
@@ -45,6 +45,9 @@ const userSchema = new Schema({
         default: 'user'
     },
     phone:{
+        type: String
+    },
+    refreshToken:{
         type: String
     },
     address:[addressSchema],
