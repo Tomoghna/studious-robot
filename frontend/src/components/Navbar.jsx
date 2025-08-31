@@ -6,7 +6,16 @@ import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 
+// default avatar image
+const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=User&background=random&color=fff";
+
 const Navbar = () => {
+  const user = {
+    name: "Guest",
+    avatar: null,
+    isLoggedIn: false,
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -49,6 +58,26 @@ const Navbar = () => {
     setIsDark(prev => !prev);
   };
 
+  const LoginSignupButton = (
+    <Link to="/login" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup">
+      <img src={user.avatar || DEFAULT_AVATAR} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
+
+      <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
+        {user.isLoggedIn ? user.name : "Login / Signup"}
+      </span>
+    </Link>
+  );
+
+  const MobileSignupButton = (
+    <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup" onClick={toggleMenu}>
+      <img src={user.avatar || DEFAULT_AVATAR} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
+
+      <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
+        {user.isLoggedIn ? user.name : "Login / Signup"}
+      </span>
+    </Link>
+  );
+
   return (
     <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors">
       <nav className="container mx-auto px-4 py-4">
@@ -58,7 +87,7 @@ const Navbar = () => {
           </Link>
 
           {/* Search bar hidden on mobile */}
-          <form onSubmit={handleSearch} className="hidden lg:flex items-center flex-1 max-w-xl mx-8">
+          <form onSubmit={handleSearch} className="hidden lg:flex items-center flex-1 max-w-xl mx-4">
             <div className="relative flex-1">
               <select 
                 name="category"
@@ -88,6 +117,8 @@ const Navbar = () => {
               </button>
             </div>
           </form>
+
+          {LoginSignupButton}
 
           <div className="flex items-center gap-7">
             <button
@@ -220,6 +251,7 @@ const Navbar = () => {
                   <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'} hover:text-blue-600 dark:hover:text-blue-400`} onClick={toggleMenu}>
                     Contact
                   </NavLink>
+                  <div className="mt-4">{MobileSignupButton}</div>
                 </div>
               </div>
             </div>
