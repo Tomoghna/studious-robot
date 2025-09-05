@@ -13,6 +13,7 @@ import SearchResults from "./components/SearchResults";
 import Products from "./components/Products";
 import ProductDetail from "./components/ProductDetail";
 import Wishlist from "./components/Wishlist";
+import LoginPage from "./pages/LoginPage";
 import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
 
 export default function App() {
@@ -112,6 +113,7 @@ export default function App() {
                 <Route path="/about" element={<AboutUs6 />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/LoginPage" element={<LoginPage/>} />
               </Routes>
 
               {/* Footer */}

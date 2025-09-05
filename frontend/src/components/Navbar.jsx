@@ -5,15 +5,21 @@ import { SunIcon, MoonIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import LoginModal from "./LoginModal";
+import { FaUser } from "react-icons/fa";
 
-// default avatar image
-const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=User&background=random&color=fff";
 
 const Navbar = () => {
-  const user = {
-    name: "Guest",
-    avatar: null,
-    isLoggedIn: false,
+  const { user } = useAuth();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLoginSignupClick = () => {
+    if (!user) {
+      setIsLoginModalOpen(true);
+    } else {
+      navigate("/LoginPage");
+    }
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -59,21 +65,18 @@ const Navbar = () => {
   };
 
   const LoginSignupButton = (
-    <Link to="/login" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup">
-      <img src={user.avatar || DEFAULT_AVATAR} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
-
-      <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
-        {user.isLoggedIn ? user.name : "Login / Signup"}
-      </span>
-    </Link>
+      <button type="button" onClick={handleLoginSignupClick} aria-label="Login or Signup" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300">
+        {user ? <img src={user.avatar} alt="avatar" className="w-5 h-5 rounded-full object-cover border border-gray-300 dark:border-gray-700"/> : <FaUser className="w-5 h-5"/>}
+        <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">{user ? user.name : "Login / Signup"}</span>
+      </button>
   );
 
   const MobileSignupButton = (
-    <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup" onClick={toggleMenu}>
-      <img src={user.avatar || DEFAULT_AVATAR} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
+    <Link to="/LoginPage" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup" onClick={toggleMenu}>
+      <img src={user?.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
 
       <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
-        {user.isLoggedIn ? user.name : "Login / Signup"}
+        {user?.isLoggedIn ? user.name : "Login / Signup"}
       </span>
     </Link>
   );
@@ -119,6 +122,8 @@ const Navbar = () => {
           </form>
 
           {LoginSignupButton}
+
+          <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
 
           <div className="flex items-center gap-7">
             <button
