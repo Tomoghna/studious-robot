@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleLoginSignupClick = () => {
-    if (!user) {
+    if (user) {
       setIsLoginModalOpen(true);
     } else {
       navigate("/LoginPage");
