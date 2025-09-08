@@ -19,7 +19,9 @@ app.use(cookieParser());
 
 //Routes
 import userRoutes from "./routes/user-route.js";
+import cartRoutes from "./routes/cart-route.js";
 
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/cart", cartRoutes);
 
 export default app;

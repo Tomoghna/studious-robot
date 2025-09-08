@@ -32,7 +32,7 @@ const signupUser = asyncHandler(async (req, res) => {
         const { localId, refreshToken, idToken } = firebaseRes.data;
 
         const mongoUser = new User({
-            _id: localId,
+            _uid: localId,
             name,
             email,
             refreshToken,
@@ -75,7 +75,7 @@ const loginUser = asyncHandler(async (req, res) => {
         );
         const { localId, refreshToken, idToken } = firebaseRes.data;
 
-        const user = await User.findById(localId).select("-refreshToken");
+        const user = await User.findOne({ _uid: localId }).select("-refreshToken");
         if (!user) {
             throw new apiError(400, "User with this email does not exist");
         }
