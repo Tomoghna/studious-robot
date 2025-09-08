@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
 import { Cart } from "../models/cart-model.js";
-import mongoose, { mongo, Schema } from "mongoose";
+import { Product } from "../models/product-model.js";
 
 const addToCart = asyncHandler(async (req, res) => {
     const { item } = req.body;
@@ -12,9 +12,9 @@ const addToCart = asyncHandler(async (req, res) => {
         throw new apiError(400, "All fields are required");
     }
 
-    const cart = await Cart.findOne({ userId });
+    const cart = await Cart.findOne({ user: userId });
 
-    if (!cart) {
+    if(cart === null){
         const newCart = new Cart({
             user: userId,
             items: item,
@@ -60,47 +60,54 @@ const addToCart = asyncHandler(async (req, res) => {
 });
 
 const getCart = asyncHandler(async (req, res) => {  
-    const userId =  req.user._id;
+    const userId = req.user._id;
+    const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
-    console.log(userId);
-    
-    const cart = await Cart.aggregate([
-        {
-            $match: { userId }
-        },  
-        {
-            $unwind: "$items"
-        },
-        {
-            $lookup: {
-                from: "products",
-                localField: "items.product",
-                foreignField: "_id",
-                as: "productDetails"
-            }
-        },
-        {
-            $unwind: "$productDetails"
-        },
-        {
-            $project: {
-                _id: 0,
-                productId: "$productDetails._id",
-                name: "$productDetails.name",
-                quantity: "$items.quantity",
-                price: "$items.price",
-                totalPrice: 1,
-                totalItems: 1
-            }
-        }       
-    ]);
     if (!cart) {
-        throw new apiError(404, "Cart not found for this user");
+        throw new apiError(404, "Cart not found");
+    }       
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                cart,
+                "Cart fetched successfully!!!"
+            )
+        )
+});
+
+const removeFromCart = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+    const userId = req.user._id;
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+        throw new apiError(404, "Cart not found");
     }
-    console.log(cart);
+    const itemIndex = cart.items.findIndex(
+        (item) => item.product.toString() === productId
+    );  
+    if (itemIndex > -1) {
+        cart.totalPrice -= cart.items[itemIndex].price * cart.items[itemIndex].quantity;
+        cart.items.splice(itemIndex, 1);
+        cart.totalItems = cart.items.length;
+        await cart.save();
+        return res
+            .status(200)
+            .json(
+                new apiResponse(
+                    200,
+                    cart,
+                    "Item removed from cart successfully!!!"
+                )
+            )
+    } else {
+        throw new apiError(404, "Item not found in cart");
+    }   
 });
 
 export {
     addToCart,
-    getCart
+    getCart,
+    removeFromCart
 }

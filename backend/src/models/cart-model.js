@@ -2,8 +2,8 @@ import mongoose, {Schema} from "mongoose";
 
 const cartItemSchema = new Schema({
     product:{
-        type: String,
-        // ref: 'Product'
+        type: Schema.Types.ObjectId,
+        ref: 'Product'
     },
     quantity:{
         type: Number,
