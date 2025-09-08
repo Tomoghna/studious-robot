@@ -34,7 +34,7 @@ const productSchema = new Schema({
     images:[
         {
             type: String,
-            required: [true, 'Product image is required'],
+            // required: [true, 'Product image is required'],
         }
     ],
     ratings:{
@@ -50,7 +50,6 @@ const productSchema = new Schema({
             user:{
                 type: Schema.Types.ObjectId,
                 ref: 'User',
-                required: true
             },
             name:{
                 type: String,

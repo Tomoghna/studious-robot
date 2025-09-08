@@ -24,3 +24,12 @@ export const authMiddleware = async (req, res, next) => {
         throw new apiError(401, "Not authorized, token failed");
     }
 }
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access forbidden: Insufficient rights" });
+    }
+    next();
+  };
+};

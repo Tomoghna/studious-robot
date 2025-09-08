@@ -17,11 +17,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
+app.set('trust proxy', true);
+
 //Routes
 import userRoutes from "./routes/user-route.js";
 import cartRoutes from "./routes/cart-route.js";
+import adminRoutes from "./routes/admin-routes.js";
 
 app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/users/cart", cartRoutes);
+
+
+app.use("/api/v1/admin/products", adminRoutes);
 
 export default app;
