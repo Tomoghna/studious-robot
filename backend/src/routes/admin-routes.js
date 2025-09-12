@@ -1,6 +1,8 @@
 import express from "express";
 import {
     createProduct,
+    deleteProduct,
+    updateProduct
 } from "../controllers/product-controller.js";
 import { 
     authMiddleware,
@@ -15,5 +17,18 @@ router.route("/create").post(
     restrictToIPs,
     createProduct
 );
+router.route("/delete/:id").delete(
+    authMiddleware, 
+    authorizeRoles("admin"), 
+    restrictToIPs,
+    deleteProduct
+);
+
+router.route("/update/:id").patch(
+    authMiddleware,
+    authorizeRoles("admin"),
+    restrictToIPs,
+    updateProduct
+)
 
 export default router;

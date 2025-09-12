@@ -28,6 +28,61 @@ const createProduct = asyncHandler(async (req, res) => {
         )
 });
 
+const deleteProduct = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    if(!product){
+        throw new apiError(404, "Product not found");
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                [],
+                "Product deleted successfully!!!"
+            )
+        )   
+});
+
+const updateProduct = asyncHandler( async(req, res)=>{
+    const { id } = req.params;
+    const { price, stock }= req.body;
+
+    const product = await Product.findById(id);
+    if(!product){
+        new apiError(404, "Product not found");
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        {
+            $set:{
+                price,
+                stock
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                updatedProduct,
+                "Product details updated successfully!!"
+            )
+        )
+});
+
 export{
-    createProduct
+    createProduct,
+    deleteProduct,
+    updateProduct
 }
