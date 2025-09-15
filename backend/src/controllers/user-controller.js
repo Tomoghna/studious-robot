@@ -3,7 +3,7 @@ import { User } from "../models/user-model.js";
 import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
 import axios from "axios";
-
+import { Product } from "../models/product-model.js";
 
 const signupUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
@@ -255,6 +255,163 @@ const deleteAddress = asyncHandler(async (req, res) => {
         );
 });
 
+const addToWhislist = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+    if (!productId) {
+        throw new apiError(400, "Product id is required");
+    }
+    const user = await User.findById(req.user._id).select("-refreshToken");
+    if (user.whislist.includes(productId)) {
+        throw new apiError(400, "Product already in wishlist");
+    }
+    user.whislist.push(productId);
+    await user.save();
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "Product added to wishlist successfully!!!"
+            )
+        );
+});
+
+const removeFromWhislist = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+    if (!productId) {
+        throw new apiError(400, "Product id is required");
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $pull: {
+                whislist: productId
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-refreshToken");
+
+    if (!user) {
+        throw new apiError(404, "Product not found in wishlist");
+    }
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "Product removed from wishlist successfully!!!"
+            )
+        );
+});
+
+const getWhislist = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id).select("whislist -_id").populate("whislist");
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user.whislist,
+                "Wishlist fetched successfully!!!"
+            )
+        );
+});
+
+const giveReviewsToProduct = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+    const { name, rating, comment } = req.body;
+    if (!productId) {
+        throw new apiError(400, "Product id is required");
+    }
+    if (!rating || rating < 1 || rating > 5) {
+        throw new apiError(400, "Star rating must be between 1 and 5");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+        throw new apiError(404, "Product not found");
+    }
+
+    const user = await User.findById(req.user._id).select("-refreshToken");
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    const alreadyReviewed = product.reviews.find(
+        (review => review.userId.toString() === user._id.toString())
+    );
+    if (alreadyReviewed) {
+        throw new apiError(400, "You have already reviewed this product");
+    } else {
+        const review = {
+            userId: user._id,
+            name: name || user.name,
+            rating: Number(rating),
+            comment
+        };
+        product.reviews.push(review);
+        product.numOfReviews = product.reviews.length;
+        product.ratings = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
+        await product.save();
+    }
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                product,
+                "Review added successfully!!!"
+            )
+        );
+});
+
+const updateReviewsOfUser = asyncHandler( async (req, res)=>{
+    const { productId } = req.params;
+    const { rating, comment} = req.body;
+    if (!productId) {
+        throw new apiError(400, "Product id is required");
+    }
+    if (!rating || rating < 1 || rating > 5) {
+        throw new apiError(400, "Star rating must be between 1 and 5");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+        throw new apiError(404, "Product not found");
+    }
+
+    const user = await User.findById(req.user._id).select("-refreshToken");
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    const alreadyReviewed = product.reviews.find(
+        (review => review.userId.toString() === user._id.toString())
+    );
+
+    if(!alreadyReviewed){
+        throw new apiError(400, "No review present to update!!")
+    }else{
+        alreadyReviewed.rating = rating;
+        alreadyReviewed.comment = comment; 
+        await product.save();
+    }
+
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                product,
+                "Review updated successfully!!"
+            )
+        )
+
+});
+
 export {
     signupUser,
     loginUser,
@@ -262,5 +419,10 @@ export {
     loggedInUser,
     updateProfile,
     updateAddess,
-    deleteAddress
+    deleteAddress,
+    addToWhislist,
+    removeFromWhislist,
+    getWhislist,
+    giveReviewsToProduct,
+    updateReviewsOfUser
 }
