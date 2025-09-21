@@ -70,7 +70,7 @@ const userSchema = new Schema({
             }
         }
     ],
-    isVerified:{
+    isBanned:{
         type: Boolean,
         default: false
     }

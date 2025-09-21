@@ -22,12 +22,14 @@ app.set('trust proxy', true);
 //Routes
 import userRoutes from "./routes/user-route.js";
 import cartRoutes from "./routes/cart-route.js";
-import adminRoutes from "./routes/admin-routes.js";
+import productRoutes from "./routes/product-routes.js";
+import adminRoutes from "./routes/admin-route.js";
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/users/cart", cartRoutes);
 
 
-app.use("/api/v1/admin/products", adminRoutes);
+app.use("/api/v1/admin/products", productRoutes);
+app.use("/api/v1/admin/users", adminRoutes);
 
 export default app;

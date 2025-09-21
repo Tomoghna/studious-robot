@@ -15,8 +15,8 @@ export const authMiddleware = async (req, res, next) => {
         }
         
         const user = await User.findOne({ _uid: decodedToken.uid }).select("-refreshToken");
-        if(!user){  
-            throw new apiError(401, "No user found with this token");
+        if(!user || user.isBanned){  
+            throw new apiError(401, "No User found or User has been banned!!");
         }
         req.user = user;
         next();
