@@ -13,6 +13,10 @@ import {
     giveReviewsToProduct,
     updateReviewsOfUser
 } from '../controllers/user-controller.js';
+import { 
+    getProducts,
+    getProductById
+} from '../controllers/product-controller.js';
 import { authMiddleware } from '../middlewares/auth-middleware.js';
 
 const router = express.Router();   
@@ -29,5 +33,7 @@ router.route('/removefromwhislist/:productId').delete(authMiddleware, removeFrom
 router.route('/getwhislist').get(authMiddleware, getWhislist);
 router.route('/givereview/:productId').post(authMiddleware, giveReviewsToProduct);
 router.route('/updatereview/:productId').patch(authMiddleware, updateReviewsOfUser);
+router.route('/products').get(authMiddleware, getProducts);
+router.route('/product/:productId').get(authMiddleware, getProductById);
 
 export default router;
