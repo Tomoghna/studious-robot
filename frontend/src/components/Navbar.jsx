@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleLoginSignupClick = () => {
-    if (user) {
+    if (user) { // put not (!user) to show login modal if not logged in
       setIsLoginModalOpen(true);
     } else {
       navigate("/LoginPage");

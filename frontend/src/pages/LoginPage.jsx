@@ -18,7 +18,7 @@ const LoginPage = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [formChanged, setFormChanged] = useState(false);
 
-  if(user) {
+  if(user) { // put not (!user) to show login form if not logged in
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-4">Login</h1>
