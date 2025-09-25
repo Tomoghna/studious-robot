@@ -34,23 +34,22 @@ const productSchema = new Schema({
     images:[
         {
             type: String,
-            required: [true, 'Product image is required'],
+            // required: [true, 'Product image is required'],
         }
     ],
-    ratings:{
+    numOfReviews:{
         type: Number,
         default: 0
     },
-    numOfReviews:{
+    ratings:{
         type: Number,
         default: 0
     },
     reviews:[
         {
-            user:{
+            userId:{
                 type: Schema.Types.ObjectId,
                 ref: 'User',
-                required: true
             },
             name:{
                 type: String,
@@ -58,11 +57,16 @@ const productSchema = new Schema({
             },
             rating:{
                 type: Number,
-                required: true
+                required: true,
+                default: -1
             },
             comment:{
                 type: String,
                 required: true
+            },
+            ratedAt:{
+                type: Date,
+                default: Date.now
             }
         }
     ]

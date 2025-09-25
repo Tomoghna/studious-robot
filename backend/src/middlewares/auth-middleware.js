@@ -14,9 +14,9 @@ export const authMiddleware = async (req, res, next) => {
             throw new apiError(401, "Unauthorized, token failed");
         }
         
-        const user = await User.findById(decodedToken.uid).select("-refreshToken");
-        if(!user){  
-            throw new apiError(401, "No user found with this token");
+        const user = await User.findOne({ _uid: decodedToken.uid }).select("-refreshToken");
+        if(!user || user.isBanned){  
+            throw new apiError(401, "No User found or User has been banned!!");
         }
         req.user = user;
         next();
@@ -24,3 +24,12 @@ export const authMiddleware = async (req, res, next) => {
         throw new apiError(401, "Not authorized, token failed");
     }
 }
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access forbidden: Insufficient rights" });
+    }
+    next();
+  };
+};

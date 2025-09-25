@@ -23,7 +23,7 @@ const addressSchema =  new Schema({
 });
 
 const userSchema = new Schema({
-    _id:{
+    _uid:{
         type: String,
         required: true
     },
@@ -70,7 +70,7 @@ const userSchema = new Schema({
             }
         }
     ],
-    isVerified:{
+    isBanned:{
         type: Boolean,
         default: false
     }
