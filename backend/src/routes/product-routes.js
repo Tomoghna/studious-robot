@@ -23,4 +23,10 @@ router.route("/delete/:id").delete(
     restrictToIPs,
     deleteProduct
 );
+router.route("/update/:id").patch(
+    authMiddleware, 
+    authorizeRoles("admin"), 
+    restrictToIPs,
+    updateProduct
+);
 export default router;
