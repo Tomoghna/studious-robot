@@ -52,7 +52,9 @@ const orderItemSchema = new Schema({
             type: String, 
             enum: ["pending", "paid", "failed", "refunded","COD"], 
             default: "pending" 
-        }
+        },
+        razorpayOrderId: { type: String },
+        razorpayPaymentId: { type: String }
     },
     placedAt:{
         type:Date,
