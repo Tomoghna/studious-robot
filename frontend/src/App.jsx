@@ -15,6 +15,7 @@ import ProductDetail from "./components/ProductDetail";
 import Wishlist from "./components/Wishlist";
 import LoginPage from "./pages/LoginPage";
 import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
+import CheckoutPage from "./pages/CheckoutPage";
 
 export default function App() {
   const images = [
@@ -114,6 +115,7 @@ export default function App() {
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/LoginPage" element={<LoginPage/>} />
+                <Route path="/checkout" element={<CheckoutPage/>} />
               </Routes>
 
               {/* Footer */}
