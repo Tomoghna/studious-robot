@@ -7,17 +7,17 @@ const LoginForm = ({onSuccess}) => {
     const [mode, setMode] = useState("signin");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [mobile, setMobile] = useState("");
+    const [name, setName] = useState("");
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             if(mode === "signup"){
-                await login(email, password);
+                await signup(email, password, name);
             }
             else {
-                await signup(email, password);
+                await login(email, password);
             }
             if (onSuccess) onSuccess();
         }
@@ -55,7 +55,7 @@ const LoginForm = ({onSuccess}) => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 {error && <div className="text-red-500">{error}</div>}
                 {mode === "signup" && (
-                    <input type="text" placeholder="Mobile Number" className="w-full p-2 border rounded" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+                    <input type="text" placeholder="Name" className="w-full p-2 border rounded" value={name} onChange={(e) => setMobile(e.target.value)} required/>
                 )}
 
                 <input type="email" placeholder="Email" className="w-full p-2 border rounded" value={email} onChange={(e) => setEmail(e.target.value)} required />

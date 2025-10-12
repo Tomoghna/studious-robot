@@ -4,7 +4,7 @@ import {getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sig
 
 
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -22,13 +22,11 @@ export function AuthProvider({ children }) {
   const API_URL = "http://localhost:8000"; //Replace with the backend url
 
   const login = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const idToken = await userCredential.user.getIdToken();
     const res = await fetch(`${API_URL}/api/v1/users/login`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       credentials: "include", // ** Important to include for cookie-based sessions
-      body: JSON.stringify({idToken}),
+      body: JSON.stringify({email, password}),
     });
     const data = await res.json();
     if(res.ok && data.data?.user) {

@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaHeart } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaHeart, FaUser, FaSignOutAlt, FaCog } from "react-icons/fa";
 import { SunIcon, MoonIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import LoginModal from "./LoginModal";
-import { FaUser } from "react-icons/fa";
 
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showMobileUserDropdown, setShowMobileUserDropdown] = useState(false);
 
   const handleLoginSignupClick = () => {
     if (!user) { // put not (!user) to show login modal if not logged in
@@ -65,20 +66,38 @@ const Navbar = () => {
   };
 
   const LoginSignupButton = (
-      <button type="button" onClick={handleLoginSignupClick} aria-label="Login or Signup" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300">
-        {user ? <img src={user.avatar} alt="avatar" className="w-5 h-5 rounded-full object-cover border border-gray-300 dark:border-gray-700"/> : <FaUser className="w-5 h-5"/>}
-        <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">{user ? user.name : "Login / Signup"}</span>
-      </button>
+      <div className="relative hidden md:block" onMouseEnter={() => setShowUserDropdown(true)} onMouseLeave={() => setShowUserDropdown(false)}>
+        <button type="button" onClick={handleLoginSignupClick} aria-label="Login or Signup" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300">
+          {user ? <img src={user.avatar} alt="avatar" className="w-5 h-5 rounded-full object-cover border border-gray-300 dark:border-gray-700"/> : <FaUser className="w-5 h-5"/>}
+          <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">{user ? user.name : "Login / Signup"}</span>
+        </button>
+        {user && showUserDropdown && (
+          <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border z-50 p-4 flex flex-col items-center">
+            <img src={user.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover border mb-2" />
+            <div className="font-semibold mb-2 text-center">{user.name}</div>
+            <button className="w-full flex items-center gap-2 px-4 py-2 mb-2 bg-blue-600 text-white rounded hover:bg-blue-700 justify-center" onClick={() => {setShowUserDropdown(false); navigate("/account");}}><FaCog/> Manage Account</button>
+            <button className="w-full flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 justify-center" onClick={() => {logout(); setShowUserDropdown(false);}}><FaSignOutAlt/> Logout</button>
+          </div>
+        )}
+      </div>
+      
   );
 
   const MobileSignupButton = (
-    <Link to="/LoginPage" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300" aria-label="Login or Signup" onClick={toggleMenu}>
-      <img src={user?.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700" />
-
-      <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
-        {user?.isLoggedIn ? user.name : "Login / Signup"}
-      </span>
-    </Link>
+    <div>
+      <button type="button" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 w-full" aria-label="Login or Signup" onClick={() => setShowMobileUserDropdown((prev) => !prev)}>
+        <img src={user?.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700"/>
+        <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
+          {user ? user.name : "Login / Signup"}
+        </span>
+      </button>
+      {user && showMobileUserDropdown && (
+        <div className="ml-8 mt-2 flex flex-col gap-2">
+          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 justify-start" onClick={() => {setShowMobileUserDropdown(false); setIsOpen(false); navigate("/account");}}><FaCog/> Manage Account</button>
+          <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 justify-start" onClick={() => {logout(); setShowMobileUserDropdown(false); setIsOpen(false);}}><FaSignOutAlt/> Logout</button>
+        </div>
+      )}
+    </div>
   );
 
   return (

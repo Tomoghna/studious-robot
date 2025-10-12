@@ -8,7 +8,7 @@ import { Product } from "../models/product-model.js";
 const signupUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
-    if ([name, email, password].some((field) => field?.trim === "")) {
+    if ([name, email, password].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     try {
@@ -60,7 +60,7 @@ const signupUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    if ([email, password].some((field) => field?.trim === "")) {
+    if ([email, password].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
@@ -149,7 +149,7 @@ const loggedInUser = asyncHandler(async (req, res) => {
 
 const updateProfile = asyncHandler(async (req, res) => {
     const { name, newAddress, phone } = req.body;
-    if ([newAddress, phone].some((field) => field?.trim === "")) {
+    if ([newAddress, phone].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     const user = await User.findByIdAndUpdate(req.user._id,

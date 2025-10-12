@@ -8,9 +8,9 @@ const OPTIONS = {
   credentials: true,
 }
 
-app.use(cors({
+app.use(cors(
     OPTIONS
-}));
+));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
