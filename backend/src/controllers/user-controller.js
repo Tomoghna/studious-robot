@@ -4,6 +4,7 @@ import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
 import axios from "axios";
 import { Product } from "../models/product-model.js";
+import { admin } from "../configs/firebase.js";
 
 const signupUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
@@ -17,7 +18,6 @@ const signupUser = asyncHandler(async (req, res) => {
         if (existingUser) {
             throw new apiError(400, "User with this name or email already exists");
         }
-
         const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
         const firebaseRes = await axios.post(
@@ -82,7 +82,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true
+            secure: true,
+            sameSite: "strict"
         };
 
         return res
@@ -116,15 +117,18 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
     );
 
+    await admin.auth().revokeRefreshTokens(req.user._uid);
+
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: "strict"
     };
 
     return res
         .status(200)
-        .cookie("token", "", options)
-        .cookie("refreshToken", "", options)
+        .clearCookie("token", options)
+        .clearCookie("refreshToken", options)
         .json(
             new apiResponse(
                 200,

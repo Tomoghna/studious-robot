@@ -6,12 +6,12 @@ import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
 import { validateRazorpaySignature } from "../services/razorPay-service.js";
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-});
 
 const createOrder = asyncHandler(async (req, res) => {
+    const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
     const { items, shippingAddress, payment } = req.body;
 
     if ([items, shippingAddress, payment].some((field) => field?.trim === "")) {
