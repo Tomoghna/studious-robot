@@ -13,6 +13,9 @@ import SearchResults from "./components/SearchResults";
 import Products from "./components/Products";
 import ProductDetail from "./components/ProductDetail";
 import Wishlist from "./components/Wishlist";
+import LoginPage from "./pages/LoginPage";
+import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
+import CheckoutPage from "./pages/CheckoutPage";
 
 export default function App() {
   const images = [
@@ -111,6 +114,8 @@ export default function App() {
                 <Route path="/about" element={<AboutUs6 />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/LoginPage" element={<LoginPage/>} />
+                <Route path="/checkout" element={<CheckoutPage/>} />
               </Routes>
 
               {/* Footer */}
@@ -150,6 +155,14 @@ export default function App() {
                           123 Main Street, Anytown, India
                         </li>
                       </ul>
+                      <div>
+                        <h3 className="text-xl font-bold mb-4">Follow Us</h3>
+                        <div className="flex space-x-4">
+                          <a href="https://facebook.com/yourpage" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FaFacebook size={24} /> </a>
+                          <a href="https://www.instagram.com/mayurhamsa/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FaInstagram size={24} /> </a>
+                          <a href="https://twitter.com/yourpage" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FaTwitter size={24} /> </a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">

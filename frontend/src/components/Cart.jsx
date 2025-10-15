@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import {useNavigate} from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const navigate = useNavigate();
 
   if (cartItems.length === 0) {
     return (
@@ -102,7 +104,7 @@ const Cart = () => {
                 </div>
               </div>
             </div>
-            <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+            <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors" onClick={() => navigate("/checkout")}>
               Proceed to Checkout
             </button>
             <Link 
