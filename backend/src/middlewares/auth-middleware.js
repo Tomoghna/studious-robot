@@ -1,4 +1,4 @@
-import { admin } from "../../configs/firebase.js";
+import { admin } from "../configs/firebase.js";
 import apiError from "../utils/apiError.js";
 import { User } from "../models/user-model.js";
 
