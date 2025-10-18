@@ -85,8 +85,12 @@ const Navbar = () => {
 
   const MobileSignupButton = (
     <div>
-      <button type="button" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 w-full" aria-label="Login or Signup" onClick={() => setShowMobileUserDropdown((prev) => !prev)}>
-        <img src={user?.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700"/>
+      <button type="button" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 w-full" aria-label="Login or Signup" onClick={() => { if (!user) {setIsLoginModalOpen(true); setIsOpen(false);} else {setShowMobileUserDropdown((prev) => !prev)}}}>
+        {user ? (
+          <img src={user?.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-gray-700"/>
+        ) : (
+          <FaUser className="w-6 h-8 text-gray-700 dark:text-gray-200"/>
+        )}
         <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">
           {user ? user.name : "Login / Signup"}
         </span>

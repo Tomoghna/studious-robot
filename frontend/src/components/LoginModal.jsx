@@ -1,22 +1,48 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
 import LoginForm from "./LoginForm";
-import {FaTimes} from "react-icons/fa";
+import Fade from "@mui/material/Fade";
 
-const LoginModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+
+const LoginModal = ({isOpen, onClose}) => {
+  const [tab, setTab] = useState(0);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    return () => { document.body.style.overflow = prev || "";};
+  }, []);
+
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Fade ref={ref} {...props}/>;
+  });
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-slate-100 dark:bg-slate-950 rounded-lg p-6 shadow-lg relative w-full max-w-sm">
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-          onClick={onClose}
-        >
-          <FaTimes size={20} />
-        </button>
-        <h2 className="text-xl font-bold mb-4 text-blue-800">Login</h2>
-        <LoginForm onSuccess={onClose} />
-      </div>
-    </div>
+    <Dialog open={isOpen} onClose={onClose} TransitionComponent={Transition} fullWidth maxWidth="xs" keepMounted={false} disableRestoreFocus BackdropProps={{onClick: onClose}} PaperProps={{sx: {borderRadius: 3, bgcolor: "background.paper"},}}>
+      <DialogTitle sx={{m: 0, p: 2, textAlign: "center", fontWeight: "bold"}}>
+        {tab === 0 ? "Sign In" : "Sign Up"}
+        <IconButton aria-label="close" onClick={onClose} sx={{position: "absolute", right: 8, top: 8, color: (theme) => theme.palette.grey[500],}}>
+          <CloseIcon/>
+        </IconButton>
+      </DialogTitle>
+
+      <Box sx={{borderBottom: 1, borderColor: "divider", textAlign: "center"}}>
+        <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} centered textColor="primary" indicatorColor="primary">
+          <Tab label="Sign In"/>
+          <Tab label="Sign Up"/>
+        </Tabs>
+      </Box>
+
+      <DialogContent dividers>
+        <LoginForm mode={tab === 0 ? "signin" : "signup"} onSuccess={onClose}/>
+      </DialogContent>
+    </Dialog>
   );
 };
 
