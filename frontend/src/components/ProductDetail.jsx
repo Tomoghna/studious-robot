@@ -3,8 +3,28 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { FaHeart } from 'react-icons/fa';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
 import Carousel from './Carousel';
+import TextField from '@mui/material/TextField';
+import Rating from '@mui/material/Rating';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import { useAuth } from '../contexts/AuthContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+const API_URL = "http://localhost:8000";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -18,16 +38,11 @@ export default function ProductDetail() {
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Product not found</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">The product you're looking for doesn't exist.</p>
-        <button
-          onClick={() => navigate('/products')}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Return to Products
-        </button>
-      </div>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom>Product not found</Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>The product you're looking for doesn't exist.</Typography>
+        <Button variant="contained" onClick={() => navigate('/products')}>Return to Products</Button>
+      </Container>
     );
   }
 
@@ -54,140 +69,161 @@ export default function ProductDetail() {
     }
   };
 
+  // Reviews state (start from product.reviews if available)
+  const [reviews, setReviews] = useState(product.reviews ? product.reviews.slice() : []);
+  const [reviewName, setReviewName] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState('');
+  const { fetchUser, user } = useAuth();
+  const { showSnackbar } = useSnackbar();
+
+  const handleAddReview = () => {
+    if (!reviewText.trim()) return;
+    (async () => {
+      try {
+        const payload = { name: reviewName || user?.name || '', rating: reviewRating, comment: reviewText };
+        const res = await fetch(`${API_URL}/api/v1/users/givereview/${product._id || product.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setReviews(prev => [{ id: Date.now(), name: payload.name, rating: payload.rating, text: payload.comment, date: new Date().toISOString() }, ...prev]);
+          setReviewName(''); setReviewRating(5); setReviewText('');
+          showSnackbar('Review added', 'success');
+          // optionally refresh product/user
+        } else {
+          showSnackbar(data.message || 'Failed to add review', 'error');
+        }
+      } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+    })();
+  };
+
+  const handleUpdateReview = async (rating, comment) => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/users/updatereview/${product._id || product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rating, comment })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showSnackbar('Review updated', 'success');
+        // Update local list if necessary; here we will simply refetch user/product in real app
+      } else {
+        showSnackbar(data.message || 'Update failed', 'error');
+      }
+    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-        {/* Product Images */}
-        <div className="lg:col-span-7">
-          <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+    <Container sx={{ py: 4 }}>
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={7}>
+          <Paper sx={{ overflow: 'hidden' }}>
             <Carousel images={product.images} autoplayInterval={4000} />
-          </div>
-          {/* Thumbnail Navigation */}
-          <div className="grid grid-cols-4 gap-4 mt-4">
+          </Paper>
+          <Grid container spacing={2} sx={{ mt: 2 }}>
             {product.images.map((image, index) => (
-              <button
-                key={index}
-                className="relative rounded-lg overflow-hidden aspect-square bg-white dark:bg-gray-800"
-                onClick={() => {/* TODO: Implement thumbnail click */}}
-              >
-                <img
-                  src={image}
-                  alt={`${product.name} thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
+              <Grid key={index} item xs={3}>
+                <Button sx={{ p: 0, minWidth: 0 }} onClick={() => {/* thumbnail click: could set carousel index */}}>
+                  <Box component="img" src={image} alt={`${product.name} thumb ${index+1}`} sx={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 1 }} />
+                </Button>
+              </Grid>
             ))}
-          </div>
-        </div>
+          </Grid>
+        </Grid>
 
-        {/* Product Info */}
-        <div className="lg:col-span-5 mt-8 lg:mt-0">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                {product.name}
-              </h1>
-              <button
-                onClick={toggleWishlist}
-                className={`p-2 rounded-full ${
-                  isInWishlist(product.id)
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                } hover:scale-110 transition-all duration-200`}
-                aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                <FaHeart size={20} />
-              </button>
-            </div>
-            {product.isNew && (
-              <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium mb-4">
-                New
-              </span>
-            )}
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-6">
-              ${product.price}
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-              {product.description}
-            </p>
+        <Grid item xs={12} md={5}>
+          <Paper sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>{product.name}</Typography>
+              <IconButton onClick={toggleWishlist} color={isInWishlist(product.id) ? 'error' : 'default'}>
+                <FavoriteIcon />
+              </IconButton>
+            </Box>
 
-            {/* Category */}
-            <div className="mb-6">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Category:
-              </span>
-              <span className="ml-2 text-gray-900 dark:text-white capitalize">
-                {product.category.replace('-', ' ')}
-              </span>
-            </div>
+            {product.isNew && <Chip label="New" color="error" sx={{ mt: 1 }} />}
 
-            {/* Quantity Selector */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Quantity
-              </label>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                  className="w-20 h-10 text-center rounded-lg border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-                <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            <Typography variant="h5" color="success.main" sx={{ mt: 2, mb: 2 }}>${product.price}</Typography>
 
-            {/* Action Buttons */}
-            <div className="space-y-4">
-              <button
-                onClick={handleBuyNow}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
-              >
+            <Typography color="text.secondary" sx={{ mb: 3 }}>{product.description}</Typography>
+
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" color="text.secondary">Category:</Typography>
+              <Typography>{product.category.replace('-', ' ')}</Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <Button variant="outlined" onClick={() => handleQuantityChange(quantity - 1)}>-</Button>
+              <Box sx={{ width: 64, textAlign: 'center' }}>{quantity}</Box>
+              <Button variant="outlined" onClick={() => handleQuantityChange(quantity + 1)}>+</Button>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Button variant="contained" onClick={handleBuyNow} fullWidth>
                 Buy Now - ${(product.price * quantity).toFixed(2)}
-              </button>
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3 rounded-lg font-semibold transition-colors"
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
+              </Button>
+              <Button variant="outlined" onClick={handleAddToCart} fullWidth>Add to Cart</Button>
+            </Box>
+          </Paper>
 
-          {/* Additional Information */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Product Details
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Materials</h3>
-                <p className="mt-1 text-gray-900 dark:text-white">Handcrafted bamboo, natural dyes</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Dimensions</h3>
-                <p className="mt-1 text-gray-900 dark:text-white">Height: 12 inches, Width: 8 inches</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Care Instructions</h3>
-                <p className="mt-1 text-gray-900 dark:text-white">Clean with dry cloth, avoid direct sunlight</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          <Paper sx={{ p: 3, mt: 3 }}>
+            <Typography variant="h6" gutterBottom>Product Details</Typography>
+            <Typography variant="subtitle2" color="text.secondary">Materials</Typography>
+            <Typography>Handcrafted bamboo, natural dyes</Typography>
+
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>Dimensions</Typography>
+            <Typography>Height: 12 inches, Width: 8 inches</Typography>
+
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>Care Instructions</Typography>
+            <Typography>Clean with dry cloth, avoid direct sunlight</Typography>
+          </Paper>
+
+          <Paper sx={{ p: 3, mt: 3 }}>
+            <Typography variant="h6" gutterBottom>Reviews ({reviews.length})</Typography>
+
+            <Stack spacing={2} sx={{ mb: 2 }}>
+              <TextField label="Name" value={reviewName} onChange={(e) => setReviewName(e.target.value)} fullWidth />
+              <Rating value={reviewRating} onChange={(e, v) => setReviewRating(v || 5)} />
+              <TextField label="Review" value={reviewText} onChange={(e) => setReviewText(e.target.value)} fullWidth multiline minRows={3} />
+              <Button variant="contained" onClick={handleAddReview}>Add Review</Button>
+            </Stack>
+
+            <Divider sx={{ mb: 2 }} />
+
+            {reviews.length === 0 ? (
+              <Typography color="text.secondary">No reviews yet. Be the first to review this product.</Typography>
+            ) : (
+              <List>
+                {reviews.map((r) => (
+                  <React.Fragment key={r.id}>
+                    <ListItem alignItems="flex-start">
+                      <ListItemAvatar>
+                        <Avatar>{r.name ? r.name[0].toUpperCase() : '?'}</Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography sx={{ fontWeight: 600 }}>{r.name}</Typography>
+                            <Rating value={r.rating} size="small" readOnly />
+                            <Typography variant="caption" color="text.secondary">{new Date(r.date).toLocaleDateString()}</Typography>
+                          </Box>
+                        }
+                        secondary={<Typography sx={{ whiteSpace: 'pre-wrap' }}>{r.text}</Typography>}
+                      />
+                    </ListItem>
+                    <Divider component="li" />
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }
