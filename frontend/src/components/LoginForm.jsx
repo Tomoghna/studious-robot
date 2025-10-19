@@ -63,11 +63,7 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
                 <Divider>or</Divider>
 
                 {mode === "signup" && (
-<<<<<<< HEAD
-                    <input type="text" placeholder="Name" className="w-full p-2 border rounded" value={name} onChange={(e) => setName(e.target.value)} required/>
-=======
                     <TextField label="Full Name" variant="outlined" fullWidth value={name} onChange={(e) => setName(e.target.value)} required/>
->>>>>>> be0ec83d8a7c0421fdcea7067a747770876aa1a7
                 )}
 
                 <TextField label="Email" variant="outlined" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} required/>
