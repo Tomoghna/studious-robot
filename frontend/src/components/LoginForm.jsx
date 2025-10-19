@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {useAuth} from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -12,6 +13,7 @@ import Alert from "@mui/material/Alert";
 
 const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const {login, signup} = useAuth();
+    const navigate = useNavigate();
     const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -25,13 +27,24 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
         setError("");
         setIsSubmitting(true);
         try {
+            let returnedUser = null;
             if (mode === "signup") {
-                await signup(email, password, name);
+                returnedUser = await signup(email, password, name);
             }
             else {
-                await login(email, password);
+                returnedUser = await login(email, password);
             }
+
+            // Close modal or notify parent
             onSuccess && onSuccess();
+
+            // Navigate based on role
+            if (returnedUser && returnedUser.role === "admin") {
+                navigate('/admin');
+            } else {
+                // default user dashboard/account page
+                navigate('/LoginPage');
+            }
         }
         catch (err) {
             setError("Invalid credentials or network error.");

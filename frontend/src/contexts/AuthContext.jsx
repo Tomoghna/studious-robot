@@ -19,6 +19,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const {showSnackbar} = useSnackbar();
 
   const API_URL = "http://localhost:8000"; //Replace with the backend url
@@ -95,13 +96,18 @@ export function AuthProvider({ children }) {
   };
 
   const fetchUser = async () => {
-    const res = await fetch(`${API_URL}/api/v1/users/loggedinuser`, {
-      method: "GET",
-      credentials: "include",
-    });
-    const data = await res.json();
-    if(res.ok && data.data) {
-      setUser(data.data);
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/api/v1/users/loggedinuser`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok && data.data) setUser(data.data);
+    } catch (err) {
+      console.error('fetchUser error', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,6 +115,6 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  const value = { user, login, signup, logout, fetchUser };
+  const value = { user, loading, login, signup, logout, fetchUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
