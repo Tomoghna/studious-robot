@@ -52,18 +52,6 @@ export function AuthProvider({ children }) {
 
 
   const signup = async (email, password, name) => {
-<<<<<<< HEAD
-    const res = await fetch(`${API_URL}/api/v1/users/register`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      credentials: "include",
-      body: JSON.stringify({name,email, password}),
-    });
-    const data = await res.json();
-    if(res.ok && data.data?.user) {
-      setUser(data.data.user);
-      return data.data.user;
-=======
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
@@ -83,7 +71,6 @@ export function AuthProvider({ children }) {
         showSnackbar(data.message || "Signup failed", "error", 3000);
         throw new Error(data.message || "Signup failed");
       }
->>>>>>> be0ec83d8a7c0421fdcea7067a747770876aa1a7
     }
     catch (err) {
       showSnackbar("Signup error!", "error", 4000);
@@ -94,13 +81,6 @@ export function AuthProvider({ children }) {
 
 
   const logout = async () => {
-<<<<<<< HEAD
-    await fetch(`${API_URL}/api/v1/users/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    setUser(null);
-=======
     try {
       await signOut(auth);
       await fetch(`${API_URL}/api/v1/users/logout`, {
@@ -113,7 +93,6 @@ export function AuthProvider({ children }) {
     catch (err) {
       showSnackbar("Logout failed", "error", 2000);
     }
->>>>>>> be0ec83d8a7c0421fdcea7067a747770876aa1a7
   };
 
   const fetchUser = async () => {
@@ -136,21 +115,6 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-<<<<<<< HEAD
-  // const updateProfile = async (newAddress, phone)=>{
-  //   const res = await fetch(`${API_URL}/api/v1/users/updateprofile`,{
-  //     method:"PATCH",
-  //     headers: {"Content-Type": "application/json"},
-  //     credentials:"include",
-  //     body: JSON.stringify({newAddress, phone})
-  //   })
-  //   const data = await res.json();
-  //   console.log(data);
-  // }
-
-  const value = { user, login, signup, logout, fetchUser };
-=======
   const value = { user, loading, login, signup, logout, fetchUser };
->>>>>>> be0ec83d8a7c0421fdcea7067a747770876aa1a7
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
