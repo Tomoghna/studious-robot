@@ -55,7 +55,7 @@ const LoginForm = ({onSuccess}) => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 {error && <div className="text-red-500">{error}</div>}
                 {mode === "signup" && (
-                    <input type="text" placeholder="Name" className="w-full p-2 border rounded" value={name} onChange={(e) => setMobile(e.target.value)} required/>
+                    <input type="text" placeholder="Name" className="w-full p-2 border rounded" value={name} onChange={(e) => setName(e.target.value)} required/>
                 )}
 
                 <input type="email" placeholder="Email" className="w-full p-2 border rounded" value={email} onChange={(e) => setEmail(e.target.value)} required />

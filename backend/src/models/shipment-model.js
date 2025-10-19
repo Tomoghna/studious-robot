@@ -17,7 +17,7 @@ const shipmentSchema = new Schema({
     labelUrl: {
         type: String
     },
-    rate: {
+    shippingRate: {
         type: Number
     },
     shippingStatus: {

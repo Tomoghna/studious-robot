@@ -17,7 +17,7 @@ const createOrder = asyncHandler(async (req, res) => {
     if ([items, shippingAddress, payment].some((field) => field?.trim === "")) {
         throw new apiError(400, "All fields are required!")
     }
-    const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
+    const productPrice = 0;
 
     if (payment.method === "COD") {
         for (const item of items) {
@@ -32,21 +32,22 @@ const createOrder = asyncHandler(async (req, res) => {
             await product.save();
             item.price = product.price;
             item.name = product.name;
+            productPrice += item.price * item.quantity;
         }
     } else {
         //create orderId from razorpay
-        const razorpayOrder = await razorpay.orders.create({
-            amount: totalPrice * 100,
+        const razorpayOrder = razorpay.orders.create({
+            amount: productPrice * 100,
             currency: "INR",
             receipt: `receipt_order_${Date.now()}`,
-            payment_capture: 1
+            payment_capture: 0
         })
     }
 
     const order = await Order.create({
         user: req.user._id,
         items,
-        totalPrice,
+        productPrice,
         shippingAddress,
         payment: {
             method: payment.method,

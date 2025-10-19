@@ -1,14 +1,4 @@
 import React, { createContext, useContext, useState } from "react";
-import {initializeApp} from "firebase/app";
-import {getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut} from "firebase/auth";
-
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 const AuthContext = createContext();
 
@@ -25,7 +15,7 @@ export function AuthProvider({ children }) {
     const res = await fetch(`${API_URL}/api/v1/users/login`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      credentials: "include", // ** Important to include for cookie-based sessions
+      credentials: "include", 
       body: JSON.stringify({email, password}),
     });
     const data = await res.json();
@@ -40,13 +30,11 @@ export function AuthProvider({ children }) {
 
 
   const signup = async (email, password, name) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const idToken = await userCredential.user.getIdToken();
     const res = await fetch(`${API_URL}/api/v1/users/register`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       credentials: "include",
-      body: JSON.stringify({idToken, name}),
+      body: JSON.stringify({name,email, password}),
     });
     const data = await res.json();
     if(res.ok && data.data?.user) {
@@ -60,7 +48,6 @@ export function AuthProvider({ children }) {
 
 
   const logout = async () => {
-    await signOut(auth);
     await fetch(`${API_URL}/api/v1/users/logout`, {
       method: "POST",
       credentials: "include",
@@ -82,6 +69,17 @@ export function AuthProvider({ children }) {
   React.useEffect(() => {
     fetchUser();
   }, []);
+
+  // const updateProfile = async (newAddress, phone)=>{
+  //   const res = await fetch(`${API_URL}/api/v1/users/updateprofile`,{
+  //     method:"PATCH",
+  //     headers: {"Content-Type": "application/json"},
+  //     credentials:"include",
+  //     body: JSON.stringify({newAddress, phone})
+  //   })
+  //   const data = await res.json();
+  //   console.log(data);
+  // }
 
   const value = { user, login, signup, logout, fetchUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
