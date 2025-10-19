@@ -3,12 +3,15 @@ import {useCart} from "../contexts/CartContext";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../contexts/AuthContext";
 import {FaCheckCircle, FaMapMarkerAlt, FaShoppingCart, FaCreditCard} from "react-icons/fa";
+import { useSnackbar } from "../contexts/SnackbarContext";
+const API_URL = "http://localhost:8000";
 
 
 const CheckoutPage = () => {
     const {cartItems, getCartTotal}  = useCart();
     const {user} = useAuth();
     const navigate = useNavigate();
+    const { showSnackbar } = useSnackbar();
 
     const [step, setStep] = useState(0);
     const [selectedAddress, setSelectedAddress] = useState(null);
@@ -22,34 +25,26 @@ const CheckoutPage = () => {
     }, [user]);
 
     const handlePayment = async () => {
-        const response = await fetch("/api/create-razorpay-order", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({amount: getCartTotal()}),
-        });
-
-        const data = await response.json();
-
-        const options = {
-            key: "YOUR_RAZORPAY_KEY_ID",
-            amount: data.amount,
-            currency: "INR",
-            name: "MAYUR HAMSA",
-            description: "Order Payment",
-            order_id: data.orderId,
-            handler: function (response) {
-                navigate("/orders");
-            },
-            prefill: {
-                name: user.name,
-                email: user.email,
-                contact: user.phone,
-            },
-            theme: {color: "#3399cc"},
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.open();
+        // Create order on backend
+        const items = cartItems.map(ci => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
+        try {
+            const res = await fetch(`${API_URL}/api/v1/users/orders/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ items, shippingAddress: selectedAddress, payment: { method: 'COD' } })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showSnackbar('Order created', 'success');
+                navigate('/orders');
+            } else {
+                showSnackbar(data.message || 'Order creation failed', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showSnackbar('Network error', 'error');
+        }
     };
 
 

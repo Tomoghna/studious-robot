@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const Carousel = ({ images, autoplayInterval = 5000 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,62 +71,36 @@ const Carousel = ({ images, autoplayInterval = 5000 }) => {
     };
 
     return (
-        <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-            <div
-                className="flex transition-transform duration-500 ease-out h-[300px] sm:h-[400px] md:h-[500px]"
+        <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
+            <Box
+                sx={{ display: 'flex', transition: 'transform 500ms ease-out', height: { xs: 300, sm: 400, md: 500 } }}
                 style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
                 {images.map((image, index) => (
-                    <div key={index} className="w-full flex-shrink-0">
-                        <img
-                            src={image}
-                            alt={`Slide ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            loading={index === 0 ? "eager" : "lazy"}
-                        />
-                    </div>
+                    <Box key={index} sx={{ minWidth: '100%', flexShrink: 0 }}>
+                        <Box component="img" src={image} alt={`Slide ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </Box>
                 ))}
-            </div>
+            </Box>
 
             {/* Navigation Arrows */}
-            <button
-                onClick={goToPrevious}
-                className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-2 rounded-full transition-colors duration-200 hidden sm:block"
-                aria-label="Previous slide"
-            >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-            <button
-                onClick={goToNext}
-                className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-2 rounded-full transition-colors duration-200 hidden sm:block"
-                aria-label="Next slide"
-            >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
+            <IconButton onClick={goToPrevious} sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(0,0,0,0.4)', color: 'common.white', display: { xs: 'none', sm: 'inline-flex' } }} aria-label="Previous slide">
+                <ChevronLeftIcon />
+            </IconButton>
+            <IconButton onClick={goToNext} sx={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)', bgcolor: 'rgba(0,0,0,0.4)', color: 'common.white', display: { xs: 'none', sm: 'inline-flex' } }} aria-label="Next slide">
+                <ChevronRightIcon />
+            </IconButton>
 
             {/* Slide Indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <Box sx={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 1 }}>
                 {images.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`w-2.5 h-2.5 rounded-full transition-colors duration-200 ${
-                            index === currentIndex
-                                ? "bg-white"
-                                : "bg-white/50 hover:bg-white/75"
-                        }`}
-                        aria-label={`Go to slide ${index + 1}`}
-                    />
+                    <Box key={index} onClick={() => goToSlide(index)} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: index === currentIndex ? 'common.white' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }} />
                 ))}
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 };
 

@@ -168,6 +168,7 @@ const PriceFilter = ({ priceRange, onChange }) => {
 
 export default function Products() {
   const { products } = useProducts();
+  const [searchText, setSearchText] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -213,11 +214,12 @@ export default function Products() {
   };
 
   const filteredProducts = products.filter(product => {
+    const matchesSearch = searchText.trim() === '' || product.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesCategory = selectedCategories.length > 0
       ? selectedCategories.includes(product.category)
       : true;
     const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
-    return matchesCategory && matchesPrice;
+    return matchesCategory && matchesPrice && matchesSearch;
   });
 
   // Calculate pagination
@@ -287,15 +289,29 @@ export default function Products() {
         {/* Products grid */}
         <div className="lg:col-span-9">
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-              {selectedCategories.length > 0 
-                ? CATEGORIES.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
-                : 'All Products'}
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-              Showing {Math.min(startIndex + 1, filteredProducts.length)}-
-              {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                  {selectedCategories.length > 0 
+                    ? CATEGORIES.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
+                    : 'All Products'}
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
+                  Showing {Math.min(startIndex + 1, filteredProducts.length)}-
+                  {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+                </p>
+              </div>
+
+              <div className="w-full sm:w-80">
+                <input
+                  type="search"
+                  value={searchText}
+                  onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }}
+                  placeholder="Search products by name..."
+                  className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
           </div>
 
           {paginatedProducts.length > 0 ? (

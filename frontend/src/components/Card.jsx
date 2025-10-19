@@ -1,6 +1,18 @@
 import React, {useState, useEffect} from "react";
 import { Link } from "react-router-dom";
-import { FaHeart, FaStar, FaStarHalf } from "react-icons/fa";
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import StarIcon from '@mui/icons-material/Star';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
+
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 
@@ -39,82 +51,51 @@ const ProductCard = ({product}) => {
     const renderRating = (rating = 4.5) => {
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 !== 0;
-        
         return (
-            <div className="flex items-center gap-1">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 {[...Array(fullStars)].map((_, i) => (
-                    <FaStar key={i} className="text-yellow-400 w-3 h-3 sm:w-4 sm:h-4" />
+                    <StarIcon key={i} sx={{ color: 'warning.main', fontSize: 16 }} />
                 ))}
-                {hasHalfStar && <FaStarHalf className="text-yellow-400 w-3 h-3 sm:w-4 sm:h-4" />}
-                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1">({rating})</span>
-            </div>
+                {hasHalfStar && <StarHalfIcon sx={{ color: 'warning.main', fontSize: 16 }} />}
+                <Typography variant="caption" sx={{ ml: 0.5, color: 'text.secondary' }}>({rating})</Typography>
+            </Box>
         );
     };
 
     return (
-        <Link to={`/product/${product.id}`} className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-            <div 
-                onMouseEnter={() => setIsHovered(true)} 
-                onMouseLeave={() => setIsHovered(false)}
-            >
-                {/* Image container with wishlist button */}
-                <div className="relative w-full pt-[100%]">
-                    <img 
-                        src={product.images[currentImageIndex]} 
-                        alt={product.name} 
-                        className="absolute top-0 left-0 w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
+        <Card sx={{ textDecoration: 'none', height: '100%', display: 'flex', flexDirection: 'column' }} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+            <Box sx={{ position: 'relative' }}>
+                <Link to={`/product/${product.id}`} style={{ display: 'block' }}>
+                    <CardMedia
+                        component="img"
+                        image={product.images[currentImageIndex]}
+                        alt={product.name}
+                        sx={{ objectFit: 'contain', height: 200, p: 1, bgcolor: 'background.paper' }}
                     />
-                    <button
-                        onClick={handleWishlistToggle}
-                        className={`absolute top-2 right-2 p-1.5 rounded-full ${
-                            isWishlisted 
-                                ? 'bg-red-500 text-white' 
-                                : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400'
-                        } hover:scale-110 transition-all duration-200`}
-                        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                    >
-                        <FaHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </button>
-                    {product.isNew && (
-                        <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 text-xs font-medium rounded-full">
-                            New
-                        </span>
-                    )}
-                </div>
-                
-                <div className="p-2 sm:p-3 flex flex-col flex-grow">
-                    {/* Product Title */}
-                    <h3 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white line-clamp-2 mb-1">{product.name}</h3>
-                    
-                    {/* Rating */}
-                    <div className="mb-2">
-                        {renderRating(product.rating)}
-                    </div>
+                </Link>
+                {product.isNew && (
+                    <Chip label="New" color="error" size="small" sx={{ position: 'absolute', top: 8, left: 8 }} />
+                )}
+                <IconButton onClick={handleWishlistToggle} aria-label="toggle wishlist" sx={{ position: 'absolute', top: 8, right: 8, bgcolor: isWishlisted ? 'error.main' : 'background.paper' }}>
+                    <FavoriteIcon sx={{ color: isWishlisted ? '#fff' : 'inherit' }} />
+                </IconButton>
+            </Box>
 
-                    <div className="mt-auto">
-                        {/* Price */}
-                        <p className="text-sm sm:text-base font-bold text-green-600 dark:text-green-400 mb-2">${product.price}</p>
-                        
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-2">
-                            <Link 
-                                to={`/product/${product.id}`}
-                                className="h-8 sm:h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-center rounded transition-colors duration-200 text-xs sm:text-sm font-medium"
-                            >
-                                Buy Now
-                            </Link>
-                            <button 
-                                className="h-8 sm:h-9 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 text-gray-800 dark:text-white rounded transition-colors duration-200 text-xs sm:text-sm font-medium"
-                                onClick={handleAddToCart}
-                            >
-                                Add to Bag
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Link>
+            <CardContent sx={{ flexGrow: 1 }}>
+                <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+                        {product.name}
+                    </Typography>
+                </Link>
+                <Box sx={{ mb: 1 }}>{renderRating(product.rating)}</Box>
+                <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>${product.price}</Typography>
+            </CardContent>
+
+            <CardActions>
+                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product.id}`} sx={{ flex: 1 }}>Buy Now</Button>
+                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ flex: 1 }}>Add to Bag</Button>
+            </CardActions>
+        </Card>
     );
 };
 

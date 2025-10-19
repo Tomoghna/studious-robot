@@ -1,72 +1,84 @@
 import React, {useState} from "react";
 import {useAuth} from "../contexts/AuthContext";
-import {FaMobileAlt} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
+import GoogleIcon from "@mui/icons-material/Google";
+import SmartphoneIcon from "@mui/icons-material/Smartphone";
+import Alert from "@mui/material/Alert";
 
-const LoginForm = ({onSuccess}) => {
-    const {login, signup, loginWithGoogle, loginWithMobile} = useAuth();
-    const [mode, setMode] = useState("signin");
+
+const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
+    const {login, signup} = useAuth();
+    const navigate = useNavigate();
+    const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setError("");
+        setIsSubmitting(true);
         try {
-            if(mode === "signup"){
-                await signup(email, password, name);
+            let returnedUser = null;
+            if (mode === "signup") {
+                returnedUser = await signup(email, password, name);
             }
             else {
-                await login(email, password);
+                returnedUser = await login(email, password);
             }
-            if (onSuccess) onSuccess();
+
+            // Close modal or notify parent
+            onSuccess && onSuccess();
+
+            // Navigate based on role
+            if (returnedUser && returnedUser.role === "admin") {
+                navigate('/admin');
+            } else {
+                // default user dashboard/account page
+                navigate('/LoginPage');
+            }
         }
         catch (err) {
-            setError("Invalid credentials.");
+            setError("Invalid credentials or network error.");
+        }
+        finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div>
-            <div className="flex mb-4">
-                <button className={`flex-1 py-2 font-semibold rounded-t-lg ${mode === "signin" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200"}`} onClick={() => setMode("signin")}>Sign In</button>
+        <form onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+                <Button variant="outlined" color="inherit" startIcon={<GoogleIcon/>} fullWidth>Continue with Google</Button>
+                <Button variant="outlined" color="inherit" startIcon={<SmartphoneIcon/>} fullWidth>Continue with Mobile</Button>
 
-                <button className={`flex-1 py-2 font-semibold rounded-t-lg ${mode === "signup" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200"}`} onClick={() => setMode("signup")}>Sign Up</button>
-            </div>
+                <Divider>or</Divider>
 
-            <div className="flex flex-col gap-2 mb-4">
-                <button type="button" className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded py-2 hover:bg-sky-300" onClick={loginWithGoogle}>
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5"/>
-                    <div className="text-black">Continue with Google</div>
-                </button>
-
-                <button type="button" className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded py-2 hover:bg-sky-300" onClick={loginWithMobile}>
-                    <span role="img" aria-label="mobile"><FaMobileAlt color="black"/> </span>
-                    <div className="text-black">Continue with Mobile</div>
-                </button>
-            </div>
-
-            <div className="relative flex items-center mb-4">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="mx-2 text-gray-400 text-xs">or</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {error && <div className="text-red-500">{error}</div>}
                 {mode === "signup" && (
+<<<<<<< HEAD
                     <input type="text" placeholder="Name" className="w-full p-2 border rounded" value={name} onChange={(e) => setName(e.target.value)} required/>
+=======
+                    <TextField label="Full Name" variant="outlined" fullWidth value={name} onChange={(e) => setName(e.target.value)} required/>
+>>>>>>> be0ec83d8a7c0421fdcea7067a747770876aa1a7
                 )}
 
-                <input type="email" placeholder="Email" className="w-full p-2 border rounded" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <TextField label="Email" variant="outlined" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} required/>
 
-                <input type="password" placeholder="Password" className="w-full p-2 border rounded" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <TextField label="Password" variant="outlined" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} required/>
 
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-700">
-                    {mode === "signin" ? "Sign In" : "Sign Up"}
-                </button>
-            </form>
-        </div>
+                <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 1, py: 1}}>
+                    {mode === "signup" ? "Sign Up" : "Sign In"}
+                </Button>
+            </Stack>
+        </form>
     );
 };
 
