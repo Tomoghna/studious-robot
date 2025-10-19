@@ -40,8 +40,16 @@ const signupUser = asyncHandler(async (req, res) => {
 
         await mongoUser.save();
 
+        const options = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict"
+        };
+
         return res
             .status(200)
+            .cookie("token", idToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new apiResponse(
                     200,
