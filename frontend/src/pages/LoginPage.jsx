@@ -66,13 +66,15 @@ const LoginPage = () => {
 
   const handleProfileSave = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/updateprofile`, {
-        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, newAddress: '', phone })
+      const res = await fetch(`${API_URL}/api/v1/users/saveprofile`, {
+        method: 'PATCH', 
+        credentials: 'include', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name,phone })
       });
       const data = await res.json();
       if (res.ok) {
-        showSnackbar('Profile updated', 'success');
+        showSnackbar(data.message, 'success');
         await fetchUser();
         setFormChanged(false);
       } else showSnackbar(data.message || 'Update failed', 'error');
@@ -91,18 +93,20 @@ const LoginPage = () => {
   };
 
   const handleAddAddress = async () => {
-    const ok = form.fullName && form.address1 && form.state && form.city && form.pin && form.phone && form.email;
+    const ok = form.address1 && form.state && form.city && form.pin;
     if (!ok) return showSnackbar('Please fill all address fields', 'warning');
     try {
       const res = await fetch(`${API_URL}/api/v1/users/updateprofile`, {
-        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: user.name || '', newAddress: {
-          street: form.address1 + (form.address2 ? '\n' + form.address2 : ''), city: form.city, state: form.state, zip: form.pin, defaultAddress: false
-        }, phone: user.phone || '' })
+        method: 'PATCH', 
+        credentials: 'include', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+          state: form.state, pinCode: form.pin
+        }) 
       });
       const data = await res.json();
       if (res.ok) {
-        showSnackbar('Address added', 'success');
+        showSnackbar(data.message, 'success');
         await fetchUser();
         setForm(initialForm); setAdding(false);
       } else showSnackbar(data.message || 'Failed to add address', 'error');
@@ -110,9 +114,9 @@ const LoginPage = () => {
   };
 
   const startEdit = (addr) => {
-    setEditingId(addr._id || addr.id);
-    const [a1, a2] = (addr.street || '').split('\n');
-    setForm({ fullName: addr.fullName || user.name || '', phone: addr.phone || '', email: addr.email || user.email || '', pin: addr.zip || '', address1: a1 || '', address2: a2 || '', state: addr.state || '', city: addr.city || '' });
+    setEditingId(addr._id);
+    const AddLine2  = addr.AddLine1.split('\n');
+    setForm({ pin: addr.pinCode || '', address1: AddLine2[0] , address2: AddLine2[1] || '', state: addr.state || '', city: addr.city || '' });
     setAdding(true);
   };
 
@@ -120,8 +124,11 @@ const LoginPage = () => {
     if (!editingId) return;
     try {
       const res = await fetch(`${API_URL}/api/v1/users/updateaddress/${editingId}`, {
-        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: { street: form.address1 + (form.address2 ? '\n' + form.address2 : ''), city: form.city, state: form.state, zip: form.pin } })
+        method: 'PATCH', 
+        credentials: 'include', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+          state: form.state, pinCode: form.pin })
       });
       const data = await res.json();
       if (res.ok) { showSnackbar('Address updated', 'success'); await fetchUser(); setEditingId(null); setAdding(false); setForm(initialForm); }
@@ -132,9 +139,12 @@ const LoginPage = () => {
   const handleDelete = async (id) => {
     if (!confirm('Delete this address?')) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/deleteaddress/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/v1/users/deleteaddress/${id}`, { 
+        method: 'DELETE', 
+        credentials: 'include' 
+      });
       const data = await res.json();
-      if (res.ok) { showSnackbar('Address deleted', 'success'); await fetchUser(); }
+      if (res.ok) { showSnackbar(data.message, 'success'); await fetchUser(); }
       else showSnackbar(data.message || 'Delete failed', 'error');
     } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
   };
@@ -179,7 +189,7 @@ const LoginPage = () => {
               </Grid>
               <Grid item xs>
                 <TextField label="Name" fullWidth value={name} onChange={e => { setName(e.target.value); setFormChanged(true); }} sx={{ mb: 1 }} />
-                <TextField label="Email" fullWidth value={email} onChange={e => { setEmail(e.target.value); setFormChanged(true); }} sx={{ mb: 1 }} />
+                <TextField label="Email" fullWidth value={email} sx={{ mb: 1 }} />     
                 <TextField label="Phone" fullWidth value={phone} onChange={e => { setPhone(e.target.value); setFormChanged(true); }} sx={{ mb: 1 }} />
                 <Box sx={{ mt: 1 }}>
                   <Button variant="contained" onClick={handleProfileSave} disabled={!formChanged}>Save Profile</Button>
@@ -195,12 +205,12 @@ const LoginPage = () => {
                   <Grid item xs={12} md={6} key={addr._id || addr.id}>
                     <Card variant="outlined">
                       <CardContent>
-                        <Typography fontWeight={600}>{addr.fullName || user.name}</Typography>
-                        <Typography>{(addr.street || addr.address1 || '')}</Typography>
-                        {addr.address2 && <Typography>{addr.address2}</Typography>}
-                        <Typography>{addr.city}, {addr.state} - {addr.zip || addr.pin}</Typography>
-                        <Typography>Phone: {addr.phone}</Typography>
-                        <Typography>Email: {addr.email || user.email}</Typography>
+                        <Typography fontWeight={600}>{user.name}</Typography>
+                        <Typography>{(addr.AddLine1)}</Typography>
+                        {addr.AddLine2 && <Typography>{addr.AddLine2}</Typography>}
+                        <Typography>{addr.city}, {addr.state} - {addr.pinCode}</Typography>
+                        <Typography>Phone: {user.phone}</Typography>
+                        <Typography>Email: {user.email}</Typography>
                       </CardContent>
                       <CardActions>
                         <Button size="small" onClick={() => startEdit(addr)}>Edit</Button>
@@ -219,12 +229,9 @@ const LoginPage = () => {
             {adding && (
               <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}><TextField label="Full Name" name="fullName" fullWidth value={form.fullName} onChange={handleInput} /></Grid>
-                  <Grid item xs={12} md={6}><TextField label="Phone" name="phone" fullWidth value={form.phone} onChange={handleInput} /></Grid>
-                  <Grid item xs={12} md={6}><TextField label="Email" name="email" fullWidth value={form.email} onChange={handleInput} /></Grid>
-                  <Grid item xs={12} md={6}><TextField label="Pin Code" name="pin" fullWidth value={form.pin} onChange={handleInput} /></Grid>
                   <Grid item xs={12}><TextField label="Address Line 1" name="address1" fullWidth value={form.address1} onChange={handleInput} /></Grid>
                   <Grid item xs={12}><TextField label="Address Line 2" name="address2" fullWidth value={form.address2} onChange={handleInput} /></Grid>
+                  <Grid item xs={12} md={6}><TextField label="Pin Code" name="pin" fullWidth value={form.pin} onChange={handleInput} /></Grid>
                   <Grid item xs={12} md={6}>
                     <TextField select label="State" name="state" fullWidth value={form.state} onChange={handleStateChange}>
                       <MenuItem value="">Select State</MenuItem>

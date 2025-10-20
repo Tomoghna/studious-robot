@@ -36,7 +36,7 @@ function ProductsTab({ onNotify }) {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ name: "", description: "", price: "", category: "", brand: "", stock: "" });
 
-        const fetchProducts = async () => {
+    const fetchProducts = async () => {
         try {
             const res = await fetch(`${API_URL}/api/v1/users/products`, { credentials: "include" });
             const data = await res.json();
@@ -58,8 +58,8 @@ function ProductsTab({ onNotify }) {
                 body: JSON.stringify(form),
             });
             const data = await res.json();
-                    if (res.ok) {
-                        onNotify && onNotify("Product created", "success");
+            if (res.ok) {
+                onNotify && onNotify(data.message, "success");
                 setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "" });
                 fetchProducts();
             } else throw new Error(data.message || "Failed");
@@ -71,7 +71,7 @@ function ProductsTab({ onNotify }) {
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/products/delete/${id}`, { method: "DELETE", credentials: "include" });
             const data = await res.json();
-            if (res.ok) { onNotify && onNotify("Deleted", "success"); fetchProducts(); }
+            if (res.ok) { onNotify && onNotify(data.message, "success"); fetchProducts(); }
             else throw new Error(data.message || "Delete failed");
         } catch (err) { onNotify && onNotify(err.message || "Delete failed", "error"); }
     };
@@ -87,82 +87,84 @@ function ProductsTab({ onNotify }) {
                 body: JSON.stringify({ price: form.price, stock: form.stock }),
             });
             const data = await res.json();
-            if (res.ok) { onNotify && onNotify("Updated", "success"); setEditing(null); fetchProducts(); }
+            if (res.ok) { onNotify && onNotify(data.message, "success"); setEditing(null); fetchProducts(); }
             else throw new Error(data.message || "Update failed");
         } catch (err) { onNotify && onNotify(err.message || "Update failed", "error"); }
     };
 
-        return (
-            <Box>
-                <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
-                    <Typography variant="h6" sx={{ mb: 1 }}>Create / Edit Product</Typography>
-                    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-                        <TextField label="Name" value={form.name} onChange={handleChange('name')} fullWidth />
-                        <TextField label="Category" value={form.category} onChange={handleChange('category')} fullWidth />
-                        <TextField label="Brand" value={form.brand} onChange={handleChange('brand')} fullWidth />
-                        <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth />
-                        <TextField label="Stock" value={form.stock} onChange={handleChange('stock')} fullWidth />
-                        <TextField label="Description" value={form.description} onChange={handleChange('description')} multiline rows={2} fullWidth />
-                    </Box>
-                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                        {!editing ? (
-                            <Button variant="contained" onClick={handleCreate}>Create Product</Button>
-                        ) : (
-                            <>
-                                <Button variant="contained" onClick={handleUpdate}>Save</Button>
-                                <Button variant="outlined" onClick={() => { setEditing(null); setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "" }); }}>Cancel</Button>
-                            </>
-                        )}
-                    </Box>
-                </Paper>
+    return (
+        <Box>
+            <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
+                <Typography variant="h6" sx={{ mb: 1 }}>Create / Edit Product</Typography>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                    <TextField label="Name" value={form.name} onChange={handleChange('name')} fullWidth />
+                    <TextField label="Category" value={form.category} onChange={handleChange('category')} fullWidth />
+                    <TextField label="Brand" value={form.brand} onChange={handleChange('brand')} fullWidth />
+                    <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth />
+                    <TextField label="Stock" value={form.stock} onChange={handleChange('stock')} fullWidth />
+                    <TextField label="Description" value={form.description} onChange={handleChange('description')} multiline rows={2} fullWidth />
+                </Box>
+                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    {!editing ? (
+                        <Button variant="contained" onClick={handleCreate}>Create Product</Button>
+                    ) : (
+                        <>
+                            <Button variant="contained" onClick={handleUpdate}>Save</Button>
+                            <Button variant="outlined" onClick={() => { setEditing(null); setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "" }); }}>Cancel</Button>
+                        </>
+                    )}
+                </Box>
+            </Paper>
 
-                <Paper elevation={1} sx={{ p: 1 }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Price</TableCell>
-                                <TableCell>Stock</TableCell>
-                                <TableCell>Category</TableCell>
-                                <TableCell>Actions</TableCell>
+            <Paper elevation={1} sx={{ p: 1 }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Price</TableCell>
+                            <TableCell>Stock</TableCell>
+                            <TableCell>Category</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {products.map(p => (
+                            <TableRow key={p._id} hover>
+                                <TableCell>{p.name}</TableCell>
+                                <TableCell>{p.price}</TableCell>
+                                <TableCell>{p.stock}</TableCell>
+                                <TableCell>{p.category}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={() => startEdit(p)}><EditIcon /></IconButton>
+                                    <IconButton onClick={() => handleDelete(p._id)} color="error"><DeleteIcon /></IconButton>
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {products.map(p => (
-                                <TableRow key={p._id} hover>
-                                    <TableCell>{p.name}</TableCell>
-                                    <TableCell>{p.price}</TableCell>
-                                    <TableCell>{p.stock}</TableCell>
-                                    <TableCell>{p.category}</TableCell>
-                                    <TableCell>
-                                        <IconButton onClick={() => startEdit(p)}><EditIcon/></IconButton>
-                                        <IconButton onClick={() => handleDelete(p._id)} color="error"><DeleteIcon/></IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </Paper>
-            </Box>
-        );
+                        ))}
+                    </TableBody>
+                </Table>
+            </Paper>
+        </Box>
+    );
 }
 
 function UsersTab({ onNotify }) {
-    const [uids, setUids] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // No backend endpoint to list all users in current API; however we can attempt to derive UIDs from orders.
-        const fetchUserUidsFromOrders = async () => {
+    const fetchUserUidsFromOrders = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/v1/admin/users/orders`, { credentials: "include" });
+            const res = await fetch(`${API_URL}/api/v1/admin/users/user`, {
+                method: "GET",
+                credentials: "include"
+            });
             const data = await res.json();
-                    if (res.ok) {
-                        const uidsSet = new Set(data.data.map(o => o.user._id));
-                        setUids(Array.from(uidsSet));
-                    } else {
-                        onNotify && onNotify(data.message || 'Failed to fetch orders', 'error');
-                    }
+            if (res.ok) {
+                const usersSet = new Set(data.data.map(o => o));
+                setUsers(Array.from(usersSet));
+            } else {
+                onNotify && onNotify(data.message || 'Failed to fetch orders', 'error');
+            }
         } catch (err) { console.error(err); onNotify && onNotify('Network error', 'error'); }
         setLoading(false);
     };
@@ -173,7 +175,7 @@ function UsersTab({ onNotify }) {
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/users/ban/${uid}`, { method: 'POST', credentials: 'include' });
             const data = await res.json();
-            if (res.ok) onNotify && onNotify('User banned', 'success'); else throw new Error(data.message || 'Failed');
+            if (res.ok) onNotify && onNotify(data.message, 'success'); else throw new Error(data.message || 'Failed');
         } catch (err) { onNotify && onNotify(err.message || 'Ban failed', 'error'); }
     };
 
@@ -181,31 +183,33 @@ function UsersTab({ onNotify }) {
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/users/unban/${uid}`, { method: 'POST', credentials: 'include' });
             const data = await res.json();
-            if (res.ok) onNotify && onNotify('User unbanned', 'success'); else throw new Error(data.message || 'Failed');
-        } catch (err) { onNotify && onNotify(err.message || 'Unban failed', 'error'); }
+            if (res.ok) onNotify && onNotify(data.message, 'success'); else throw new Error(data.message || 'Failed');
+        } catch (err) { onNotify && onNotify(data.message || 'Unban failed', 'error'); }
     };
 
     return (
         <Box>
             <Paper sx={{ p: 2 }}>
                 <Box sx={{ mb: 2 }}>
-                        <Button variant="contained" onClick={fetchUserUidsFromOrders} disabled={loading}>Refresh Users from Orders</Button>
+                    <Button variant="contained" onClick={fetchUserUidsFromOrders} disabled={loading}>Refresh Users</Button>
                 </Box>
-                        {uids.length === 0 ? <div>No users found (try refreshing)</div> : (
+                {users.length === 0 ? <div>No users found (try refreshing)</div> : (
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>UID</TableCell>
+                                <TableCell>NAME</TableCell>
+                                <TableCell>EMAIL</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {uids.map(uid => (
-                                <TableRow key={uid}>
-                                    <TableCell>{uid}</TableCell>
+                            {users.map(user => (
+                                <TableRow>
+                                    <TableCell>{user.name}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        <IconButton onClick={() => handleBan(uid)}><BlockIcon/></IconButton>
-                                        <IconButton onClick={() => handleUnban(uid)}><LockOpenIcon/></IconButton>
+                                        <IconButton onClick={() => handleBan(user._uid)}><BlockIcon /></IconButton>
+                                        <IconButton onClick={() => handleUnban(user._uid)}><LockOpenIcon /></IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -245,46 +249,46 @@ function OrdersTab({ onNotify }) {
         } catch (err) { onNotify && onNotify(err.message || 'Update failed', 'error'); }
     };
 
-        return (
-            <Box>
-                <Paper sx={{ p: 1 }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Order ID</TableCell>
-                                <TableCell>User</TableCell>
-                                <TableCell>Total</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell>Actions</TableCell>
+    return (
+        <Box>
+            <Paper sx={{ p: 1 }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Order ID</TableCell>
+                            <TableCell>User</TableCell>
+                            <TableCell>Total</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {orders.map(o => (
+                            <TableRow key={o._id} hover>
+                                <TableCell>{o._id}</TableCell>
+                                <TableCell>{o.user?.name} ({o.user?.email})</TableCell>
+                                <TableCell>{o.totalPrice}</TableCell>
+                                <TableCell>{o.orderStatus}</TableCell>
+                                <TableCell>
+                                    <FormControl size="small" sx={{ minWidth: 140 }}>
+                                        <InputLabel>Status</InputLabel>
+                                        <Select label="Status" defaultValue={o.orderStatus} onChange={(e) => handleStatusChange(o._id, e.target.value)}>
+                                            <MenuItem value="pending">pending</MenuItem>
+                                            <MenuItem value="confirmed">confirmed</MenuItem>
+                                            <MenuItem value="shipped">shipped</MenuItem>
+                                            <MenuItem value="delivered">delivered</MenuItem>
+                                            <MenuItem value="cancelled">cancelled</MenuItem>
+                                            <MenuItem value="returned">returned</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {orders.map(o => (
-                                <TableRow key={o._id} hover>
-                                    <TableCell>{o._id}</TableCell>
-                                    <TableCell>{o.user?.name} ({o.user?.email})</TableCell>
-                                    <TableCell>{o.totalPrice}</TableCell>
-                                    <TableCell>{o.orderStatus}</TableCell>
-                                    <TableCell>
-                                        <FormControl size="small" sx={{ minWidth: 140 }}>
-                                            <InputLabel>Status</InputLabel>
-                                            <Select label="Status" defaultValue={o.orderStatus} onChange={(e) => handleStatusChange(o._id, e.target.value)}>
-                                                <MenuItem value="pending">pending</MenuItem>
-                                                <MenuItem value="confirmed">confirmed</MenuItem>
-                                                <MenuItem value="shipped">shipped</MenuItem>
-                                                <MenuItem value="delivered">delivered</MenuItem>
-                                                <MenuItem value="cancelled">cancelled</MenuItem>
-                                                <MenuItem value="returned">returned</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </Paper>
-            </Box>
-        );
+                        ))}
+                    </TableBody>
+                </Table>
+            </Paper>
+        </Box>
+    );
 }
 
 export default function AdminPage() {

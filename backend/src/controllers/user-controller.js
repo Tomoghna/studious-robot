@@ -71,6 +71,10 @@ const loginUser = asyncHandler(async (req, res) => {
     if ([email, password].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
+    const userExists = await User.findOne({ email });
+    if (userExists.isBanned === true) {
+        throw new apiError(400, "User is banned, please contact support");
+    }
     const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
     try {
         const firebaseRes = await axios.post(
@@ -159,24 +163,47 @@ const loggedInUser = asyncHandler(async (req, res) => {
         );
 });
 
-const updateProfile = asyncHandler(async (req, res) => {
-    const { name, newAddress, phone } = req.body;
-    if ([newAddress, phone].some((field) => field?.trim() === "")) {
+const saveProfile = asyncHandler(async (req, res) => {
+    const { name, phone } = req.body;
+    if ([name, phone ].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     const user = await User.findByIdAndUpdate(req.user._id,
         {
             $set: {
                 name,
-                phone,
-                address: [...req.user.address, newAddress]
+                phone
             }
         }, {
         new: true
     }
     ).select("-refreshToken");
 
-    console.log(user);
+    return res
+        .status(200)
+        .json(
+            new apiResponse(
+                200,
+                user,
+                "Profile saved successfully!!!"
+            )
+        );
+});
+
+const updateProfile = asyncHandler(async (req, res) => {
+    const { AddLine1, pinCode, city, state } = req.body;
+    if ([AddLine1, pinCode, city, state].some((field) => field?.trim() === "")) {
+        throw new apiError(400, "All fields are required");
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                address: [...req.user.address, { AddLine1, pinCode, city, state }]
+            }
+        }, {
+        new: true
+    }
+    ).select("-refreshToken");
 
     return res
         .status(200)
@@ -191,12 +218,12 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 const updateAddess = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { address } = req.body;
+    const { AddLine1, pinCode, state, city} = req.body;
     if (!id) {
         throw new apiError(400, "Address id is required");
     }
-    if (!address || Object.keys(address).length === 0) {
-        throw new apiError(400, "Address data is required");
+    if ([AddLine1, pinCode, city, state].some((field) => field?.trim() === "")) {
+        throw new apiError(400, "All fields are required");
     }
     const user = await User.findById(req.user._id).select("-refreshToken");
     const addressIndex = user.address.findIndex((addr) => addr._id.toString() === id);
@@ -213,10 +240,10 @@ const updateAddess = asyncHandler(async (req, res) => {
         {
             $set:
             {
-                "address.$.street": address.street,
-                "address.$.city": address.city,
-                "address.$.state": address.state,
-                "address.$.zip": address.zip
+                "address.$.AddLine1": AddLine1,
+                "address.$.city": city,
+                "address.$.state": state,
+                "address.$.pinCode": pinCode
             }
         },
         {
@@ -429,6 +456,7 @@ export {
     loginUser,
     logoutUser,
     loggedInUser,
+    saveProfile,
     updateProfile,
     updateAddess,
     deleteAddress,

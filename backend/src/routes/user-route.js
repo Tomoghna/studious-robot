@@ -4,6 +4,7 @@ import {
     loginUser,
     logoutUser,
     loggedInUser,
+    saveProfile,
     updateProfile,
     updateAddess,
     deleteAddress,
@@ -25,6 +26,7 @@ router.route('/register').post(signupUser);
 router.route('/login').post(loginUser);
 router.route('/logout').post(authMiddleware, logoutUser);
 router.route('/loggedinuser').get(authMiddleware, loggedInUser);
+router.route('/saveprofile').patch(authMiddleware, saveProfile);
 router.route('/updateprofile').patch(authMiddleware, updateProfile);
 router.route('/updateaddress/:id').patch(authMiddleware, updateAddess);
 router.route('/deleteaddress/:id').delete(authMiddleware, deleteAddress);

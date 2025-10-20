@@ -4,6 +4,7 @@ import {
     authorizeRoles
  } from "../middlewares/auth-middleware.js";
  import{
+    getAllUsers,
     banUser,
     unbanUser
  } from "../controllers/admin-controller.js";
@@ -14,6 +15,13 @@ import {
 import { restrictToIPs } from "../middlewares/ipWhitelist-middleware.js";
 
 const router = express.Router();
+
+router.route("/user").get(
+    authMiddleware,
+    authorizeRoles("admin"),
+    restrictToIPs,
+    getAllUsers
+)
 
 router.route("/ban/:uid").post(
     authMiddleware,

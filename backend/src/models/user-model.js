@@ -1,8 +1,9 @@
 import mongoose, {Schema} from 'mongoose';
 
 const addressSchema =  new Schema({
-    street:{
+    AddLine1:{
         type: String,
+        required: true
     },
     city: {
         type: String,
@@ -12,7 +13,7 @@ const addressSchema =  new Schema({
         type: String,
         required: true
     },
-    zip: {
+    pinCode: {
         type: String,
         required: true
     },
