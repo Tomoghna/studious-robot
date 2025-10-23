@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const OrdersPage = () => {
     const { user } = useAuth();

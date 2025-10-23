@@ -16,7 +16,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const CheckoutPage = () => {
   const { cartItems, getCartTotal } = useCart();
