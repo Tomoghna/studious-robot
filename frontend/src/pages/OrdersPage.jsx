@@ -10,11 +10,13 @@ const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
 
     useEffect(() => {
+        // problem with frontend 
         if (!user) return;
         (async () => {
             try {
-                const res = await fetch(`${API_URL}/api/v1/users/orders`, { credentials: 'include' });
+                const res = await fetch(`${API_URL}/api/v1/users/orders/`, { credentials: 'include' });
                 const data = await res.json();
+                console.log(data);
                 if (res.ok) setOrders(data.data || []);
                 else showSnackbar(data.message || 'Failed to fetch orders', 'error');
             } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }

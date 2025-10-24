@@ -244,7 +244,7 @@ function OrdersTab({ onNotify }) {
                 body: JSON.stringify({ orderStatus: status })
             });
             const data = await res.json();
-            if (res.ok) { onNotify && onNotify('Order updated', 'success'); fetchOrders(); }
+            if (res.ok) { onNotify && onNotify(data.message, 'success'); fetchOrders(); }
             else throw new Error(data.message || 'Update failed');
         } catch (err) { onNotify && onNotify(err.message || 'Update failed', 'error'); }
     };
