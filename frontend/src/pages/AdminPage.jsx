@@ -23,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = "http://localhost:8000"; // adjust if your backend runs elsewhere
+const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs elsewhere
 
 const TABS = [
     { key: "upload", label: "Products" },

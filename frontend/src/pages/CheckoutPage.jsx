@@ -1,146 +1,166 @@
-import React, {useState, useEffect} from "react";
-import {useCart} from "../contexts/CartContext";
-import {useNavigate} from "react-router-dom";
-import {useAuth} from "../contexts/AuthContext";
-import {FaCheckCircle, FaMapMarkerAlt, FaShoppingCart, FaCreditCard} from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { useCart } from "../contexts/CartContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
-const API_URL = "http://localhost:8000";
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
 
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const CheckoutPage = () => {
-    const {cartItems, getCartTotal}  = useCart();
-    const {user} = useAuth();
-    const navigate = useNavigate();
-    const { showSnackbar } = useSnackbar();
+  const { cartItems, getCartTotal } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
-    const [step, setStep] = useState(0);
-    const [selectedAddress, setSelectedAddress] = useState(null);
-    const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [addressOpen, setAddressOpen] = useState(false);
 
-    useEffect(() => {
-        if(user?.address?.length) {
-            const defaultAddr = user.address.find(addr => addr.defaultAddress) || user.address[0];
-            setSelectedAddress(defaultAddr);
-        }
-    }, [user]);
+  useEffect(() => {
+    if (user?.address?.length) {
+      const defaultAddr = user.address.find((a) => a.defaultAddress) || user.address[0];
+      setSelectedAddress(defaultAddr);
+    } else {
+      setSelectedAddress(null);
+    }
+  }, [user]);
 
-    const handlePayment = async () => {
-        // Create order on backend
-        const items = cartItems.map(ci => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
-        try {
-            const res = await fetch(`${API_URL}/api/v1/users/orders/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ items, shippingAddress: selectedAddress, payment: { method: 'COD' } })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showSnackbar('Order created', 'success');
-                navigate('/orders');
-            } else {
-                showSnackbar(data.message || 'Order creation failed', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showSnackbar('Network error', 'error');
-        }
-    };
+  const steps = ["Address", "Review", "Payment"];
 
+  const handleNext = () => setActiveStep((s) => Math.min(s + 1, steps.length - 1));
+  const handleBack = () => setActiveStep((s) => Math.max(s - 1, 0));
 
-    const steps = [
-        {label: "Address", icon: <FaMapMarkerAlt/>},
-        {label: "Review", icon: <FaShoppingCart/>},
-        {label: "Payment", icon: <FaCreditCard/>},
-    ];
+  const handleCreateOrder = async () => {
+    if (!selectedAddress) {
+      showSnackbar('Please select an address', 'error');
+      return;
+    }
 
-    return (
-        <div className="max-w-3xl mx-auto py-8 px-4">
-            <div className="flex items-center justify-between mb-8">
-                {steps.map((s, idx) => (
-                    <div key={s.label} className="flex-1 flex flex-col items-center">
-                        <div className={`rounded-full w-10 h-10 flex items-center justify-center text-lg ${step === idx ? "bg-blue-600 text-white" : step > idx ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"}`}>
-                            {step > idx ? <FaCheckCircle/> : s.icon}
-                        </div>
-                        <span className={`mt-2 text-sm font-semibold ${step === idx ? "text-blue-600" : "text-gray-500"}`}>{s.label}</span>
-                        {idx < steps.length - 1 && (
-                            <div className={`h-1 w-full bg-${step > idx ? "green-500" : "gray-300"} mt-2`} />
-                        )}
-                    </div>
-                ))}
-            </div>
+    if (!cartItems || cartItems.length === 0) {
+      showSnackbar('Your cart is empty', 'error');
+      return;
+    }
 
-            {step === 0 && (
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Select Delivery Address</h2>
-                    <div className="mb-4">
-                        {selectedAddress ? (
-                            <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 cursor-pointer shadow flex justify-between items-center" onClick={() => setShowAddressDropdown(!showAddressDropdown)}>
-                                <div>
-                                    <div className="font-semibold">{selectedAddress.fullName}</div>
-                                    <div className="text-gray-700">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}</div>
-                                    <div className="text-gray-500 text-sm">{selectedAddress.phone}</div>
-                                </div>
-                                <span className="text-blue-600 font-medium">Change</span>
-                            </div>
-                        ) : (
-                            <div className="text-gray-500">No address found</div>
-                        )}
-                        {showAddressDropdown && (
-                            <div className="mt-4 grid gap-3">
-                                {user.address.map((addr, idx) => (
-                                    <div key={idx} className={`border rounded-lg p-4 bg-white dark:bg-gray-800 cursor-pointer shadow transition-all ${selectedAddress === addr ? "border-blue-600 ring-2 ring-blue-200" : ""}`} onClick={() => {setSelectedAddress(addr); setShowAddressDropdown(false);}}>
-                                        <div className="font-semibold">{addr.fullName}</div>
-                                        <div className="text-gray-700">{addr.street}, {addr.city}, {addr.state}, {addr.zip}</div>
-                                        <div className="text-gray-500 text-sm">{addr.phone}</div>
-                                        {addr.defaultAddress && (
-                                            <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs">Default</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold w-full mt-4 hover:bg-blue-700 transition" onClick={() => setStep(1)} disabled={!selectedAddress}>Continue</button>
-                </div>
-            )}
+    const items = cartItems.map((ci) => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
+    try {
+      const res = await fetch(`${API_URL}/api/v1/users/orders/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ items, shippingAddress: selectedAddress, payment: { method: 'COD' } }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showSnackbar('Order created', 'success');
+        navigate('/orders');
+      } else {
+        showSnackbar(data.message || 'Order creation failed', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showSnackbar('Network error', 'error');
+    }
+  };
 
+  return (
+    <Box sx={{ maxWidth: 920, mx: 'auto', py: 6, px: 2 }}>
+      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
-            {step === 1 && (
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Review Your Order</h2>
-                    <div className="bg-white dark:bg-grau-800 rounded-lg shadow p-4 mb-4">
-                        <ul>
-                            {cartItems.map(item => (
-                                <li key={item.id} className="flex jusitfy-between py-2 border-b last:border-b-0">
-                                    <span>{item.name} <span className="text-xs text-gray-500">x {item.quantity}</span> </span>
-                                    <span className="font-semibold">₹{item.price * item.quantity}</span>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className="flex justify-between items-center mt-4">
-                            <span className="font-bold text-lg">Total</span>
-                            <span className="font-bold text-lg text-blue-600">₹{getCartTotal()}</span>
-                        </div>
-                    </div>
-                    <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold w-full hover:bg-blue-700 transition" onClick={() => setStep(2)}>Proceed to Payment</button>
-                </div>
-            )}
+      {activeStep === 0 && (
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>Select Delivery Address</Typography>
 
+          {selectedAddress ? (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}>
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>{selectedAddress.fullName}</Typography>
+                <Typography sx={{ color: 'text.secondary' }}>{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>{selectedAddress.phone}</Typography>
+              </Box>
+              <Button variant="text" onClick={() => setAddressOpen((s) => !s)}>Change</Button>
+            </Box>
+          ) : (
+            <Typography color="text.secondary">No address found. Please add an address in your profile.</Typography>
+          )}
 
-            {step === 2 && (
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Payment</h2>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-4 flex flex-col items-center">
-                        <FaCreditCard className="text-4xl text-blue-600 mb-2"/>
-                        <div className="mb-2 text-gray-700">Pay securely with Razorpay</div>
-                        <div className="mb-4 text-gray-500 text-sm">Order Amount: <span className="font-bold text-blue-600">₹{getCartTotal()}</span></div>
-                        <button className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition" onclick={handlePayment}>Pay with Razorpay</button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+          {addressOpen && user?.address?.length > 0 && (
+            <List sx={{ mt: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+              {user.address.map((addr, idx) => (
+                <React.Fragment key={idx}>
+                  <ListItem button selected={selectedAddress === addr} onClick={() => { setSelectedAddress(addr); setAddressOpen(false); }}>
+                    <ListItemText primary={addr.fullName} secondary={`${addr.street}, ${addr.city}, ${addr.state}, ${addr.zip} • ${addr.phone}`} />
+                    {addr.defaultAddress && <Typography variant="caption" color="primary">Default</Typography>}
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+            <Button variant="contained" onClick={handleNext} disabled={!selectedAddress}>Continue</Button>
+            <Button variant="outlined" onClick={() => navigate(-1)}>Cancel</Button>
+          </Box>
+        </Paper>
+      )}
+
+      {activeStep === 1 && (
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>Review Your Order</Typography>
+          <List>
+            {cartItems.map((item) => (
+              <ListItem key={item.id} secondaryAction={<Typography sx={{ fontWeight: 700 }}>₹{item.price * item.quantity}</Typography>}>
+                <ListItemText primary={`${item.name} x ${item.quantity}`} secondary={item.variant || ''} />
+              </ListItem>
+            ))}
+          </List>
+
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Total</Typography>
+            <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 700 }}>₹{getCartTotal()}</Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button variant="outlined" onClick={handleBack}>Back</Button>
+            <Button variant="contained" onClick={handleNext}>Proceed to Payment</Button>
+          </Box>
+        </Paper>
+      )}
+
+      {activeStep === 2 && (
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>Payment</Typography>
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <Typography sx={{ mb: 1 }}>Pay securely with Razorpay</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Order Amount: <strong>₹{getCartTotal()}</strong></Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button variant="outlined" onClick={handleBack}>Back</Button>
+              <Button variant="contained" color="success" onClick={handleCreateOrder}>Place Order (COD)</Button>
+            </Box>
+          </Box>
+        </Paper>
+      )}
+    </Box>
+  );
 };
 
 export default CheckoutPage;

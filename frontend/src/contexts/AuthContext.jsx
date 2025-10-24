@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const { showSnackbar } = useSnackbar();
 
-  const API_URL = "http://localhost:8000"; //Replace with the backend url
+  const API_URL = import.meta.env.VITE_SERVER_URL; //Replace with the backend url
 
   const login = async (email, password) => {
     try {
