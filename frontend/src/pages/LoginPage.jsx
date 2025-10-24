@@ -4,7 +4,7 @@ import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
 import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, Card, CardContent, CardActions } from '@mui/material';
 
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 function TabPanel({ children, value, index }) {
   return (

@@ -13,7 +13,7 @@ export function WishlistProvider({ children }) {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
   const { openLogin } = useAuthModal();
-  const API_URL = 'http://localhost:8000';
+  const API_URL = import.meta.env.VITE_SERVER_URL;
 
   // No localStorage fallback: empty wishlist until server provides data when logged in
   const [wishlistItems, setWishlistItems] = useState([]);

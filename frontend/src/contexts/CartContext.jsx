@@ -14,7 +14,7 @@ export function CartProvider({ children }) {
   const { showSnackbar } = useSnackbar();
   const { openLogin } = useAuthModal();
 
-  const API_URL = 'http://localhost:8000';
+  const API_URL = import.meta.env.VITE_SERVER_URL;
 
   // No localStorage fallback: keep cart in memory; server is source of truth when logged in
   const [cartItems, setCartItems] = useState([]);
