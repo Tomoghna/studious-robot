@@ -8,10 +8,12 @@ import {
     authMiddleware,
     authorizeRoles
 } from "../middlewares/auth-middleware.js";
+import upload from "../middlewares/multer-middleware.js";
 import { restrictToIPs } from "../middlewares/ipWhitelist-middleware.js";
 const router = express.Router();
 
 router.route("/create").post(
+    upload.single('image'),
     authMiddleware, 
     authorizeRoles("admin"), 
     restrictToIPs,

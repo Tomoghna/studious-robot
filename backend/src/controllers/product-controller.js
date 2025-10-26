@@ -8,13 +8,18 @@ const createProduct = asyncHandler(async (req, res) => {
     if ([name, description, price, stock].some((field) => field?.trim === "")) {
         throw new apiError(400, "All fields are required");
     }
+    const imageUrl = req.file?.path;
+    if (!imageUrl) {
+        throw new apiError(400, "Product image is required");
+    }
     const product = new Product({
         name,
         description,
         price,
         category,
         brand,
-        stock
+        stock,
+        images: [imageUrl],
     });
     await product.save();
     return res

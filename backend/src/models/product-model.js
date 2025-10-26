@@ -34,7 +34,7 @@ const productSchema = new Schema({
     images:[
         {
             type: String,
-            // required: [true, 'Product image is required'],
+            required: [true, 'Product image is required'],
         }
     ],
     numOfReviews:{
