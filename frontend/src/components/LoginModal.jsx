@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -14,34 +14,9 @@ import Fade from "@mui/material/Fade";
 const LoginModal = ({isOpen, onClose}) => {
   const [tab, setTab] = useState(0);
 
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    return () => {
-      document.body.style.overflow = prev || "";
-      document.querySelectorAll(".MuiBackdrop-root").forEach((el) => el.remove());
-    };
-  }, []);
-
-  const handleClose = (...args) => {
-    try {
-      onClose && onClose(...args);
-    }
-    catch (e) {
-      /* ignore */
-    }
-
-    setTimeout(() => {
-      document.body.style.overflow = "";
-      document.querySelectorAll(".MuiBackdrop-root").forEach((el) => el.remove());
-    }, 50);
-  };
-
-  const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Fade ref={ref} {...props}/>;
-  });
-
+  
   return (
-    <Dialog open={isOpen} onClose={handleClose} TransitionComponent={Transition} fullWidth maxWidth="xs" keepMounted={false} BackdropProps={{onClick: handleClose}} PaperProps={{sx: {borderRadius: 3, bgcolor: "background.paper"},}}>
+    <Dialog open={isOpen} onClose={onClose} TransitionComponent={Fade} fullWidth maxWidth="xs" keepMounted PaperProps={{sx: {borderRadius: 3, bgcolor: "background.paper"},}}>
       <DialogTitle sx={{m: 0, p: 2, textAlign: "center", fontWeight: "bold"}}>
         {tab === 0 ? "Sign In" : "Sign Up"}
         <IconButton aria-label="close" onClick={onClose} sx={{position: "absolute", right: 8, top: 8, color: (theme) => theme.palette.grey[500],}}>
