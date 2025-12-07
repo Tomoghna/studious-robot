@@ -35,7 +35,7 @@ router.route('/removefromwhislist/:productId').delete(authMiddleware, removeFrom
 router.route('/getwhislist').get(authMiddleware, getWhislist);
 router.route('/givereview/:productId').post(authMiddleware, giveReviewsToProduct);
 router.route('/updatereview/:productId').patch(authMiddleware, updateReviewsOfUser);
-router.route('/products').get(authMiddleware, getProducts);
-router.route('/product/:productId').get(authMiddleware, getProductById);
+router.route('/products').get(getProducts);
+router.route('/product/:productId').get(getProductById);
 
 export default router;

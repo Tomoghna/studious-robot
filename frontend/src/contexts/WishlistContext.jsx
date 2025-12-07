@@ -49,9 +49,10 @@ export function WishlistProvider({ children }) {
     });
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/api/v1/users/addtowhislist/${product.id}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/v1/users/addtowhislist/${product._id}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
-        if (!res.ok) showSnackbar(data.message || 'Failed to add to wishlist', 'error');
+        console.log('addToWishlist response', data);
+        if (res.ok) showSnackbar(data.message || 'Failed to add to wishlist', 'success');
       } catch (err) {
         console.error('addToWishlist error', err);
         showSnackbar('Network error while adding to wishlist', 'error');
@@ -66,7 +67,7 @@ export function WishlistProvider({ children }) {
       try {
         const res = await fetch(`${API_URL}/api/v1/users/removefromwhislist/${productId}`, { method: 'DELETE', credentials: 'include' });
         const data = await res.json();
-        if (!res.ok) showSnackbar(data.message || 'Failed to remove from wishlist', 'error');
+        if (res.ok) showSnackbar(data.message || 'Failed to remove from wishlist', 'success');
       } catch (err) {
         console.error('removeFromWishlist error', err);
         showSnackbar('Network error while removing from wishlist', 'error');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -34,7 +35,7 @@ const TABS = [
 function ProductsTab({ onNotify }) {
     const [products, setProducts] = useState([]);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: "", description: "", price: "", category: "", brand: "", stock: "" });
+    const [form, setForm] = useState({ name: "", description: "", price: "", category: "", brand: "", stock: "", imageFile: null, image: "" });
 
     const fetchProducts = async () => {
         try {
@@ -48,14 +49,32 @@ function ProductsTab({ onNotify }) {
     useEffect(() => { fetchProducts(); }, []);
 
     const handleChange = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm((prev) => ({ ...prev, image: reader.result, imageFile: file }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleCreate = async () => {
+        const formData = new FormData();
+        formData.append("name", form.name);
+        formData.append("description", form.description);
+        formData.append("price", form.price);
+        formData.append("category", form.category);
+        formData.append("brand", form.brand);
+        formData.append("stock", form.stock);
+        formData.append("image", form.imageFile);
+
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/products/create`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                body: formData, 
                 credentials: "include",
-                body: JSON.stringify(form),
             });
             const data = await res.json();
             if (res.ok) {
@@ -103,6 +122,33 @@ function ProductsTab({ onNotify }) {
                     <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth />
                     <TextField label="Stock" value={form.stock} onChange={handleChange('stock')} fullWidth />
                     <TextField label="Description" value={form.description} onChange={handleChange('description')} multiline rows={2} fullWidth />
+                    <Box
+                        sx={{
+                            gridColumn: "1 / -1",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 1,
+                        }}
+                    >
+                        <Avatar
+                            variant="rounded"
+                            src={form.image}
+                            sx={{ width: 120, height: 120, mb: 1 }}
+                        />
+                        <input
+                            accept="image/*"
+                            id="upload-image"
+                            type="file"
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
+                        />
+                        <label htmlFor="upload-image">
+                            <Button variant="contained" component="span">
+                                Choose Image
+                            </Button>
+                        </label>
+                    </Box>
                 </Box>
                 <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
                     {!editing ? (

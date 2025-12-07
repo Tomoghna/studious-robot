@@ -63,10 +63,10 @@ export function CartProvider({ children }) {
     // sync to server
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/api/v1/users/cart/add/${product.id}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/v1/users/cart/add/${product._id}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
-        if (!res.ok) {
-          showSnackbar(data.message || 'Failed to add to cart', 'error');
+        if (res.ok) {
+          showSnackbar(data.message || 'Failed to add to cart', 'success');
         }
       } catch (err) {
         console.error('addToCart error', err);
@@ -77,12 +77,12 @@ export function CartProvider({ children }) {
 
   const removeFromCart = (productId) => {
     if (!user) { openLogin(); return; }
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+    setCartItems(prev => prev.filter(item => item._id !== productId));
     (async () => {
       try {
         const res = await fetch(`${API_URL}/api/v1/users/cart/remove/${productId}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
-        if (!res.ok) showSnackbar(data.message || 'Failed to remove from cart', 'error');
+        if (res.ok) showSnackbar(data.message || 'Failed to remove from cart', 'success');
       } catch (err) {
         console.error('removeFromCart error', err);
         showSnackbar('Network error while removing from cart', 'error');
@@ -92,12 +92,12 @@ export function CartProvider({ children }) {
 
   const updateQuantity = (productId, quantity) => {
     if (quantity < 1) return;
-    const prevItem = cartItems.find(i => i.id === productId);
+    const prevItem = cartItems.find(i => i._id === productId);
     const prevQuantity = prevItem ? prevItem.quantity : 0;
 
     if (!user) { openLogin(); return; }
 
-    setCartItems(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
+    setCartItems(prev => prev.map(item => item._id === productId ? { ...item, quantity } : item));
 
     const delta = quantity - prevQuantity;
     (async () => {
@@ -118,7 +118,7 @@ export function CartProvider({ children }) {
   };
 
   const isInCart = (productId) => {
-    return cartItems.some(item => item.id === productId);
+    return cartItems.some(item => item._id === productId);
   };
 
   const getCartItemCount = () => {
