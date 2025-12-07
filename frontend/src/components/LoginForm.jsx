@@ -13,7 +13,6 @@ import Alert from "@mui/material/Alert";
 
 const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const {login, signup} = useAuth();
-    const navigate = useNavigate();
     const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
