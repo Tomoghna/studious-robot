@@ -8,18 +8,15 @@ import { admin } from "../configs/firebase.js";
 
 const signupUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
-
     if ([name, email, password].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     try {
         const existingUser = await User.findOne({ email });
-
         if (existingUser) {
             throw new apiError(400, "User with this name or email already exists");
         }
         const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
-
         const firebaseRes = await axios.post(
             `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
             {
@@ -28,9 +25,7 @@ const signupUser = asyncHandler(async (req, res) => {
                 returnSecureToken: true
             }
         );
-
         const { localId, refreshToken, idToken } = firebaseRes.data;
-
         const mongoUser = new User({
             _uid: localId,
             name,
@@ -52,18 +47,20 @@ const signupUser = asyncHandler(async (req, res) => {
             .cookie("refreshToken", refreshToken, options)
             .json(
                 new apiResponse(
-                    200,
+                    201,
                     {
                         user: mongoUser,
-                        idToken,
-                        refreshToken
+                        idToken
                     },
                     "User registered successfully!!!"
                 )
             )
     } catch (error) {
-        throw new apiError(400, "Invalid credentials, please try again");
+        const message =
+            error.response?.data?.error?.message || error.message || "Signup failed";
+        throw new apiError(400, message);
     }
+
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -107,15 +104,17 @@ const loginUser = asyncHandler(async (req, res) => {
                     200,
                     {
                         user,
-                        idToken,
-                        refreshToken
+                        idToken
                     },
                     "User logged in successfully!!!"
                 )
             )
     } catch (error) {
-        throw new apiError(400, "Invalid credentials");
+        const message =
+            error.response?.data?.error?.message || error.message || "Login failed";
+        throw new apiError(400, message);
     }
+
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -165,7 +164,7 @@ const loggedInUser = asyncHandler(async (req, res) => {
 
 const saveProfile = asyncHandler(async (req, res) => {
     const { name, phone } = req.body;
-    if ([name, phone ].some((field) => field?.trim() === "")) {
+    if ([name, phone].some((field) => field?.trim() === "")) {
         throw new apiError(400, "All fields are required");
     }
     const user = await User.findByIdAndUpdate(req.user._id,
@@ -218,7 +217,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 const updateAddess = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { AddLine1, pinCode, state, city} = req.body;
+    const { AddLine1, pinCode, state, city } = req.body;
     if (!id) {
         throw new apiError(400, "Address id is required");
     }
@@ -407,9 +406,9 @@ const giveReviewsToProduct = asyncHandler(async (req, res) => {
         );
 });
 
-const updateReviewsOfUser = asyncHandler( async (req, res)=>{
+const updateReviewsOfUser = asyncHandler(async (req, res) => {
     const { productId } = req.params;
-    const { rating, comment} = req.body;
+    const { rating, comment } = req.body;
     if (!productId) {
         throw new apiError(400, "Product id is required");
     }
@@ -431,11 +430,11 @@ const updateReviewsOfUser = asyncHandler( async (req, res)=>{
         (review => review.userId.toString() === user._id.toString())
     );
 
-    if(!alreadyReviewed){
+    if (!alreadyReviewed) {
         throw new apiError(400, "No review present to update!!")
-    }else{
+    } else {
         alreadyReviewed.rating = rating;
-        alreadyReviewed.comment = comment; 
+        alreadyReviewed.comment = comment;
         await product.save();
     }
 
