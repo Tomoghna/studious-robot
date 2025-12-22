@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useAuth} from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+// ...existing code...
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -9,7 +9,6 @@ import Typography from "@mui/material/Typography";
 import GoogleIcon from "@mui/icons-material/Google";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import Alert from "@mui/material/Alert";
-
 
 const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const {login, signup} = useAuth();
@@ -29,26 +28,15 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
             let returnedUser = null;
             if (mode === "signup") {
                 returnedUser = await signup(email, password, name);
-            }
-            else {
+            } else {
                 returnedUser = await login(email, password);
             }
 
-            // Close modal or notify parent
-            onSuccess && onSuccess();
-
-            // Navigate based on role
-            if (returnedUser && returnedUser.role === "admin") {
-                navigate('/admin');
-            } else {
-                // default user dashboard/account page
-                navigate('/LoginPage');
-            }
-        }
-        catch (err) {
+            // Notify parent to close modal / handle navigation
+            onSuccess && onSuccess(returnedUser);
+        } catch (err) {
             setError("Invalid credentials or network error.");
-        }
-        finally {
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -69,7 +57,9 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
 
                 <TextField label="Password" variant="outlined" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} required/>
 
-                <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 1, py: 1}}>
+                {error && <Alert severity="error">{error}</Alert>}
+
+                <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 1, py: 1}} disabled={isSubmitting}>
                     {mode === "signup" ? "Sign Up" : "Sign In"}
                 </Button>
             </Stack>
