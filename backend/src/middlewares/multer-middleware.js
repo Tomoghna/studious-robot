@@ -6,7 +6,7 @@ import cloudinary from '../services/cloudinary.js';
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'uploads', // Folder name in Cloudinary
+    folder: 'Ecommerce_Products', // Folder name in Cloudinary
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
 });
