@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {useAuth} from "../contexts/AuthContext";
 // ...existing code...
 import TextField from "@mui/material/TextField";
@@ -12,13 +12,21 @@ import Alert from "@mui/material/Alert";
 
 const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const {login, signup} = useAuth();
-    const navigate = useNavigate();
     const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    //update mode when initalMode prop changes
+    useEffect(() => {
+        setMode(initialMode);
+        setEmail("");
+        setPassword("");
+        setName("");
+        setError("");
+    }, [initialMode]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

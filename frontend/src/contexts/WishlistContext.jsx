@@ -41,18 +41,21 @@ export function WishlistProvider({ children }) {
 
   const addToWishlist = (product) => {
     if (!user) { openLogin(); return; }
+
+    const productId = product._id || product.id;
+
     setWishlistItems(prev => {
-      if (!prev.some(item => item.id === product.id)) {
-        return [...prev, product];
+      if (!prev.some(item => item.id === productId)) {
+        return [...prev, { id: productId, _id: productId, ...product }];
       }
       return prev;
     });
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/api/v1/users/addtowhislist/${product._id}`, { method: 'POST', credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/v1/users/addtowhislist/${productId}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
         console.log('addToWishlist response', data);
-        if (res.ok) showSnackbar(data.message || 'Failed to add to wishlist', 'success');
+        if (res.ok) showSnackbar(data.message || 'Added to wishlist', 'success');
       } catch (err) {
         console.error('addToWishlist error', err);
         showSnackbar('Network error while adding to wishlist', 'error');
@@ -76,7 +79,7 @@ export function WishlistProvider({ children }) {
   };
 
   const isInWishlist = (productId) => {
-    return wishlistItems.some(item => item.id === productId);
+    return wishlistItems.some(item => (item._id || item.id) === productId);
   };
 
   const value = {
