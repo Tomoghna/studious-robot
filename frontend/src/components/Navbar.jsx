@@ -134,7 +134,7 @@ const Navbar = () => {
 
           {/* wishlist and cart removed from top navbar per migration to MUI BottomNav */}
 
-          <IconButton color="inherit" onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate('/account'); } }} aria-label="account">
+          <IconButton color="inherit" onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate(user.role === 'admin' ? '/admin' : '/account'); } }} aria-label="account">
             {user ? <Avatar src={user.avatar} sx={{ width: 32, height: 32 }} /> : <AccountCircle />}
           </IconButton>
         </Box>
