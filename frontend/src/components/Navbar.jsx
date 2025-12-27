@@ -8,6 +8,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import HomeIcon from '@mui/icons-material/Home';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -56,14 +60,40 @@ const Navbar = () => {
       <List>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/">
+            <ListItemIcon>
+              <HomeIcon/>
+            </ListItemIcon>
             <ListItemText primary="Home" />
           </ListItemButton>
         </ListItem>
+
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/products">
+            <ListItemIcon>
+              <Inventory2Icon/>
+            </ListItemIcon>
             <ListItemText primary="Products" />
           </ListItemButton>
         </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/wishlist">
+            <Badge badgeContent={wishlistItems?.length || 0} color="primary">
+              <FavoriteIcon/>
+            </Badge>
+            <ListItemText primary="wishlist"/>
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/cart">
+            <Badge badgeContent={getCartItemCount() || 0} color="primary">
+              <ShoppingCartIcon/>
+            </Badge>
+            <ListItemText primary="Cart"/>
+          </ListItemButton>
+        </ListItem>
+
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/about">
             <ListItemText primary="About" />
@@ -114,7 +144,7 @@ const Navbar = () => {
     <AppBar position="sticky" color="default" elevation={1} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit" edge="start" sx={{ display: { md: 'none' } }} onClick={handleDrawerToggle} aria-label="menu">
+          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} aria-label="menu">
             <MenuIcon />
           </IconButton>
           <Typography component={Link} to="/" variant="h6" sx={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
