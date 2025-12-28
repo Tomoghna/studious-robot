@@ -37,7 +37,7 @@ export function CartProvider({ children }) {
     };
     loadServerCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [cartItems]);
 
   // no localStorage persistence per request
 

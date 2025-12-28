@@ -65,7 +65,7 @@ const ProductCard = ({product}) => {
     return (
         <Card sx={{ textDecoration: 'none', height: '100%', display: 'flex', flexDirection: 'column' }} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <Box sx={{ position: 'relative' }}>
-                <Link to={`/product/${product.id}`} style={{ display: 'block' }}>
+                <Link to={`/product/${product._id}`} style={{ display: 'block' }}>
                     <CardMedia
                         component="img"
                         image={product.images[currentImageIndex]}
@@ -92,7 +92,7 @@ const ProductCard = ({product}) => {
             </CardContent>
 
             <CardActions>
-                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product.id}`} sx={{ flex: 1 }}>Buy Now</Button>
+                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ flex: 1 }}>Buy Now</Button>
                 <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ flex: 1 }}>Add to Bag</Button>
             </CardActions>
         </Card>

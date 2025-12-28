@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { errorMiddleware } from "./middlewares/error-middleware.js";
 const app = express();
 
 const OPTIONS = {
@@ -36,5 +37,7 @@ app.use("/api/v1/users/orders", orderRoutes);
 
 app.use("/api/v1/admin/products", productRoutes);
 app.use("/api/v1/admin/users", adminRoutes);
+
+app.use(errorMiddleware);
 
 export default app;

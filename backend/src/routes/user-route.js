@@ -16,7 +16,8 @@ import {
 } from '../controllers/user-controller.js';
 import { 
     getProducts,
-    getProductById
+    getProductById,
+    getproductByName
 } from '../controllers/product-controller.js';
 import { authMiddleware } from '../middlewares/auth-middleware.js';
 
@@ -37,5 +38,6 @@ router.route('/givereview/:productId').post(authMiddleware, giveReviewsToProduct
 router.route('/updatereview/:productId').patch(authMiddleware, updateReviewsOfUser);
 router.route('/products').get(getProducts);
 router.route('/product/:productId').get(getProductById);
+router.route('/product/:name').get(getproductByName);
 
 export default router;

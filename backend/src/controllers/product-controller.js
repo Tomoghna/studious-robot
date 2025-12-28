@@ -2,16 +2,25 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
 import { Product } from "../models/product-model.js";
+import { Category } from "../models/category-model.js";
 
 const createProduct = asyncHandler(async (req, res) => {
     const { name, description, price, category, brand, stock } = req.body;
-    if ([name, description, price, stock].some((field) => field?.trim === "")) {
+    if ([name, description, price, stock, category, brand, stock].some((field) => field?.trim()=== "")) {
         throw new apiError(400, "All fields are required");
     }
     const imageUrl = req.file?.path;
     if (!imageUrl) {
         throw new apiError(400, "Product image is required");
     }
+    const categoryDoc =  await Category.findOne({ category });
+    if(!categoryDoc){
+        categoryDoc = await Category.create({
+            category,
+            image: imageUrl
+        })
+    }
+
     const product = new Product({
         name,
         description,
@@ -21,6 +30,16 @@ const createProduct = asyncHandler(async (req, res) => {
         stock,
         images: [imageUrl],
     });
+
+    await Category.findByIdAndUpdate( 
+        categoryDoc._id,
+        {
+            $inc:{
+                totalCount: 1
+            }
+        }
+    )
+    
     await product.save();
     return res
         .status(201)
@@ -161,10 +180,30 @@ const getProductById = asyncHandler(async (req, res)=>{
             )
 });
 
+const getproductByName =  asyncHandler(async(req, res)=>{
+    const { name } = req.params;
+    if(!name){
+        throw new apiError(400, "Product name is required!")
+    }
+
+    const product = await Product.findOne({ name });
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            product,
+            "Product fetched successfully by name!"
+        )
+    )
+})
+
 export {
     createProduct,
     deleteProduct,
     updateProduct,
     getProducts,
-    getProductById
+    getProductById,
+    getproductByName
 }

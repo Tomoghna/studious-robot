@@ -382,7 +382,7 @@ const giveReviewsToProduct = asyncHandler(async (req, res) => {
         (review => review.userId.toString() === user._id.toString())
     );
     if (alreadyReviewed) {
-        throw new apiError(400, "You have already reviewed this product");
+        throw new apiError(400, "You have already reviewed this product, please update review if needed!");
     } else {
         const review = {
             userId: user._id,
