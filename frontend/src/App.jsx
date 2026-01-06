@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import { CartProvider } from "./contexts/CartContext";
+import {Box, Container, Typography, Grid, Card, CardMedia, CardContent, Link as  MuiLink, useTheme, useMediaQuery} from "@mui/material";
 import Banner from "./components/Banner";
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
@@ -22,6 +23,10 @@ import CheckoutPage from "./pages/CheckoutPage";
 import BottomNav from "./components/BottomNav";
 
 export default function App() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const images = [
     "/products/product-1.jpg",
     "/products/product-2.jpg",
@@ -40,53 +45,73 @@ export default function App() {
     <ProductProvider>
       <WishlistProvider>
         <CartProvider>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <Box sx={{minHeight: '100vh', bgcolor: 'background.default'}}>
             <Router>
               <Navbar />
               {/* Global horizontal margin wrapper */}
-              <div className="mx-4 md:mx-8 lg:mx-16">
+              <Box sx={{px: {xs: 2, md: 4, lg: 8}}}>
               <Routes>
                 <Route
                   path="/"
                   element={
                     <main>
                       <Banner />
-                      <div className="container mx-auto px-4">
+                      <Container maxWidth="lg" sx={{py: 4}}>
                         {/* Hero Carousel */}
-                        <section className="my-8">
+                        <Box sx={{my: 4}}>
                           <Carousel images={images} />
-                        </section>
+                        </Box>
 
                         {/* Categories */}
-                        <section className="my-12">
-                          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
+                        <Box sx={{my: 6}}>
+                          <Typography variant="h4" sx={{fontWeight: 'bold', texttAlign: 'center', mb: 4}}>
                             Shop by Categories
-                          </h2>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 bg-gray-400 dark:bg-cyan-950 p-4 rounded-xl">
+                          </Typography>
+                          <Grid container spacing={2} sx={{p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2}}>
                             {categories.map((category) => (
-                              <Link
-                                key={category.id}
-                                to={`/products?category=${category.name.toLowerCase().replace(' ', '-')}`}
-                                className="group cursor-pointer bg-white dark:bg-gray-800 rounded-lg p-4 transition-transform hover:scale-105"
-                              >
-                                <div className="relative pb-[100%] rounded-lg overflow-hidden mb-4">
-                                  <img
-                                    src={category.image}
+                              <Grid item xs={6} sm={4} lg={2.4} key={category.id}>
+                                <MuiLink href={`/prodicts?category=${category.name.toLowerCase().replace(' ', '-')}`} sx={{textDecoration: 'none'}}>
+                                  <Card sx={{
+                                    bgcolor: 'background.paper',
+                                    transition: 'transform 0.3s ease-in-out',
+                                    '&:hover': {
+                                      transform: 'scale(1.05',
+                                      '& img': {
+                                        transform: 'scale(1.1)'
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <CardMedia
+                                    component="img"
+                                    image={category.image}
                                     alt={category.name}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-110"
+                                    sx={{
+                                      aspectRatio: '1/1',
+                                      objectFit: 'cover',
+                                      transition: 'transform 0.3s ease-in-out'
+                                    }}
                                   />
-                                </div>
-                                <h3 className="text-gray-900 dark:text-white font-semibold text-center">
-                                  {category.name}
-                                </h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
-                                  {category.count} items
-                                </p>
-                              </Link>
+                                  <CardContent sx={{ textAlign: 'center'}}>
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{fontWeight: 600, mb: 0.5}}
+                                    >
+                                      {category.name}
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="textSecondary">
+                                        {category.count} items
+                                      </Typography>
+                                  </CardContent>
+                                </Card>
+                                </MuiLink>
+                              </Grid>
                             ))}
-                          </div>
-                        </section>
-                      </div>
+                          </Grid>
+                        </Box>
+                      </Container>
                     </main>
                   }
                 />
@@ -103,10 +128,10 @@ export default function App() {
               </Routes>
 
               <BottomNav />
-              </div>
+              </Box>
               <BackToTop />
             </Router>
-          </div>
+          </Box>
         </CartProvider>
       </WishlistProvider>
     </ProductProvider>
