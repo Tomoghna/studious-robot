@@ -14,10 +14,12 @@ export function ProductProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize with sample products
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/v1/users/products`);
         const data = await res.json();
@@ -27,6 +29,8 @@ export function ProductProvider({ children }) {
         }
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchProducts();
@@ -74,6 +78,7 @@ export function ProductProvider({ children }) {
     priceRange,
     searchProducts,
     setPriceRange,
+    isLoading,
   };
 
   return (

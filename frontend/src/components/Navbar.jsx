@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -25,6 +25,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import LogoutIcon from '@mui/icons-material/Logout';
+import CategoryIcon from '@mui/icons-material/Category';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import Collapse from '@mui/material/Collapse';
 
 import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
@@ -32,6 +36,8 @@ import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import { UseThemeMode } from "../contexts/ThemeContext";
 import LoginModal from "./LoginModal";
+
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -43,8 +49,26 @@ const Navbar = () => {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/categories`);
+      const data = await res.json();
+      if (res.ok) {
+        setCategories(data.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -53,6 +77,11 @@ const Navbar = () => {
     const query = formData.get('search');
     searchProducts(query, category);
     navigate('/search');
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    setMobileOpen(false);
+    navigate(`/products?category=${categoryName.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
   const drawer = (
@@ -75,6 +104,28 @@ const Navbar = () => {
             <ListItemText primary="Products" />
           </ListItemButton>
         </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setCategoriesOpen(!categoriesOpen)}>
+            <ListItemIcon>
+              <CategoryIcon/>
+            </ListItemIcon>
+            <ListItemText primary="Categories" />
+            {categoriesOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </ListItemButton>
+        </ListItem>
+        
+        <Collapse in={categoriesOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {categories.map((category) => (
+              <ListItem key={category._id} disablePadding sx={{ pl: 4 }}>
+                <ListItemButton onClick={() => handleCategoryClick(category.name)}>
+                  <ListItemText primary={category.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
 
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/wishlist">
