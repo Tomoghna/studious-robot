@@ -5,205 +5,207 @@ import { Product } from "../models/product-model.js";
 import { Category } from "../models/category-model.js";
 
 const createProduct = asyncHandler(async (req, res) => {
-    const { name, description, price, category, brand, stock } = req.body;
-    if ([name, description, price, stock, category, brand, stock].some((field) => field?.trim()=== "")) {
-        throw new apiError(400, "All fields are required");
-    }
-    const imageUrl = req.file?.path;
-    if (!imageUrl) {
-        throw new apiError(400, "Product image is required");
-    }
-    const categoryDoc =  await Category.findOne({ category });
-    if(!categoryDoc){
-        categoryDoc = await Category.create({
-            category,
-            image: imageUrl
-        })
-    }
+  const { name, description, price, category, brand, stock } = req.body;
+  if ([name, description, category, brand].some((field) => field?.trim() === "")) {
+    throw new apiError(400, "All fields are required");
+  }
+  if (price === undefined || stock === undefined) {
+    throw new apiError(400, "Price and stock are required");
+  }
 
-    const product = new Product({
-        name,
-        description,
-        price,
-        category,
-        brand,
-        stock,
-        images: [imageUrl],
+  if (price <= 0 || stock < 0) {
+    throw new apiError(400, "Invalid price or stock value");
+  }
+  if (!req.files || req.files.length === 0) {
+    throw new apiError(400, "Product images are required");
+  }
+  
+  const imageUrl = req.files?.map((file) => file.path);
+  if (!imageUrl) {
+    throw new apiError(400, "Product image is required");
+  }
+  let categoryDoc = await Category.findOne({ category });
+  if (!categoryDoc) {
+    categoryDoc = await Category.create({
+      category,
+      image: imageUrl?.[0],
     });
+  }
 
-    await Category.findByIdAndUpdate( 
-        categoryDoc._id,
-        {
-            $inc:{
-                totalCount: 1
-            }
-        }
-    )
-    
-    await product.save();
-    return res
-        .status(201)
-        .json(
-            new apiResponse(
-                201,
-                product,
-                "Product created successfully!!!"
-            )
-        )
+  const product = new Product({
+    name,
+    description,
+    price,
+    category,
+    brand,
+    stock,
+    images: imageUrl,
+  });
+
+  await Category.findByIdAndUpdate(categoryDoc._id, {
+    $inc: {
+      totalCount: 1,
+    },
+  });
+
+  await product.save();
+  return res
+    .status(201)
+    .json(new apiResponse(201, product, "Product created successfully!!!"));
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const product = await Product.findById(id);
-    if (!product) {
-        throw new apiError(404, "Product not found");
-    }
+  const { id } = req.params;
+  const product = await Product.findById(id);
+  if (!product) {
+    throw new apiError(404, "Product not found");
+  }
 
-    await Product.findByIdAndDelete(id);
+  await Product.findByIdAndDelete(id);
 
-    return res
-        .status(200)
-        .json(
-            new apiResponse(
-                200,
-                [],
-                "Product deleted successfully!!!"
-            )
-        )
+  return res
+    .status(200)
+    .json(new apiResponse(200, [], "Product deleted successfully!!!"));
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { price, stock } = req.body;
+  const { id } = req.params;
+  const { price, stock } = req.body;
 
-    const product = await Product.findById(id);
-    if (!product) {
-        new apiError(404, "Product not found");
+  const product = await Product.findById(id);
+  if (!product) {
+    new apiError(404, "Product not found");
+  }
+
+  const updatedProduct = await Product.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        price,
+        stock,
+      },
+    },
+    {
+      new: true,
     }
+  );
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-        id,
-        {
-            $set: {
-                price,
-                stock
-            }
-        },
-        {
-            new: true
-        }
-    )
-
-    return res
-        .status(200)
-        .json(
-            new apiResponse(
-                200,
-                updatedProduct,
-                "Product details updated successfully!!"
-            )
-        )
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        updatedProduct,
+        "Product details updated successfully!!"
+      )
+    );
 });
 
 const getProducts = asyncHandler(async (req, res) => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
-    const keyword = req.query.keyword
-        ? { name: { $regex: req.query.keyword, $options: 'i' } }
-        : {};
-    const category = req.query.category ? { category: req.query.category } : {};
-    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
-    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : Infinity;
-    const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
+  const keyword = req.query.keyword
+    ? { name: { $regex: req.query.keyword, $options: "i" } }
+    : {};
+  const category = req.query.category ? { category: req.query.category } : {};
+  const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
+  const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : Infinity;
+  const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
 
-    const query = { ...keyword, ...category, ...priceFilter };
+  const query = { ...keyword, ...category, ...priceFilter };
 
-    let sortBy = {};
-    switch (req.query.sort) {
-        case 'priceAsc':
-            sortBy = { price: 1 };
-            break;
-        case 'priceDesc':
-            sortBy = { price: -1 };
-            break;
-        case 'ratingDesc':
-            sortBy = { ratings: -1 };
-            break;
-        case 'newest':
-            sortBy = { createdAt: -1 };
-            break;
-        default:
-            sortBy = { createdAt: -1 };
-    }
+  let sortBy = {};
+  switch (req.query.sort) {
+    case "priceAsc":
+      sortBy = { price: 1 };
+      break;
+    case "priceDesc":
+      sortBy = { price: -1 };
+      break;
+    case "ratingDesc":
+      sortBy = { ratings: -1 };
+      break;
+    case "newest":
+      sortBy = { createdAt: -1 };
+      break;
+    default:
+      sortBy = { createdAt: -1 };
+  }
 
-    const totalProducts = await Product.countDocuments(query);
+  const totalProducts = await Product.countDocuments(query);
 
-    const products = await Product.find(query)
-        .skip(skip)
-        .limit(limit)
-        .sort(sortBy);
+  const products = await Product.find(query)
+    .skip(skip)
+    .limit(limit)
+    .sort(sortBy);
 
-    return res
-        .status(200)
-        .json(
-            new apiResponse(
-                200,
-                {
-                    totalProducts,
-                    currentPage: page,
-                    totalPages: Math.ceil(totalProducts / limit),
-                    products,
-                },
-                "Products  fetched successfully!!!"
-            )
-        );
+  return res.status(200).json(
+    new apiResponse(
+      200,
+      {
+        totalProducts,
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        products,
+      },
+      "Products  fetched successfully!!!"
+    )
+  );
 });
 
-const getProductById = asyncHandler(async (req, res)=>{
-    const { productId } = req.params;
-    if(!productId){
-        throw new apiError(400, "Product ID is required")
-    }
+const getProductById = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  if (!productId) {
+    throw new apiError(400, "Product ID is required");
+  }
 
-    const product = await Product.findById(productId);
+  const product = await Product.findById(productId);
 
-    return res  
-        .status(200)
-            .json(
-                new apiResponse(
-                    200,
-                    product,
-                    "Product fetched sucessfully by ID"
-                )
-            )
+  return res
+    .status(200)
+    .json(new apiResponse(200, product, "Product fetched sucessfully by ID"));
 });
 
-const getproductByName =  asyncHandler(async(req, res)=>{
-    const { name } = req.params;
-    if(!name){
-        throw new apiError(400, "Product name is required!")
-    }
+const getproductByName = asyncHandler(async (req, res) => {
+  const { name } = req.params;
+  if (!name) {
+    throw new apiError(400, "Product name is required!");
+  }
 
-    const product = await Product.findOne({ name });
+  const product = await Product.findOne({ name });
 
-    return res
+  return res
     .status(200)
     .json(
-        new apiResponse(
-            200,
-            product,
-            "Product fetched successfully by name!"
-        )
+      new apiResponse(200, product, "Product fetched successfully by name!")
+    );
+});
+
+const getCategory = asyncHandler( async(req, res)=>{
+  const categories = await Category.find({});
+  if(!categories){
+    throw new apiError(400, "No category of products available")
+  }
+
+  return res
+  .status(200)
+  .json(
+    new apiResponse(
+      200,
+      categories,
+      "Category fetched successfully!!"
     )
+  )
 })
 
 export {
-    createProduct,
-    deleteProduct,
-    updateProduct,
-    getProducts,
-    getProductById,
-    getproductByName
-}
+  createProduct,
+  deleteProduct,
+  updateProduct,
+  getProducts,
+  getProductById,
+  getproductByName,
+  getCategory
+};

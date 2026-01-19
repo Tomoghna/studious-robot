@@ -13,11 +13,11 @@ import { restrictToIPs } from "../middlewares/ipWhitelist-middleware.js";
 const router = express.Router();
 
 router.route("/create").post(
-    upload.single('image'),
-    authMiddleware, 
-    authorizeRoles("admin"), 
-    restrictToIPs,
-    createProduct
+  authMiddleware,
+  authorizeRoles("admin"),
+  restrictToIPs,
+  upload.array("images", 5),
+  createProduct
 );
 router.route("/delete/:id").delete(
     authMiddleware, 
