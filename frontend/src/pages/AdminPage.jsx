@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import NumberSpinner from "../components/NumberSpinner";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -21,6 +22,10 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardMedia from "@mui/material/CardMedia";
+import CardActions from "@mui/material/CardActions";
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,6 +33,7 @@ const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs 
 
 const TABS = [
     { key: "upload", label: "Products" },
+    { key: "categories", label: "Categories" },
     { key: "users", label: "Users" },
     { key: "orders", label: "Orders" },
 ];
@@ -35,7 +41,7 @@ const TABS = [
 function ProductsTab({ onNotify }) {
     const [products, setProducts] = useState([]);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: "", description: "", price: "", category: "", brand: "", stock: "", imageFile: null, image: "" });
+    const [form, setForm] = useState({ name: "", description: "", price: "", category: "", brand: "", stock: "", images: [], newImages: [] });
 
     const fetchProducts = async () => {
         try {
@@ -50,14 +56,38 @@ function ProductsTab({ onNotify }) {
 
     const handleChange = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
     const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
+        const files = Array.from(event.target.files || []);
+        const newImages = [];
+
+        let loadedCount = 0;
+        files.forEach((file) => {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setForm((prev) => ({ ...prev, image: reader.result, imageFile: file }));
+                newImages.push({file, preview: reader.result});
+                loadedCount++;
+                if(loadedCount === files.length){
+                    setForm((prev) => ({
+                        ...prev,
+                        newImages: [...prev.newImages, ...newImages]
+                    }));
+                }
             };
             reader.readAsDataURL(file);
-        }
+        });
+    };
+
+    const removeNewImage = (index) => {
+        setForm((prev) => ({
+            ...prev,
+            newImages: prev.newImages.filter((_, i) => i !== index)
+        }));
+    };
+
+    const removeExistingImage = (imageIndex) => {
+        setForm((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== imageIndex)
+        }));
     };
 
     const handleCreate = async () => {
@@ -68,7 +98,10 @@ function ProductsTab({ onNotify }) {
         formData.append("category", form.category);
         formData.append("brand", form.brand);
         formData.append("stock", form.stock);
-        formData.append("image", form.imageFile);
+        
+        form.newImages.forEach((img, idx) => {
+            formData.append("images", img.file);
+        });
 
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/products/create`, {
@@ -79,7 +112,7 @@ function ProductsTab({ onNotify }) {
             const data = await res.json();
             if (res.ok) {
                 onNotify && onNotify(data.message, "success");
-                setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "" });
+                setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "", images: [], newImages: [] });
                 fetchProducts();
             } else throw new Error(data.message || "Failed");
         } catch (err) { onNotify && onNotify(err.message || "Create failed", "error"); }
@@ -95,20 +128,44 @@ function ProductsTab({ onNotify }) {
         } catch (err) { onNotify && onNotify(err.message || "Delete failed", "error"); }
     };
 
-    const startEdit = (p) => { setEditing(p._id); setForm({ name: p.name, description: p.description, price: p.price, category: p.category, brand: p.brand, stock: p.stock }); };
+    const startEdit = (p) => {
+        setEditing(p._id);
+        setForm({
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            category: p.category,
+            brand: p.brand,
+            stock: p.stock,
+            images: p.images || [],
+            newImages: []
+        });
+    };
 
     const handleUpdate = async () => {
+        const formData = new FormData();
+        formData.append("price", form.price);
+        formData.append("stock", form.stock);
+
+        form.newImages.forEach((img) => {
+            formData.append("images", img.file);
+        });
+
         try {
             const res = await fetch(`${API_URL}/api/v1/admin/products/update/${editing}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                body: formData,
                 credentials: "include",
-                body: JSON.stringify({ price: form.price, stock: form.stock }),
             });
+
             const data = await res.json();
-            if (res.ok) { onNotify && onNotify(data.message, "success"); setEditing(null); fetchProducts(); }
+            if(res.ok) {
+                onNotify && onNotify(data.message, "success");
+                setEditing(null);
+                fetchProducts();
+            }
             else throw new Error(data.message || "Update failed");
-        } catch (err) { onNotify && onNotify(err.message || "Update failed", "error"); }
+        } catch (err) {onNotify && onNotify(err.message || "Update failed", "error");}
     };
 
     return (
@@ -120,49 +177,109 @@ function ProductsTab({ onNotify }) {
                     <TextField label="Category" value={form.category} onChange={handleChange('category')} fullWidth />
                     <TextField label="Brand" value={form.brand} onChange={handleChange('brand')} fullWidth />
                     <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth />
-                    <TextField label="Stock" value={form.stock} onChange={handleChange('stock')} fullWidth />
+                    <NumberSpinner label="Stock" min={1} max={500} defaultValue={form.stock} onChange={handleChange('stock')} size="small" />
                     <TextField label="Description" value={form.description} onChange={handleChange('description')} multiline rows={2} fullWidth />
-                    <Box
-                        sx={{
-                            gridColumn: "1 / -1",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: 1,
-                        }}
-                    >
-                        <Avatar
-                            variant="rounded"
-                            src={form.image}
-                            sx={{ width: 120, height: 120, mb: 1 }}
-                        />
+                    
+                    <Box sx={{gridColumn: "1 / -1"}}>
+                        <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>Product Images</Typography>
+
+                        {editing && form.images.length > 0 && (
+                            <Box sx={{mb: 3}}>
+                                <Typography variant="body2" sx={{mb: 1, color: 'text.secondary'}}>Current Images</Typography>
+                                <Grid container spacing={2}>
+                                    {form.images.map((img, idx) => (
+                                        <Grid item xs={6} sm={4} md={3} key={idx}>
+                                            <Card>
+                                                <CardMedia
+                                                    component="img"
+                                                    height="150"
+                                                    image={img}
+                                                    alt={`Product ${idx + 1}`}
+                                                />
+                                                <CardActions sx={{p: 1}}>
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => removeExistingImage(idx)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </CardActions>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+
+                        {form.newImages.length > 0 && (
+                            <Box sx={{mb: 3}}>
+                                <Typography variant="body2" sx={{mb: 1, color: 'text.secondary'}}>New Images to Upload</Typography>
+                                <Grid container spacing={2}>
+                                    {form.newImages.map((img, idx) => (
+                                        <Grid item xs={6} sm={4} md={3} key={idx}>
+                                            <Card>
+                                                <CardMedia
+                                                    component="img"
+                                                    height="150"
+                                                    image={img.preview}
+                                                    alt={`New ${idx + 1}`}
+                                                />
+                                                <CardActions sx={{p: 1}}>
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => removeNewImage(idx)}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </CardActions>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+
                         <input
                             accept="image/*"
-                            id="upload-image"
+                            id="upload-images"
                             type="file"
-                            style={{ display: "none" }}
+                            multiple
+                            style={{display: "none"}}
                             onChange={handleFileChange}
                         />
-                        <label htmlFor="upload-image">
-                            <Button variant="contained" component="span">
-                                Choose Image
-                            </Button>
+                        <label htmlFor="upload-images">
+                            <Button variant="contained" component="span">Add Images</Button>
                         </label>
                     </Box>
                 </Box>
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+
+                <Box sx={{mt: 3, display: 'flex', gap: 1}}>
                     {!editing ? (
                         <Button variant="contained" onClick={handleCreate}>Create Product</Button>
                     ) : (
                         <>
                             <Button variant="contained" onClick={handleUpdate}>Save</Button>
-                            <Button variant="outlined" onClick={() => { setEditing(null); setForm({ name: "", description: "", price: "", category: "", brand: "", stock: "" }); }}>Cancel</Button>
+                            <Button variant="outlined" onClick={() => {
+                                setEditing(null);
+                                setForm({
+                                    name: "",
+                                    description: "",
+                                    price: "",
+                                    category: "",
+                                    brand: "",
+                                    stock: "",
+                                    images: [],
+                                    newImages: []
+                                });
+                            }}>Cancel</Button>
                         </>
                     )}
                 </Box>
             </Paper>
 
-            <Paper elevation={1} sx={{ p: 1 }}>
+            <Paper elevation={1} sx={{p: 2}}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -181,13 +298,245 @@ function ProductsTab({ onNotify }) {
                                 <TableCell>{p.stock}</TableCell>
                                 <TableCell>{p.category}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={() => startEdit(p)}><EditIcon /></IconButton>
-                                    <IconButton onClick={() => handleDelete(p._id)} color="error"><DeleteIcon /></IconButton>
+                                    <IconButton onClick={() => startEdit(p)}><EditIcon/></IconButton>
+                                    <IconButton onClick={() => handleDelete(p._id)} color="error"><DeleteIcon/></IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
+            </Paper>
+        </Box>
+    );
+}
+
+function CategoriesTab({onNotify}) {
+    const [categories, setCategories] = useState([]);
+    const [editing, setEditing] = useState(null);
+    const [form, setForm] = useState({
+        name: "",
+        image: null,
+        preview: null
+    });
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/v1/admin/categories`, {credentials: "include"});
+            const data = await res.json();
+            if (res.ok) setCategories(data.data || []);
+            else onNotify && onNotify(data.message || "Failed to fetch categories", "error");
+        } catch (err) {console.error(err);}
+    };
+
+    useEffect(() => {fetchCategories(); }, []);
+
+    const handleChange = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value}));
+
+    const handleFileChange = (event) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm((prev) => ({
+                    ...prev,
+                    image: file,
+                    preview: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleCreate = async () => {
+        if (!form.name.trim()) {
+            onNotify && onNotify("Category name is required", "error");
+            return;
+        }
+
+        if(!form.image) {
+            onNotify && onNotify("Category image is required", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", form.name);
+        formData.append("image", form.image);
+
+         try {
+            const res = await fetch(`${API_URL}/api/v1/admin/categories/create`, {
+                method: "POST",
+                body: formData,
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (res.ok) {
+                onNotify && onNotify(data.message, "success");
+                setForm({ name: "", image: null, preview: null });
+                fetchCategories();
+            } else throw new Error(data.message || "Failed");
+        } catch (err) { onNotify && onNotify(err.message || "Create failed", "error"); }
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm("Delete this category?")) return;
+        try {
+            const res = await fetch(`${API_URL}/api/v1/admin/categories/${id}`, { 
+                method: "DELETE", 
+                credentials: "include" 
+            });
+            const data = await res.json();
+            if (res.ok) { 
+                onNotify && onNotify(data.message, "success"); 
+                fetchCategories(); 
+            }
+            else throw new Error(data.message || "Delete failed");
+        } catch (err) { onNotify && onNotify(err.message || "Delete failed", "error"); }
+    };
+
+    const startEdit = (cat) => {
+        setEditing(cat._id);
+        setForm({
+            name: cat.name,
+            image: null,
+            preview: cat.image
+        });
+    };
+
+     const handleUpdate = async () => {
+        if (!form.name.trim()) {
+            onNotify && onNotify("Category name is required", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", form.name);
+        if (form.image) {
+            formData.append("image", form.image);
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/api/v1/admin/categories/${editing}`, {
+                method: "PATCH",
+                body: formData,
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (res.ok) {
+                onNotify && onNotify(data.message, "success");
+                setEditing(null);
+                setForm({ name: "", image: null, preview: null });
+                fetchCategories();
+            } else throw new Error(data.message || "Update failed");
+        } catch (err) { onNotify && onNotify(err.message || "Update failed", "error"); }
+    };
+
+    return (
+        <Box>
+            <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Create / Edit Category</Typography>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                    <TextField 
+                        label="Category Name" 
+                        value={form.name} 
+                        onChange={handleChange('name')} 
+                        fullWidth 
+                    />
+                    
+                    <Box sx={{ gridColumn: "1 / -1" }}>
+                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>Category Image</Typography>
+                        
+                        {form.preview && (
+                            <Box sx={{ mb: 3 }}>
+                                <Card sx={{ maxWidth: 200 }}>
+                                    <CardMedia
+                                        component="img"
+                                        height="200"
+                                        image={form.preview}
+                                        alt="Preview"
+                                    />
+                                    {form.image && (
+                                        <CardActions sx={{ p: 1 }}>
+                                            <Button 
+                                                size="small" 
+                                                color="error"
+                                                onClick={() => setForm(prev => ({ ...prev, image: null, preview: null }))}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </CardActions>
+                                    )}
+                                </Card>
+                            </Box>
+                        )}
+
+                        <input
+                            accept="image/*"
+                            id="upload-category-image"
+                            type="file"
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
+                        />
+                        <label htmlFor="upload-category-image">
+                            <Button variant="contained" component="span">
+                                {form.preview ? "Change Image" : "Upload Image"}
+                            </Button>
+                        </label>
+                    </Box>
+                </Box>
+
+                <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
+                    {!editing ? (
+                        <Button variant="contained" onClick={handleCreate}>Create Category</Button>
+                    ) : (
+                        <>
+                            <Button variant="contained" onClick={handleUpdate}>Save</Button>
+                            <Button variant="outlined" onClick={() => {
+                                setEditing(null);
+                                setForm({ name: "", image: null, preview: null });
+                            }}>Cancel</Button>
+                        </>
+                    )}
+                </Box>
+            </Paper>
+
+            <Paper elevation={1} sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Categories List</Typography>
+                {categories.length === 0 ? (
+                    <Typography color="textSecondary">No categories found</Typography>
+                ) : (
+                    <Grid container spacing={2}>
+                        {categories.map(cat => (
+                            <Grid item xs={6} sm={4} md={3} key={cat._id}>
+                                <Card>
+                                    <CardMedia
+                                        component="img"
+                                        height="200"
+                                        image={cat.image}
+                                        alt={cat.name}
+                                    />
+                                    <CardActions sx={{ justifyContent: 'space-between', p: 1 }}>
+                                        <Typography variant="subtitle2">{cat.name}</Typography>
+                                        <Box>
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => startEdit(cat)}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton 
+                                                size="small" 
+                                                color="error"
+                                                onClick={() => handleDelete(cat._id)}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
             </Paper>
         </Box>
     );
@@ -345,21 +694,33 @@ export default function AdminPage() {
     const onNotify = (message, variant = 'info') => showSnackbar(message, variant === 'error' ? 'error' : variant, 3000);
 
     return (
-        <>
-            <div className="container mx-auto px-4 py-8">
-                <Typography variant="h4" sx={{ mb: 2 }}>Admin Dashboard {user ? `- ${user.name}` : ''}</Typography>
-                <Paper sx={{ mb: 3 }}>
-                    <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} indicatorColor="primary" textColor="primary" variant="fullWidth">
-                        {TABS.map((t, idx) => <Tab key={t.key} label={t.label} />)}
+        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+                    Admin Dashboard {user ? `- ${user.name}` : ''}
+                </Typography>
+                
+                <Paper sx={{ mb: 3 }} elevation={2}>
+                    <Tabs 
+                        value={activeTab} 
+                        onChange={(e, v) => setActiveTab(v)} 
+                        indicatorColor="primary" 
+                        textColor="primary" 
+                        variant="fullWidth"
+                    >
+                        {TABS.map((t) => (
+                            <Tab key={t.key} label={t.label} />
+                        ))}
                     </Tabs>
                 </Paper>
 
-                <Box>
+                <Box sx={{ mt: 3 }}>
                     {activeTab === 0 && <ProductsTab onNotify={onNotify} />}
-                    {activeTab === 1 && <UsersTab onNotify={onNotify} />}
-                    {activeTab === 2 && <OrdersTab onNotify={onNotify} />}
+                    {activeTab === 1 && <CategoriesTab onNotify={onNotify} />}
+                    {activeTab === 2 && <UsersTab onNotify={onNotify} />}
+                    {activeTab === 3 && <OrdersTab onNotify={onNotify} />}
                 </Box>
-            </div>
-        </>
+            </Container>
+        </Box>
     );
 }

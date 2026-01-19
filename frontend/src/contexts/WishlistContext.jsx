@@ -17,10 +17,12 @@ export function WishlistProvider({ children }) {
 
   // No localStorage fallback: empty wishlist until server provides data when logged in
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const loadServerWishlist = async () => {
       if (!user) return;
+      setIsLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/v1/users/getwhislist`, { credentials: 'include' });
         const data = await res.json();
@@ -31,6 +33,8 @@ export function WishlistProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to load wishlist', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadServerWishlist();
@@ -87,6 +91,7 @@ export function WishlistProvider({ children }) {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
+    isLoading,
   };
 
   return (

@@ -18,11 +18,13 @@ export function CartProvider({ children }) {
 
   // No localStorage fallback: keep cart in memory; server is source of truth when logged in
   const [cartItems, setCartItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // When a user logs in, fetch their server cart and replace local cart
   useEffect(() => {
     const loadServerCart = async () => {
       if (!user) return;
+      setIsLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/v1/users/cart`, { credentials: 'include' });
         const data = await res.json();
@@ -33,11 +35,13 @@ export function CartProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to load server cart', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadServerCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cartItems]);
+  }, [user]);
 
   // no localStorage persistence per request
 
@@ -137,6 +141,7 @@ export function CartProvider({ children }) {
     isInCart,
     getCartItemCount,
     getCartTotal,
+    isLoading,
   };
 
   return (
