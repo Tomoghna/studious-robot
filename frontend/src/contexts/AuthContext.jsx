@@ -75,7 +75,6 @@ export function AuthProvider({ children }) {
         credentials: "include",
       });
       const data = await res.json();
-      console.log(data);
       setUser(null);
       showSnackbar(data.message, "success", 2000);
     }

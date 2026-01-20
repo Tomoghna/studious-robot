@@ -18,6 +18,7 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', ...other }) 
   return (
     <BaseNumberField.Root
       {...other}
+      onValueChange={(value) => other.onChange?.(value)}
       render={(props, state) => (
         <FormControl
           size={size}

@@ -36,7 +36,7 @@ app.use("/api/v1/users/cart", cartRoutes);
 app.use("/api/v1/users/orders", orderRoutes);
 
 app.use("/api/v1/admin/products", productRoutes);
-app.use("/api/v1/admin/users", adminRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 app.use(errorMiddleware);
 

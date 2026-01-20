@@ -25,12 +25,6 @@ const createProduct = asyncHandler(async (req, res) => {
     throw new apiError(400, "Product image is required");
   }
   let categoryDoc = await Category.findOne({ category });
-  if (!categoryDoc) {
-    categoryDoc = await Category.create({
-      category,
-      image: imageUrl?.[0],
-    });
-  }
 
   const product = new Product({
     name,

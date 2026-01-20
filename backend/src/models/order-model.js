@@ -40,7 +40,6 @@ const orderItemSchema = new Schema({
     },
     totalPrice: {
         type: Number,
-        required: true
     },
     shippingAddress: {
         type: String,

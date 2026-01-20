@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useProducts } from "../contexts/ProductContext";
 import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -24,16 +23,16 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
-const API_URL = "http://localhost:8000";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // const { products } = useProducts();
   const [product, setProduct] = useState(null);
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_SERVER_URL;
 
   // Reviews state (start from product.reviews if available)
   const [reviews, setReviews] = useState([]);
@@ -43,8 +42,9 @@ export default function ProductDetail() {
   const { fetchUser, user } = useAuth();
   const { showSnackbar } = useSnackbar();
 
-  useEffect(() => {
-    async function fetchProductById() {
+  async function fetchProductById() {
+    try {
+      setLoading(true);
       const res = await fetch(`${API_URL}/api/v1/users/product/${id}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -55,9 +55,25 @@ export default function ProductDetail() {
         setProduct(data.data);
         setReviews(data.data.reviews || []);
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
+  }
+  useEffect(() => {
     fetchProductById();
-  }, [reviews]);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Container sx={{ py: 8, textAlign: "center" }}>
+        <Typography variant="h4" gutterBottom>
+          Loading...
+        </Typography>
+      </Container>
+    );
+  }
 
   if (!product) {
     return (
@@ -98,16 +114,6 @@ export default function ProductDetail() {
     }
   };
 
-  // Reviews state (start from product.reviews if available)
-  // const [reviews, setReviews] = useState(
-  //   product.reviews ? product.reviews.slice() : []
-  // );
-  // const [reviewName, setReviewName] = useState("");
-  // const [reviewRating, setReviewRating] = useState(5);
-  // const [reviewText, setReviewText] = useState("");
-  // const { fetchUser, user } = useAuth();
-  // const { showSnackbar } = useSnackbar();
-
   const handleAddReview = () => {
     if (!reviewText.trim()) return;
     (async () => {
@@ -118,19 +124,19 @@ export default function ProductDetail() {
           comment: reviewText,
         };
         const res = await fetch(
-          `${API_URL}/api/v1/users/givereview/${product._id || product.id}`,
+          `${API_URL}/api/v1/users/givereview/${product._id}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify(payload),
-          }
+          },
         );
         const data = await res.json();
         if (res.ok) {
           setReviews((prev) => [
             {
-              id: Date.now(),
+              _id: Date.now().toString(),
               name: payload.name,
               rating: payload.rating,
               text: payload.comment,
@@ -142,6 +148,7 @@ export default function ProductDetail() {
           setReviewRating(0);
           setReviewText("");
           showSnackbar(data.message || "Review added", "success");
+          fetchProductById();
           // optionally refresh product/user
         } else {
           setReviewName("");
@@ -165,7 +172,7 @@ export default function ProductDetail() {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ rating, comment }),
-        }
+        },
       );
       const data = await res.json();
       if (res.ok) {
@@ -188,7 +195,7 @@ export default function ProductDetail() {
             <Carousel images={product.images} autoplayInterval={4000} />
           </Paper>
           <Grid container spacing={2} sx={{ mt: 2 }}>
-            {product.images.map((image, index) => (
+            {product?.images?.map((image, index) => (
               <Grid key={index} item xs={3}>
                 <Button
                   sx={{ p: 0, minWidth: 0 }}
@@ -312,12 +319,11 @@ export default function ProductDetail() {
             <Stack spacing={2} sx={{ mb: 2 }}>
               <TextField
                 label="Name"
-                value={user.name}
-                // onChange={(e) => setReviewName(e.target.value)}
+                value={user?.name}
                 fullWidth
               />
               <Rating
-                value={reviewRating}
+                value={reviewRating || 5}
                 onChange={(e, v) => setReviewRating(v || 5)}
               />
               <TextField

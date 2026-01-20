@@ -17,9 +17,10 @@ const createOrder = asyncHandler(async (req, res) => {
     if ([items, shippingAddress, payment].some((field) => field?.trim === "")) {
         throw new apiError(400, "All fields are required!")
     }
-    const productPrice = 0;
+    let productPrice = 0;
+    let  razorpayOrder;
 
-    if (payment.method === "COD") {
+    if (payment === "COD") {
         for (const item of items) {
             const product = await Product.findById(item.product);
             if (!product) {
@@ -36,7 +37,7 @@ const createOrder = asyncHandler(async (req, res) => {
         }
     } else {
         //create orderId from razorpay
-        const razorpayOrder = razorpay.orders.create({
+        razorpayOrder = razorpay.orders.create({
             amount: productPrice * 100,
             currency: "INR",
             receipt: `receipt_order_${Date.now()}`,
@@ -50,13 +51,13 @@ const createOrder = asyncHandler(async (req, res) => {
         productPrice,
         shippingAddress,
         payment: {
-            method: payment.method,
-            status: payment.method === "COD" ? "COD" : "pending",
+            method: payment,
+            status: payment === "COD" ? "COD" : "pending",
             razorpayOrderId: razorpayOrder ? razorpayOrder.id : null
         }
     });
 
-    if (payment.method === "Razorpay") {
+    if (payment === "Razorpay") {
         validateRazorpaySignature();
     }
 
