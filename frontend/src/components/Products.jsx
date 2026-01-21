@@ -3,6 +3,35 @@ import { useProducts } from '../contexts/ProductContext';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from './Card';
 import Pagination from './Pagination';
+import {
+  Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Drawer,
+  Chip,
+  Stack,
+  Divider,
+  FormControlLabel,
+  Checkbox,
+  useMediaQuery,
+  useTheme,
+  Slider,
+  InputAdornment,
+  Toolbar,
+  AppBar,
+  IconButton,
+  CircularProgress,
+} from '@mui/material';
+import {
+  FilterList as FilterListIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+} from '@mui/icons-material';
 
 // Utility function for debouncing
 const debounce = (func, wait) => {
@@ -34,31 +63,12 @@ const CATEGORIES = [
   { id: 'wall-alters', name: 'Wall Alters' },
 ];
 
-const ITEMS_PER_PAGE = 6;
-
-const sliderStyles = {
-  rangeSlider: `
-    appearance-none
-    h-1
-    bg-gray-200 dark:bg-gray-700
-    rounded-lg
-    cursor-pointer
-    focus:outline-none focus:ring-2 focus:ring-blue-500
-  `,
-  thumb: `
-    appearance-none
-    w-4 h-4
-    bg-blue-500 dark:bg-blue-400
-    rounded-full
-    cursor-pointer
-    transition-colors
-    hover:bg-blue-600 dark:hover:bg-blue-500
-    focus:outline-none focus:ring-2 focus:ring-blue-500
-  `
-};
+const ITEMS_PER_PAGE = 12;
 
 const PriceFilter = ({ priceRange, onChange }) => {
   const [localRange, setLocalRange] = useState(priceRange);
+  const theme = useTheme();
+
   const debouncedOnChange = useCallback(
     debounce((value) => {
       const validRange = {
@@ -74,106 +84,83 @@ const PriceFilter = ({ priceRange, onChange }) => {
     setLocalRange(priceRange);
   }, [priceRange]);
 
-  const handleChange = (value) => {
+  const handleSliderChange = (event, newValue) => {
     const newRange = {
-      min: Math.max(0, parseInt(value.min) || 0),
-      max: Math.max(value.min, parseInt(value.max) || value.max)
+      min: newValue[0],
+      max: newValue[1]
     };
     setLocalRange(newRange);
     debouncedOnChange(newRange);
   };
 
-  const handleSliderChange = (type, value) => {
-    handleChange({
-      ...localRange,
-      [type]: parseInt(value)
-    });
-  };
-
   return (
-    <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Price Range</h3>
-      <div className="space-y-4">
-        <div className="relative pt-1">
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
-            <span>Min</span>
-            <span>Max</span>
-          </div>
-          <style>{`
-            input[type="range"]::-webkit-slider-thumb {
-              ${sliderStyles.thumb.replace(/\s+/g, ' ')}
-            }
-            input[type="range"]::-moz-range-thumb {
-              ${sliderStyles.thumb.replace(/\s+/g, ' ')}
-            }
-          `}</style>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            step="10"
-            value={localRange.min}
-            onChange={(e) => handleSliderChange('min', e.target.value)}
-            className={sliderStyles.rangeSlider}
-          />
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            step="10"
-            value={localRange.max}
-            onChange={(e) => handleSliderChange('max', e.target.value)}
-            className={`${sliderStyles.rangeSlider} mt-2`}
-          />
-        </div>
-        
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Min Price
-            </label>
-            <input
-              type="number"
-              min="0"
-              max={localRange.max}
-              value={localRange.min}
-              onChange={(e) => handleChange({ ...localRange, min: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Max Price
-            </label>
-            <input
-              type="number"
-              min={localRange.min}
-              value={localRange.max}
-              onChange={(e) => handleChange({ ...localRange, max: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="pt-2">
-          <div className="flex justify-between text-sm font-medium text-gray-900 dark:text-white">
-            <span>{formatPrice(localRange.min)}</span>
-            <span>{formatPrice(localRange.max)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+        Price Range
+      </Typography>
+      <Slider
+        value={[localRange.min, localRange.max]}
+        onChange={handleSliderChange}
+        valueLabelDisplay="auto"
+        valueLabelFormat={(value) => formatPrice(value)}
+        min={0}
+        max={1000}
+        step={10}
+        sx={{
+          mb: 2,
+          '& .MuiSlider-thumb': {
+            '&:hover': {
+              boxShadow: '0px 0px 0px 8px rgba(25, 118, 210, 0.16)',
+            },
+          },
+        }}
+      />
+      <Stack direction="row" spacing={2}>
+        <TextField
+          type="number"
+          label="Min"
+          size="small"
+          value={localRange.min}
+          onChange={(e) => {
+            const newRange = { ...localRange, min: parseInt(e.target.value) || 0 };
+            setLocalRange(newRange);
+            debouncedOnChange(newRange);
+          }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          }}
+        />
+        <TextField
+          type="number"
+          label="Max"
+          size="small"
+          value={localRange.max}
+          onChange={(e) => {
+            const newRange = { ...localRange, max: parseInt(e.target.value) || 1000 };
+            setLocalRange(newRange);
+            debouncedOnChange(newRange);
+          }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          }}
+        />
+      </Stack>
+    </Box>
   );
 };
 
 export default function Products() {
   const { products } = useProducts();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+
   const [searchText, setSearchText] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
 
   // Initialize selected categories from URL parameter
   useEffect(() => {
@@ -210,7 +197,7 @@ export default function Products() {
   };
 
   const hasActiveFilters = () => {
-    return selectedCategories.length > 0 || priceRange.min > 0 || priceRange.max !== Infinity;
+    return selectedCategories.length > 0 || priceRange.min > 0 || priceRange.max < 1000;
   };
 
   const filteredProducts = products.filter(product => {
@@ -229,122 +216,261 @@ export default function Products() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 100, behavior: 'smooth' });
   };
 
   const clearFilters = () => {
     setSelectedCategories([]);
     setSearchParams({});
-    setPriceRange({ min: 0, max: Infinity });
+    setPriceRange({ min: 0, max: 1000 });
     setCurrentPage(1);
   };
 
-  return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      <div className="lg:grid lg:grid-cols-12 lg:gap-4 sm:gap-8">
-        {/* Mobile filter button */}
-        <div className="lg:hidden mb-4">
-          <button
-            onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+  const FilterPanel = () => (
+    <Paper
+      sx={{
+        p: 3,
+        borderRadius: 2,
+        backgroundColor: theme.palette.mode === 'dark' ? 'grey.900' : 'background.paper',
+        boxShadow: theme.palette.mode === 'dark' ? '0px 2px 8px rgba(0,0,0,0.3)' : 1,
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          Filters
+        </Typography>
+        {hasActiveFilters() && (
+          <Button
+            size="small"
+            startIcon={<ClearIcon />}
+            onClick={clearFilters}
+            variant="text"
+            color="primary"
           >
-            {isMobileFilterOpen ? 'Hide Filters' : 'Show Filters'}
-          </button>
-        </div>
+            Clear
+          </Button>
+        )}
+      </Box>
 
-        {/* Filters sidebar */}
-        <div className={`lg:col-span-3 ${isMobileFilterOpen ? 'block' : 'hidden lg:block'}`}>
-          <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Categories</h2>
-              {hasActiveFilters() && (
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-            <div className="space-y-3">
-              {CATEGORIES.map(category => (
-                <label
-                  key={category.id}
-                  className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={() => toggleCategory(category.id)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-                  />
-                  <span className="text-sm font-medium">{category.name}</span>
-                </label>
-              ))}
-            </div>
-            <PriceFilter priceRange={priceRange} onChange={handlePriceChange} />
-          </div>
-        </div>
+      <Divider sx={{ mb: 2 }} />
 
-        {/* Products grid */}
-        <div className="lg:col-span-9">
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                  {selectedCategories.length > 0 
-                    ? CATEGORIES.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
-                    : 'All Products'}
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
-                  Showing {Math.min(startIndex + 1, filteredProducts.length)}-
-                  {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
-                </p>
-              </div>
-
-              <div className="w-full sm:w-80">
-                <input
-                  type="search"
-                  value={searchText}
-                  onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }}
-                  placeholder="Search products by name..."
-                  className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+          Categories
+        </Typography>
+        <Stack spacing={1}>
+          {CATEGORIES.map(category => (
+            <FormControlLabel
+              key={category.id}
+              control={
+                <Checkbox
+                  checked={selectedCategories.includes(category.id)}
+                  onChange={() => toggleCategory(category.id)}
+                  color="primary"
                 />
-              </div>
-            </div>
-          </div>
+              }
+              label={category.name}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  fontSize: '0.95rem',
+                },
+              }}
+            />
+          ))}
+        </Stack>
+      </Box>
 
+      <Divider sx={{ mb: 2 }} />
+      <PriceFilter priceRange={priceRange} onChange={handlePriceChange} />
+    </Paper>
+  );
+
+  return (
+    <Box sx={{ minHeight: '100vh', py: { xs: 2, sm: 4, md: 6 }, px: { xs: 1, sm: 2 } }}>
+      {/* Mobile Filter Toolbar */}
+      {isMobile && (
+        <Box sx={{ mb: 3 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<FilterListIcon />}
+            onClick={() => setMobileDrawerOpen(true)}
+            sx={{
+              py: 1.2,
+              textTransform: 'none',
+              fontSize: '1rem',
+            }}
+          >
+            Show Filters {hasActiveFilters() && `(${selectedCategories.length + (priceRange.min > 0 || priceRange.max < 1000 ? 1 : 0)})`}
+          </Button>
+        </Box>
+      )}
+
+      <Box sx={{ display: 'flex', gap: { xs: 0, md: 3 } }}>
+        {/* Sidebar - Hidden on Mobile */}
+        {!isMobile && (
+          <Box
+            sx={{
+              width: { md: '280px', lg: '300px' },
+              flexShrink: 0,
+              position: 'sticky',
+              top: 100,
+              height: 'fit-content',
+            }}
+          >
+            <FilterPanel />
+          </Box>
+        )}
+
+        {/* Mobile Drawer */}
+        <Drawer
+          anchor="left"
+          open={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: '100%',
+              maxWidth: '300px',
+            },
+          }}
+        >
+          <Box sx={{ p: 2, pt: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Filters
+              </Typography>
+              <IconButton
+                onClick={() => setMobileDrawerOpen(false)}
+                size="small"
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+            <FilterPanel />
+          </Box>
+        </Drawer>
+
+        {/* Main Content */}
+        <Box sx={{ flex: 1, width: { xs: '100%', md: 'calc(100% - 300px)' } }}>
+          {/* Header Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography
+              variant={isMobile ? 'h5' : 'h4'}
+              sx={{
+                fontWeight: 700,
+                mb: 1,
+                background: 'linear-gradient(135deg, primary.main, secondary.main)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {selectedCategories.length > 0
+                ? CATEGORIES.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
+                : 'All Products'}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+              Showing {filteredProducts.length === 0 ? 0 : Math.min(startIndex + 1, filteredProducts.length)}-
+              {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+            </Typography>
+
+            {/* Search Bar */}
+            <TextField
+              fullWidth={isMobile}
+              sx={{ maxWidth: isMobile ? '100%' : '400px' }}
+              placeholder="Search products..."
+              variant="outlined"
+              size={isMobile ? 'small' : 'medium'}
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setCurrentPage(1);
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+
+          {/* Products Grid */}
           {paginatedProducts.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'repeat(2, 1fr)',
+                    sm: 'repeat(3, 1fr)',
+                    md: 'repeat(3, 1fr)',
+                    lg: 'repeat(4, 1fr)',
+                  },
+                  gap: { xs: 1.5, sm: 2, md: 2.5, lg: 3 },
+                  mb: 4,
+                }}
+              >
                 {paginatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <Box
+                    key={product.id}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      minHeight: {
+                        xs: '240px',
+                        sm: '280px',
+                        md: '320px',
+                        lg: '360px',
+                      },
+                    }}
+                  >
+                    <ProductCard product={product} />
+                  </Box>
                 ))}
-              </div>
-              
+              </Box>
+
+              {/* Pagination */}
               {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </Box>
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                No products found in the selected categories.
-              </p>
-              <button
+            <Paper
+              sx={{
+                p: 6,
+                textAlign: 'center',
+                borderRadius: 2,
+                backgroundColor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+              }}
+            >
+              <SearchIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                No products found
+              </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                Try adjusting your filters or search terms
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<ClearIcon />}
                 onClick={clearFilters}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               >
-                Clear filters
-              </button>
-            </div>
+                Clear Filters
+              </Button>
+            </Paper>
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
