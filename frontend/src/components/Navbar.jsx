@@ -203,11 +203,6 @@ const Navbar = () => {
           </Typography>
         </Box>
 
-        <Box component="form" onSubmit={handleSearch} sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 1, width: '50%' }}>
-          <InputBase name="search" placeholder="Search products..." defaultValue={searchQuery} sx={{ ml: 1, flex: 1, bgcolor: 'background.paper', px: 2, borderRadius: 50 }} />
-          <IconButton type="submit" aria-label="search"><SearchIcon /></IconButton>
-        </Box>
-
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" onClick={toggleTheme} aria-label="toggle theme">
             {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}

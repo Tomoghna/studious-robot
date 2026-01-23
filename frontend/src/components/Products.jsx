@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useSearchParams } from 'react-router-dom';
-import ProductCard from './Card';
 import Pagination from './Pagination';
 import {
   Box,
@@ -32,6 +31,33 @@ import {
   Search as SearchIcon,
   Clear as ClearIcon,
 } from '@mui/icons-material';
+
+const ProductCard = lazy(() => import("./Card"));
+
+
+const ProductCardSkeleton = () => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      minHeight: {
+        xs: "240px",
+        sm: "280px",
+        md: "320px",
+        lg: "360px",
+      },
+      bgcolor: "grey.200",
+      borderRadius: 1,
+      animation: "pulse 1.5s ease-in-out infinite",
+      "@keyframes pulse" : {
+        "0%" : {opacity: 1},
+        "50%" : {opacity: 0.5},
+        "100%" : {opacity: 1},
+      },
+    }}
+  />
+);
 
 // Utility function for debouncing
 const debounce = (func, wait) => {
@@ -324,7 +350,7 @@ export default function Products() {
 
         {/* Mobile Drawer */}
         <Drawer
-          anchor="left"
+          anchor="right"
           open={mobileDrawerOpen}
           onClose={() => setMobileDrawerOpen(false)}
           PaperProps={{
@@ -414,22 +440,24 @@ export default function Products() {
                 }}
               >
                 {paginatedProducts.map((product) => (
-                  <Box
-                    key={product.id}
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      minHeight: {
-                        xs: '240px',
-                        sm: '280px',
-                        md: '320px',
-                        lg: '360px',
-                      },
-                    }}
-                  >
-                    <ProductCard product={product} />
-                  </Box>
+                  <Suspense key={product.id} fallback={<ProductCardSkeleton/>}>
+                    <Box
+                      key={product.id}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        minHeight: {
+                          xs: '240px',
+                          sm: '280px',
+                          md: '320px',
+                          lg: '360px',
+                        },
+                      }}
+                    >
+                      <ProductCard product={product} />
+                    </Box>
+                  </Suspense>
                 ))}
               </Box>
 
