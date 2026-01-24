@@ -28,6 +28,7 @@ import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAuth } from "../contexts/AuthContext";
+import {useCategories} from "../contexts/CategoryContext";
 
 const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs elsewhere
 
@@ -41,6 +42,7 @@ const TABS = [
 function ProductsTab({ onNotify }) {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
+  const {categories, loading: categoriesLoading} = useCategories();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -224,12 +226,25 @@ function ProductsTab({ onNotify }) {
             onChange={handleChange("name")}
             fullWidth
           />
-          <TextField
-            label="Category"
-            value={form.category}
-            onChange={handleChange("category")}
-            fullWidth
-          />
+
+          <FormControl fullWidth disabled={categoriesLoading}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              label="Category"
+              value={form.category}
+              onChange={handleChange("category")}
+            >
+              <MenuItem value="">
+                <em>Select Category</em>
+              </MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat._id} value={cat.name}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             label="Brand"
             value={form.brand}
