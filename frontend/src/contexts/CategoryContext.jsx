@@ -1,4 +1,10 @@
-import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 
 const CategoryContext = createContext({
     categories: [],
@@ -7,29 +13,37 @@ const CategoryContext = createContext({
     refreshCategories: () => {},
 });
 
-export function CategoryProvider({children}) {
+export function CategoryProvider({children})
+{
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const API_URL = import.meta.env.VITE_SERVER_URL;
+
     const fetchCategories = useCallback(async () => {
-        setLoading(true);
-        setError(null);
         try {
-            const res = await fetch();
-            if (!res.ok)
+            setLoading(true);
+            setError(null);
+
+            const res = await fetch(`${API_URL}/api/categories`);
+
+            if(!res.ok) {
                 throw new Error(`Failed to fetch: ${res.status}`);
+            }
+
             const data = await res.json();
-            setCategories(Array.isArray(data) ? data : []);
+
+            setCategories(data.categories || []);
         }
-        catch (err) {
+        catch(err) {
+            setError(err?.message ?? "Something went wrong");
             setCategories([]);
-            setError(err?.message ?? String(err));
         }
         finally {
             setLoading(false);
         }
-    }, []);
+    }, [API_URL]);
 
     useEffect(() => {
         fetchCategories();
@@ -37,7 +51,12 @@ export function CategoryProvider({children}) {
 
     return (
         <CategoryContext.Provider
-            value={{ categories, loading, error, refreshCategories: fetchCategories }}
+            value={{
+                categories,
+                loading,
+                error,
+                refreshCategories: fetchCategories,
+            }}
         >
             {children}
         </CategoryContext.Provider>
