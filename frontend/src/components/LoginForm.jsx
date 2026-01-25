@@ -9,6 +9,12 @@ import Typography from "@mui/material/Typography";
 import GoogleIcon from "@mui/icons-material/Google";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import Alert from "@mui/material/Alert";
+import { FilledInput, IconButton } from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const {login, signup} = useAuth();
@@ -18,7 +24,7 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     const [name, setName] = useState("");
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [showPassword, setShowPassword] = useState(false);
     //update mode when initalMode prop changes
     useEffect(() => {
         setMode(initialMode);
@@ -27,6 +33,14 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
         setName("");
         setError("");
     }, [initialMode]);
+
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
+    const handleMouseDownPassword = (event) => {
+        event.preventDefault();
+    };
+    const handleMouseUpPassword = (event) => {
+        event.preventDefault();
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,8 +77,30 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
                 )}
 
                 <TextField label="Email" variant="outlined" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} required/>
-
-                <TextField label="Password" variant="outlined" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} required/>
+                
+                <FormControl sx={{m: 1, width: '45ch'}} variant="outlined">
+                    <InputLabel htmlFor="filled-adornment-password">Password</InputLabel>
+                    <FilledInput
+                        id="filled-adornment-password"
+                        type={showPassword ? 'text' : 'password'}
+                        onChange={(e) => setPassword(e.target.value)}
+                        endAdornment={
+                            <InputAdornment position="end">
+                                <IconButton
+                                    aria-label={
+                                        showPassword ? "hide the password" : "display the password"
+                                    }
+                                    onClick={handleClickShowPassword}
+                                    onMouseDown={handleMouseDownPassword}
+                                    onMouseUp={handleMouseUpPassword}
+                                    edge="end"
+                                >
+                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                </IconButton>
+                            </InputAdornment>
+                        }
+                    />
+                </FormControl>
 
                 {error && <Alert severity="error">{error}</Alert>}
 

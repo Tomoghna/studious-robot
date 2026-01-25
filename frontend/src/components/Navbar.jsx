@@ -29,12 +29,14 @@ import CategoryIcon from '@mui/icons-material/Category';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Collapse from '@mui/material/Collapse';
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import { UseThemeMode } from "../contexts/ThemeContext";
+import { useCategories } from "../contexts/CategoryContext";
 import LoginModal from "./LoginModal";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
@@ -46,38 +48,13 @@ const Navbar = () => {
   const { wishlistItems } = useWishlist();
   const { getCartItemCount } = useCart();
   const { mode, toggleTheme } = UseThemeMode();
+  const {categories, loading, error} = useCategories();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/v1/categories`);
-      const data = await res.json();
-      if (res.ok) {
-        setCategories(data.data || []);
-      }
-    } catch (err) {
-      console.error("Failed to fetch categories:", err);
-    }
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const category = formData.get('category');
-    const query = formData.get('search');
-    searchProducts(query, category);
-    navigate('/search');
-  };
 
   const handleCategoryClick = (categoryName) => {
     setMobileOpen(false);
@@ -117,13 +94,27 @@ const Navbar = () => {
         
         <Collapse in={categoriesOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            {categories.map((category) => (
-              <ListItem key={category._id} disablePadding sx={{ pl: 4 }}>
-                <ListItemButton onClick={() => handleCategoryClick(category.name)}>
-                  <ListItemText primary={category.name} />
-                </ListItemButton>
+            {loading ? (
+              <ListItem sx={{ pl: 4, justifyContent: 'center' }}>
+                <CircularProgress size={24} />
               </ListItem>
-            ))}
+            ) : error ? (
+              <ListItem sx={{ pl: 4 }}>
+                <ListItemText primary="Failed to load categories" secondary={error} />
+              </ListItem>
+            ) : categories.length > 0 ? (
+              categories.map((category) => (
+                <ListItem key={category._id} disablePadding sx={{ pl: 4 }}>
+                  <ListItemButton onClick={() => handleCategoryClick(category.name)}>
+                    <ListItemText primary={category.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))
+            ) : (
+              <ListItem sx={{ pl: 4 }}>
+                <ListItemText primary="No categories available" />
+              </ListItem>
+            )}
           </List>
         </Collapse>
 
@@ -201,11 +192,6 @@ const Navbar = () => {
           <Typography component={Link} to="/" variant="h6" sx={{ textDecoration: 'none', color: 'inherit', fontWeight: 800 }}>
             MAYUR HAMSA
           </Typography>
-        </Box>
-
-        <Box component="form" onSubmit={handleSearch} sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 1, width: '50%' }}>
-          <InputBase name="search" placeholder="Search products..." defaultValue={searchQuery} sx={{ ml: 1, flex: 1, bgcolor: 'background.paper', px: 2, borderRadius: 50 }} />
-          <IconButton type="submit" aria-label="search"><SearchIcon /></IconButton>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

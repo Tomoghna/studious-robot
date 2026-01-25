@@ -8,6 +8,7 @@ import {AuthProvider} from "./contexts/AuthContext.jsx";
 import {SnackbarProvider} from "./contexts/SnackbarContext";
 import {ThemeModeProvider} from "./contexts/ThemeContext";
 import { AuthModalProvider } from './contexts/AuthModalContext';
+import { CategoryProvider } from "./contexts/CategoryContext.jsx";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <SnackbarProvider>
         <AuthProvider>
           <AuthModalProvider>
-            <App />
+            <CategoryProvider>
+              <App />
+            </CategoryProvider>
           </AuthModalProvider>
         </AuthProvider>
       </SnackbarProvider>

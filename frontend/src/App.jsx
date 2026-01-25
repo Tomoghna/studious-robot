@@ -17,7 +17,6 @@ import Wishlist from "./components/Wishlist";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import RequireAdmin from "./components/RequireAdmin";
-import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
 import BackToTop from "./components/BackToTop";
 import CheckoutPage from "./pages/CheckoutPage";
 import BottomNav from "./components/BottomNav";
@@ -89,7 +88,8 @@ export default function App() {
                                     sx={{
                                       aspectRatio: '1/1',
                                       objectFit: 'cover',
-                                      transition: 'transform 0.3s ease-in-out'
+                                      transition: 'transform 0.3s ease-in-out',
+                                      height: '150px'
                                     }}
                                   />
                                   <CardContent sx={{ textAlign: 'center'}}>
