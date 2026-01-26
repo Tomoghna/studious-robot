@@ -28,7 +28,7 @@ import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAuth } from "../contexts/AuthContext";
-import {useCategories} from "../contexts/CategoryContext";
+import { useCategories } from "../contexts/CategoryContext";
 
 const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs elsewhere
 
@@ -42,7 +42,7 @@ const TABS = [
 function ProductsTab({ onNotify }) {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
-  const {categories, loading: categoriesLoading} = useCategories();
+  const { categories, loading: categoriesLoading } = useCategories();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -118,6 +118,10 @@ function ProductsTab({ onNotify }) {
 
     form.newImages.forEach((img, idx) => {
       formData.append("images", img.file);
+    });
+
+    formData.forEach((value, key) => {
+      console.log(key, value);
     });
 
     try {
@@ -237,9 +241,9 @@ function ProductsTab({ onNotify }) {
               <MenuItem value="">
                 <em>Select Category</em>
               </MenuItem>
-              {categories.map((cat) => (
-                <MenuItem key={cat._id} value={cat.name}>
-                  {cat.name}
+              {categories?.map((cat) => (
+                <MenuItem key={cat._id} value={cat._id}>
+                  {cat.category}
                 </MenuItem>
               ))}
             </Select>
@@ -433,35 +437,13 @@ function ProductsTab({ onNotify }) {
 }
 
 function CategoriesTab({ onNotify }) {
-  const [categories, setCategories] = useState([]);
+  const { categories, loading: categoriesLoading } = useCategories();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     name: "",
     image: null,
     preview: null,
   });
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/v1/admin/category`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok){ 
-        setCategories(data.data || []);
-      }
-      else
-        onNotify &&
-          onNotify(data.message || "Failed to fetch categories", "error");
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   const handleChange = (k) => (e) =>
     setForm((s) => ({ ...s, [k]: e.target.value }));
 
@@ -551,11 +533,14 @@ function CategoriesTab({ onNotify }) {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/category/edit/${editing}`, {
-        method: "PATCH",
-        body: formData,
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_URL}/api/v1/admin/category/edit/${editing}`,
+        {
+          method: "PATCH",
+          body: formData,
+          credentials: "include",
+        },
+      );
       const data = await res.json();
       if (res.ok) {
         onNotify && onNotify(data.message, "success");
@@ -666,11 +651,11 @@ function CategoriesTab({ onNotify }) {
         <Typography variant="h6" sx={{ mb: 2 }}>
           Categories List
         </Typography>
-        {categories.length === 0 ? (
+        {categories?.length === 0 ? (
           <Typography color="textSecondary">No categories found</Typography>
         ) : (
           <Grid container spacing={2}>
-            {categories.map((cat) => (
+            {categories?.map((cat) => (
               <Grid item xs={6} sm={4} md={3} key={cat._id}>
                 <Card>
                   <CardMedia
@@ -816,10 +801,9 @@ function OrdersTab({ onNotify }) {
         credentials: "include",
       });
       const data = await res.json();
-      if (res.ok){
+      if (res.ok) {
         setOrders(data.data || []);
-      }
-      else
+      } else
         onNotify && onNotify(data.message || "Failed to fetch orders", "error");
     } catch (err) {
       console.error(err);
@@ -833,15 +817,12 @@ function OrdersTab({ onNotify }) {
 
   const handleStatusChange = async (orderId, status) => {
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/admin/order/${orderId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ orderStatus: status }),
-        },
-      );
+      const res = await fetch(`${API_URL}/api/v1/admin/order/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orderStatus: status }),
+      });
       const data = await res.json();
       if (res.ok) {
         onNotify && onNotify(data.message, "success");
