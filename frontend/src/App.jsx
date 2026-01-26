@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import { CartProvider } from "./contexts/CartContext";
-import {Box, Container, Typography, Grid, Card, CardMedia, CardContent, Link as  MuiLink, useTheme, useMediaQuery} from "@mui/material";
+import { useCategories } from "./contexts/CategoryContext";
+import {Box, Container, Typography, Card, CardMedia, CardContent, Link as  MuiLink, useTheme, useMediaQuery} from "@mui/material";
 import Banner from "./components/Banner";
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
@@ -25,19 +26,12 @@ export default function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const { categories, loading: loadingCategories } = useCategories();
 
   const images = [
     "/products/product-1.jpg",
     "/products/product-2.jpg",
     "/products/product-3.jpg",
-  ];
-
-  const categories = [
-    { id: 1, name: "Paintings", image: "/products/product-1.jpg", count: 3 },
-    { id: 2, name: "Incense Holders", image: "/products/product-7.jpg", count: 2 },
-    { id: 3, name: "Incense Boxes", image: "/products/product-4.jpg", count: 2 },
-    { id: 4, name: "Pots", image: "/products/product-10.jpg", count: 1 },
-    { id: 5, name: "Wall Alters", image: "/products/product-16.jpg", count: 1 },
   ];
 
   return (
@@ -63,23 +57,23 @@ export default function App() {
 
                         {/* Categories */}
                         <Box sx={{my: 6}}>
-                          <Typography variant="h4" sx={{fontWeight: 'bold', texttAlign: 'center', mb: 4}}>
+                          <Typography variant="h4" sx={{fontWeight: 'bold', textAlign: 'center', mb: 4}}>
                             Shop by Categories
                           </Typography>
-                          <Grid container spacing={2} sx={{p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2}}>
+                          <Box sx={{p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center'}}>
                             {categories.map((category) => (
-                              <Grid item xs={6} sm={4} lg={2.4} key={category.id}>
-                                <MuiLink href={`/prodicts?category=${category.name.toLowerCase().replace(' ', '-')}`} sx={{textDecoration: 'none'}}>
-                                  <Card sx={{
-                                    bgcolor: 'background.paper',
-                                    transition: 'transform 0.3s ease-in-out',
-                                    '&:hover': {
-                                      transform: 'scale(1.05',
-                                      '& img': {
-                                        transform: 'scale(1.1)'
-                                      }
+                              <MuiLink href={`/products?category=${category.name.toLowerCase().replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
+                                <Card sx={{
+                                  bgcolor: 'background.paper',
+                                  transition: 'transform 0.3s ease-in-out',
+                                  width: '150px',
+                                  '&:hover': {
+                                    transform: 'scale(1.05)',
+                                    '& img': {
+                                      transform: 'scale(1.1)'
                                     }
-                                  }}
+                                  }
+                                }}
                                 >
                                   <CardMedia
                                     component="img"
@@ -106,10 +100,9 @@ export default function App() {
                                       </Typography>
                                   </CardContent>
                                 </Card>
-                                </MuiLink>
-                              </Grid>
+                              </MuiLink>
                             ))}
-                          </Grid>
+                          </Box>
                         </Box>
                       </Container>
                     </main>
