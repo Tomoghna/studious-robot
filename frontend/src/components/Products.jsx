@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useProducts } from '../contexts/ProductContext';
+import { useCategories } from '../contexts/CategoryContext';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from './Pagination';
 import {
@@ -31,6 +32,7 @@ import {
   Search as SearchIcon,
   Clear as ClearIcon,
 } from '@mui/icons-material';
+import NumberSpinner from "./NumberSpinner";
 
 const ProductCard = lazy(() => import("./Card"));
 
@@ -81,14 +83,6 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const CATEGORIES = [
-  { id: 'paintings', name: 'Paintings' },
-  { id: 'incense-boxes', name: 'Incense Boxes' },
-  { id: 'incense-holders', name: 'Incense Holders' },
-  { id: 'pots', name: 'Pots' },
-  { id: 'wall-alters', name: 'Wall Alters' },
-];
-
 const ITEMS_PER_PAGE = 12;
 
 const PriceFilter = ({ priceRange, onChange }) => {
@@ -110,11 +104,14 @@ const PriceFilter = ({ priceRange, onChange }) => {
     setLocalRange(priceRange);
   }, [priceRange]);
 
-  const handleSliderChange = (event, newValue) => {
-    const newRange = {
-      min: newValue[0],
-      max: newValue[1]
-    };
+  const handleMinChange = (value) => {
+    const newRange = { ...localRange, min: parseInt(value) || 0 };
+    setLocalRange(newRange);
+    debouncedOnChange(newRange);
+  };
+
+  const handleMaxChange = (value) => {
+    const newRange = { ...localRange, max: parseInt(value) || 1000 };
     setLocalRange(newRange);
     debouncedOnChange(newRange);
   };
@@ -124,51 +121,20 @@ const PriceFilter = ({ priceRange, onChange }) => {
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
         Price Range
       </Typography>
-      <Slider
-        value={[localRange.min, localRange.max]}
-        onChange={handleSliderChange}
-        valueLabelDisplay="auto"
-        valueLabelFormat={(value) => formatPrice(value)}
-        min={0}
-        max={1000}
-        step={10}
-        sx={{
-          mb: 2,
-          '& .MuiSlider-thumb': {
-            '&:hover': {
-              boxShadow: '0px 0px 0px 8px rgba(25, 118, 210, 0.16)',
-            },
-          },
-        }}
-      />
-      <Stack direction="row" spacing={2}>
-        <TextField
-          type="number"
-          label="Min"
+      <Stack direction="column" spacing={2}>
+        <NumberSpinner
+          label="Min ₹"
+          min={0}
           size="small"
           value={localRange.min}
-          onChange={(e) => {
-            const newRange = { ...localRange, min: parseInt(e.target.value) || 0 };
-            setLocalRange(newRange);
-            debouncedOnChange(newRange);
-          }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
+          onChange={handleMinChange}
         />
-        <TextField
-          type="number"
-          label="Max"
+        <NumberSpinner
+          label="Max ₹"
+          min={0}
           size="small"
           value={localRange.max}
-          onChange={(e) => {
-            const newRange = { ...localRange, max: parseInt(e.target.value) || 1000 };
-            setLocalRange(newRange);
-            debouncedOnChange(newRange);
-          }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
+          onChange={handleMaxChange}
         />
       </Stack>
     </Box>
@@ -177,6 +143,7 @@ const PriceFilter = ({ priceRange, onChange }) => {
 
 export default function Products() {
   const { products } = useProducts();
+  const { categories, loading: loadingCategories } = useCategories();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
@@ -284,26 +251,30 @@ export default function Products() {
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
           Categories
         </Typography>
-        <Stack spacing={1}>
-          {CATEGORIES.map(category => (
-            <FormControlLabel
-              key={category.id}
-              control={
-                <Checkbox
-                  checked={selectedCategories.includes(category.id)}
-                  onChange={() => toggleCategory(category.id)}
-                  color="primary"
-                />
-              }
-              label={category.name}
-              sx={{
-                '& .MuiFormControlLabel-label': {
-                  fontSize: '0.95rem',
-                },
-              }}
-            />
-          ))}
-        </Stack>
+        {loadingCategories ? (
+          <CircularProgress size={24} />
+        ) : (
+          <Stack spacing={1}>
+            {categories.map(category => (
+              <FormControlLabel
+                key={category.id}
+                control={
+                  <Checkbox
+                    checked={selectedCategories.includes(category.id)}
+                    onChange={() => toggleCategory(category.id)}
+                    color="primary"
+                  />
+                }
+                label={category.name}
+                sx={{
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.95rem',
+                  },
+                }}
+              />
+            ))}
+          </Stack>
+        )}
       </Box>
 
       <Divider sx={{ mb: 2 }} />
@@ -312,27 +283,55 @@ export default function Products() {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', py: { xs: 2, sm: 4, md: 6 }, px: { xs: 1, sm: 2 } }}>
-      {/* Mobile Filter Toolbar */}
-      {isMobile && (
-        <Box sx={{ mb: 3 }}>
-          <Button
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Search Bar */}
+      <Box sx={{ 
+        py: 2, 
+        px: { xs: 1, sm: 2, md: 3 },
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.mode === 'dark' ? 'grey.900' : 'background.paper',
+        sticky: 'top',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <TextField
             fullWidth
-            variant="contained"
-            startIcon={<FilterListIcon />}
-            onClick={() => setMobileDrawerOpen(true)}
-            sx={{
-              py: 1.2,
-              textTransform: 'none',
-              fontSize: '1rem',
+            placeholder="Search products..."
+            variant="outlined"
+            size="small"
+            value={searchText}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              setCurrentPage(1);
             }}
-          >
-            Show Filters {hasActiveFilters() && `(${selectedCategories.length + (priceRange.min > 0 || priceRange.max < 1000 ? 1 : 0)})`}
-          </Button>
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          {isMobile && (
+            <Button
+              variant="contained"
+              startIcon={<FilterListIcon />}
+              onClick={() => setMobileDrawerOpen(true)}
+              sx={{
+                textTransform: 'none',
+                whiteSpace: 'nowrap',
+                minWidth: 'fit-content',
+              }}
+              size="small"
+            >
+              Filters {hasActiveFilters() && `(${selectedCategories.length + (priceRange.min > 0 || priceRange.max < 1000 ? 1 : 0)})`}
+            </Button>
+          )}
         </Box>
-      )}
+      </Box>
 
-      <Box sx={{ display: 'flex', gap: { xs: 0, md: 3 } }}>
+      <Box sx={{ display: 'flex', gap: { xs: 0, md: 3 }, flex: 1, py: { xs: 2, sm: 4, md: 6 }, px: { xs: 1, sm: 2 } }}>
         {/* Sidebar - Hidden on Mobile */}
         {!isMobile && (
           <Box
@@ -340,7 +339,7 @@ export default function Products() {
               width: { md: '280px', lg: '300px' },
               flexShrink: 0,
               position: 'sticky',
-              top: 100,
+              top: 120,
               height: 'fit-content',
             }}
           >
@@ -393,34 +392,13 @@ export default function Products() {
               }}
             >
               {selectedCategories.length > 0
-                ? CATEGORIES.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
+                ? categories.find(cat => cat.id === selectedCategories[0])?.name || 'Products'
                 : 'All Products'}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
               Showing {filteredProducts.length === 0 ? 0 : Math.min(startIndex + 1, filteredProducts.length)}-
               {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
             </Typography>
-
-            {/* Search Bar */}
-            <TextField
-              fullWidth={isMobile}
-              sx={{ maxWidth: isMobile ? '100%' : '400px' }}
-              placeholder="Search products..."
-              variant="outlined"
-              size={isMobile ? 'small' : 'medium'}
-              value={searchText}
-              onChange={(e) => {
-                setSearchText(e.target.value);
-                setCurrentPage(1);
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
           </Box>
 
           {/* Products Grid */}
