@@ -6,7 +6,9 @@ import { Category } from "../models/category-model.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   const { name, description, price, category, brand, stock } = req.body;
-  if ([name, description, category, brand].some((field) => field?.trim() === "")) {
+  if (
+    [name, description, category, brand].some((field) => field?.trim() === "")
+  ) {
     throw new apiError(400, "All fields are required");
   }
   if (price === undefined || stock === undefined) {
@@ -19,18 +21,22 @@ const createProduct = asyncHandler(async (req, res) => {
   if (!req.files || req.files.length === 0) {
     throw new apiError(400, "Product images are required");
   }
-  
+
   const imageUrl = req.files?.map((file) => file.path);
   if (!imageUrl) {
     throw new apiError(400, "Product image is required");
   }
-  let categoryDoc = await Category.findOne({ category });
+  let categoryDoc = await Category.findById(category);
+
+  if (!categoryDoc) {
+    throw new apiError(400, "Invalid category");
+  }
 
   const product = new Product({
     name,
     description,
     price,
-    category,
+    category: categoryDoc._id,
     brand,
     stock,
     images: imageUrl,
@@ -54,6 +60,17 @@ const deleteProduct = asyncHandler(async (req, res) => {
   if (!product) {
     throw new apiError(404, "Product not found");
   }
+
+  const category = await Category.findById(product.category);
+  if (!category) {
+    throw new apiError(404, "Category not found");
+  }
+
+  await Category.findByIdAndUpdate(category._id, {
+    $inc: {
+      totalCount: -1,
+    },
+  });
 
   await Product.findByIdAndDelete(id);
 
@@ -81,7 +98,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     },
     {
       new: true,
-    }
+    },
   );
 
   return res
@@ -90,62 +107,39 @@ const updateProduct = asyncHandler(async (req, res) => {
       new apiResponse(
         200,
         updatedProduct,
-        "Product details updated successfully!!"
-      )
+        "Product details updated successfully!!",
+      ),
     );
 });
 
 const getProducts = asyncHandler(async (req, res) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const totalProducts = await Product.countDocuments();
 
-  const keyword = req.query.keyword
-    ? { name: { $regex: req.query.keyword, $options: "i" } }
-    : {};
-  const category = req.query.category ? { category: req.query.category } : {};
-  const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0;
-  const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : Infinity;
-  const priceFilter = { price: { $gte: minPrice, $lte: maxPrice } };
+  const products = await Product.find()
+    .populate("category")
+    .sort({ createdAt: -1 });
 
-  const query = { ...keyword, ...category, ...priceFilter };
-
-  let sortBy = {};
-  switch (req.query.sort) {
-    case "priceAsc":
-      sortBy = { price: 1 };
-      break;
-    case "priceDesc":
-      sortBy = { price: -1 };
-      break;
-    case "ratingDesc":
-      sortBy = { ratings: -1 };
-      break;
-    case "newest":
-      sortBy = { createdAt: -1 };
-      break;
-    default:
-      sortBy = { createdAt: -1 };
+  if (products.length === 0) {
+    return res
+      .status(200)
+      .json(
+        new apiResponse(
+          200,
+          { totalProducts: 0, products: [] },
+          "No products found",
+        ),
+      );
   }
-
-  const totalProducts = await Product.countDocuments(query);
-
-  const products = await Product.find(query)
-    .skip(skip)
-    .limit(limit)
-    .sort(sortBy);
 
   return res.status(200).json(
     new apiResponse(
       200,
       {
         totalProducts,
-        currentPage: page,
-        totalPages: Math.ceil(totalProducts / limit),
         products,
       },
-      "Products  fetched successfully!!!"
-    )
+      "All products fetched successfully",
+    ),
   );
 });
 
@@ -173,26 +167,20 @@ const getproductByName = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new apiResponse(200, product, "Product fetched successfully by name!")
+      new apiResponse(200, product, "Product fetched successfully by name!"),
     );
 });
 
-const getCategory = asyncHandler( async(req, res)=>{
+const getCategory = asyncHandler(async (req, res) => {
   const categories = await Category.find({});
-  if(!categories){
-    throw new apiError(400, "No category of products available")
+  if (!categories) {
+    throw new apiError(400, "No category of products available");
   }
 
   return res
-  .status(200)
-  .json(
-    new apiResponse(
-      200,
-      categories,
-      "Category fetched successfully!!"
-    )
-  )
-})
+    .status(200)
+    .json(new apiResponse(200, categories, "Category fetched successfully!!"));
+});
 
 export {
   createProduct,
@@ -201,5 +189,5 @@ export {
   getProducts,
   getProductById,
   getproductByName,
-  getCategory
+  getCategory,
 };
