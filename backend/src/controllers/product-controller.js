@@ -113,9 +113,31 @@ const updateProduct = asyncHandler(async (req, res) => {
 });
 
 const getProducts = asyncHandler(async (req, res) => {
-  const totalProducts = await Product.countDocuments();
+  const {category } = req.query;
 
-  const products = await Product.find()
+  let categoryFilter = {};
+  if (category) {
+    const categoryDoc = await Category.findOne({
+      category: { $regex: `^${category}$`, $options: "i" },
+    });
+
+    if (!categoryDoc) {
+      return res
+        .status(200)
+        .json(
+          new apiResponse(
+            200,
+            { totalProducts: 0, products: [] },
+            "No products found for this category",
+          ),
+        );
+    }
+
+    categoryFilter = { category: categoryDoc._id };
+  }
+  const totalProducts = await Product.countDocuments(categoryFilter);
+
+  const products = await Product.find(categoryFilter)
     .populate("category")
     .sort({ createdAt: -1 });
 
@@ -149,7 +171,10 @@ const getProductById = asyncHandler(async (req, res) => {
     throw new apiError(400, "Product ID is required");
   }
 
-  const product = await Product.findById(productId);
+  const product = await Product.findById(productId).populate("category");
+  if(!product){
+    throw new apiError(404, "Product not found!");
+  }
 
   return res
     .status(200)
@@ -162,7 +187,10 @@ const getproductByName = asyncHandler(async (req, res) => {
     throw new apiError(400, "Product name is required!");
   }
 
-  const product = await Product.findOne({ name });
+  const product = await Product.findOne({ name }).populate("category");
+  if(!product){
+    throw new apiError(404, "Product not found!")
+  }
 
   return res
     .status(200)
@@ -171,16 +199,89 @@ const getproductByName = asyncHandler(async (req, res) => {
     );
 });
 
-const getCategory = asyncHandler(async (req, res) => {
-  const categories = await Category.find({});
-  if (!categories) {
-    throw new apiError(400, "No category of products available");
+const searchProducts = asyncHandler(async (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const { category, minPrice, maxPrice, q } = req.query;
+
+  let keywordFilter = {};
+  if (q?.trim()) {
+    keywordFilter = {
+      $or: [
+        { name: { $regex: q.trim(), $options: "i" } },
+        { description: { $regex: q.trim(), $options: "i" } },
+      ],
+    };
+  }
+  let categoryFilter = {};
+  if (category) {
+    const categoryDoc = await Category.findOne({
+      category: { $regex: `^${category}$`, $options: "i" },
+    });
+
+    if (!categoryDoc) {
+      return res.status(200).json(
+        new apiResponse(
+          200,
+          {
+            totalProducts: 0,
+            currentPage: page,
+            totalPages: 0,
+            products: [],
+          },
+          "No products found for this category"
+        )
+      );
+    }
+
+    categoryFilter = { category: categoryDoc._id };
   }
 
-  return res
-    .status(200)
-    .json(new apiResponse(200, categories, "Category fetched successfully!!"));
+  const min = minPrice ? Number(minPrice) : 0;
+  const max = maxPrice ? Number(maxPrice) : Infinity;
+
+  const priceFilter = {
+    price: { $gte: min, $lte: max },
+  };
+
+  const query = {
+    ...keywordFilter,
+    ...categoryFilter,
+    ...priceFilter,
+  };
+
+  const sortMap = {
+    priceAsc: { price: 1 },
+    priceDesc: { price: -1 },
+    newest: { createdAt: -1 },
+    ratingDesc: { ratings: -1 },
+  };
+  const sortBy = sortMap[req.query.sort] || { createdAt: -1 };
+
+  const totalProducts = await Product.countDocuments(query);
+
+  const products = await Product.find(query)
+    .populate("category", "category image totalCount")
+    .skip(skip)
+    .limit(limit)
+    .sort(sortBy);
+
+  return res.status(200).json(
+    new apiResponse(
+      200,
+      {
+        totalProducts,
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        products,
+      },
+      "Products fetched successfully 🔍"
+    )
+  );
 });
+
 
 export {
   createProduct,
@@ -189,5 +290,5 @@ export {
   getProducts,
   getProductById,
   getproductByName,
-  getCategory,
+  searchProducts
 };

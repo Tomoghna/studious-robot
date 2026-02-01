@@ -22,8 +22,8 @@ export function CategoryProvider({ children }) {
 
   const fetchCategories = useCallback(async () => {
     try {
-        setLoading(true);
-        setError(null);
+      setLoading(true);
+      setError(null);
       const res = await fetch(`${API_URL}/api/v1/admin/category`, {
         credentials: "include",
       });
