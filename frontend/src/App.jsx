@@ -62,7 +62,7 @@ export default function App() {
                           </Typography>
                           <Box sx={{p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center'}}>
                             {categories.map((category) => (
-                              <MuiLink href={`/products?category=${category?.category?.replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
+                              <MuiLink href={`/products?category=${category.name.toLowerCase().replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
                                 <Card sx={{
                                   bgcolor: 'background.paper',
                                   transition: 'transform 0.3s ease-in-out',
@@ -78,7 +78,7 @@ export default function App() {
                                   <CardMedia
                                     component="img"
                                     image={category.image}
-                                    alt={category.category}
+                                    alt={category.name}
                                     sx={{
                                       aspectRatio: '1/1',
                                       objectFit: 'cover',
@@ -91,12 +91,12 @@ export default function App() {
                                       variant="subtitle1"
                                       sx={{fontWeight: 600, mb: 0.5}}
                                     >
-                                      {category.category}
+                                      {category.name}
                                     </Typography>
                                     <Typography
                                       variant="caption"
                                       color="textSecondary">
-                                        {category.totalCount} items
+                                        {category.count} items
                                       </Typography>
                                   </CardContent>
                                 </Card>
