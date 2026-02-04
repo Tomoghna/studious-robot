@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useCategories } from '../contexts/CategoryContext';
 import { useSearchParams } from 'react-router-dom';
@@ -418,9 +418,9 @@ export default function Products() {
                 }}
               >
                 {paginatedProducts.map((product) => (
-                  <Suspense key={product.id} fallback={<ProductCardSkeleton/>}>
+                  <Suspense key={product._id} fallback={<ProductCardSkeleton/>}>
                     <Box
-                      key={product.id}
+                      key={product._id}
                       sx={{
                         display: 'flex',
                         flexDirection: 'column',

@@ -23,6 +23,7 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
+import { useAuthModal } from "../contexts/AuthModalContext";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -40,6 +41,7 @@ export default function ProductDetail() {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const { fetchUser, user } = useAuth();
+  const { openLogin } = useAuthModal();
   const { showSnackbar } = useSnackbar();
 
   async function fetchProductById() {
@@ -116,6 +118,10 @@ export default function ProductDetail() {
 
   const handleAddReview = () => {
     if (!reviewText.trim()) return;
+    if(!user){
+      openLogin();
+      return;
+    }
     (async () => {
       try {
         const payload = {
@@ -275,7 +281,7 @@ export default function ProductDetail() {
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button variant="contained" onClick={handleBuyNow} fullWidth>
-                Buy Now - ${(product.price * quantity).toFixed(2)}
+                Buy Now: ${(product.price * quantity).toFixed(2)}
               </Button>
               <Button variant="outlined" onClick={handleAddToCart} fullWidth>
                 Add to Cart
@@ -323,8 +329,8 @@ export default function ProductDetail() {
                 fullWidth
               />
               <Rating
-                value={reviewRating || 5}
-                onChange={(e, v) => setReviewRating(v || 5)}
+                value={reviewRating || 0}
+                onChange={(e, v) => setReviewRating(v || 0)}
               />
               <TextField
                 label="Review"
