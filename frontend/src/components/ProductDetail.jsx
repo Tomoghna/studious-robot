@@ -52,7 +52,6 @@ export default function ProductDetail() {
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data)
         setProduct(data.data);
         setReviews(data.data.reviews || []);
       }
@@ -255,7 +254,7 @@ export default function ProductDetail() {
               <Typography variant="subtitle2" color="text.secondary">
                 Category:
               </Typography>
-              <Typography>{product?.category.category.replace("-", " ")}</Typography>
+              <Typography>{product.category.replace("-", " ")}</Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
