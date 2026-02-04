@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useCategories } from '../contexts/CategoryContext';
 import { useSearchParams } from 'react-router-dom';
@@ -142,7 +142,7 @@ const PriceFilter = ({ priceRange, onChange }) => {
 };
 
 export default function Products() {
-  const { products, isLoading } = useProducts();
+  const { products } = useProducts();
   const { categories, loading: loadingCategories } = useCategories();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -196,7 +196,7 @@ export default function Products() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = searchText.trim() === '' || product.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesCategory = selectedCategories.length > 0
-      ? selectedCategories.includes(product.category.category)
+      ? selectedCategories.includes(product.category)
       : true;
     const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
     return matchesCategory && matchesPrice && matchesSearch;
@@ -257,15 +257,15 @@ export default function Products() {
           <Stack spacing={1}>
             {categories.map(category => (
               <FormControlLabel
-                key={category._id}
+                key={category.id}
                 control={
                   <Checkbox
-                    checked={selectedCategories.includes(category.category)}
-                    onChange={() => toggleCategory(category.category)}
+                    checked={selectedCategories.includes(category.id)}
+                    onChange={() => toggleCategory(category.id)}
                     color="primary"
                   />
                 }
-                label={category.category}
+                label={category.name}
                 sx={{
                   '& .MuiFormControlLabel-label': {
                     fontSize: '0.95rem',
@@ -281,14 +281,6 @@ export default function Products() {
       <PriceFilter priceRange={priceRange} onChange={handlePriceChange} />
     </Paper>
   );
-
-  if(isLoading){
-    return(
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    )
-  }
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -426,9 +418,9 @@ export default function Products() {
                 }}
               >
                 {paginatedProducts.map((product) => (
-                  <Suspense key={product.id} fallback={<ProductCardSkeleton/>}>
+                  <Suspense key={product._id} fallback={<ProductCardSkeleton/>}>
                     <Box
-                      key={product.id}
+                      key={product._id}
                       sx={{
                         display: 'flex',
                         flexDirection: 'column',
