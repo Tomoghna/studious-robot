@@ -12,6 +12,8 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from "../contexts/AuthContext";
 import LoginModal from "./LoginModal";
+import { getAvatarFromEmail } from '../utils/getAvatarFromEmail';
+import Avatar from '@mui/material/Avatar';
 
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ export default function BottomNav() {
         <BottomNavigationAction label="Products" icon={<StorefrontIcon />} onClick={() => navigate('/products')} />
         <BottomNavigationAction label="Wishlist" icon={<FavoriteIcon />} onClick={() => navigate('/wishlist')} />
         <BottomNavigationAction label="Cart" icon={<ShoppingCartIcon />} onClick={() => navigate('/cart')} />
-        <BottomNavigationAction label="Account" icon={<AccountCircleIcon />} onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate('/LoginPage')}}} />
+        <BottomNavigationAction label="Account" icon={user ? ( <Avatar src={getAvatarFromEmail(user.email)} sx={{ width: 24, height: 24 }} /> ) : ( <AccountCircleIcon /> )} onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate('/LoginPage')}}} />
       </BottomNavigation>
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}/>
     </Paper>

@@ -30,6 +30,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
+import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 
 import { useProducts } from "../contexts/ProductContext";
 import { useWishlist } from "../contexts/WishlistContext";
@@ -149,7 +150,7 @@ const Navbar = () => {
       <Divider />
       <Box sx={{ p: 2 }}>{user ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar src={user.avatar} alt={user.name} />
+          <Avatar src={getAvatarFromEmail(user.email)} alt={user.name} />
           <Box>
             <Typography variant="subtitle1">{user.name}</Typography>
             <Typography variant="caption" color="text.secondary">{user.email}</Typography>
