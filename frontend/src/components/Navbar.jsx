@@ -44,7 +44,6 @@ const API_URL = import.meta.env.VITE_SERVER_URL;
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { searchProducts, searchQuery } = useProducts();
   const { wishlistItems } = useWishlist();
   const { getCartItemCount } = useCart();
   const { mode, toggleTheme } = UseThemeMode();
@@ -201,9 +200,14 @@ const Navbar = () => {
 
           {/* wishlist and cart removed from top navbar per migration to MUI BottomNav */}
 
-          <IconButton color="inherit" onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate(user.role === 'admin' ? '/admin' : '/account'); } }} aria-label="account">
-            {user ? <Avatar src={user.avatar} sx={{ width: 32, height: 32 }} /> : <AccountCircle />}
-          </IconButton>
+          {user?.role === "admin" && (
+            <IconButton
+              color="inherit"
+              onClick={() => navigate("/admin")}
+            >
+              <Inventory2Icon />
+            </IconButton>
+          )}
         </Box>
       </Toolbar>
 

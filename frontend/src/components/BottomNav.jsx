@@ -10,12 +10,17 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { useAuth } from "../contexts/AuthContext";
+import LoginModal from "./LoginModal";
 
 export default function BottomNav() {
   const navigate = useNavigate();
+  const {user, logout} = useAuth();
   const { getCartItemCount } = useCart();
   const { wishlistItems } = useWishlist();
   const [value, setValue] = React.useState(0);
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = React.useState(false);
 
   return (
     <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, display: { md: 'none' } }} elevation={3}>
@@ -30,8 +35,9 @@ export default function BottomNav() {
         <BottomNavigationAction label="Products" icon={<StorefrontIcon />} onClick={() => navigate('/products')} />
         <BottomNavigationAction label="Wishlist" icon={<FavoriteIcon />} onClick={() => navigate('/wishlist')} />
         <BottomNavigationAction label="Cart" icon={<ShoppingCartIcon />} onClick={() => navigate('/cart')} />
-        <BottomNavigationAction label="Account" icon={<AccountCircleIcon />} onClick={() => navigate('/LoginPage')} />
+        <BottomNavigationAction label="Account" icon={<AccountCircleIcon />} onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate('/LoginPage')}}} />
       </BottomNavigation>
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}/>
     </Paper>
   );
 }
