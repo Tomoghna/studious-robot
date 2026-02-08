@@ -5,7 +5,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import {AuthProvider} from "./contexts/AuthContext.jsx";
-import {SnackbarProvider} from "./contexts/SnackbarContext";
+import { AlertProvider } from "./contexts/AlertContext.jsx";
+import { SnackbarProvider } from "./contexts/SnackbarContext.jsx";
 import {ThemeModeProvider} from "./contexts/ThemeContext";
 import { AuthModalProvider } from './contexts/AuthModalContext';
 import { CategoryProvider } from "./contexts/CategoryContext.jsx";
@@ -13,15 +14,17 @@ import { CategoryProvider } from "./contexts/CategoryContext.jsx";
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeModeProvider>
-      <SnackbarProvider>
-        <AuthProvider>
-          <AuthModalProvider>
-            <CategoryProvider>
-              <App />
-            </CategoryProvider>
-          </AuthModalProvider>
-        </AuthProvider>
-      </SnackbarProvider>
+      <AlertProvider>
+        <SnackbarProvider>
+          <AuthProvider>
+            <AuthModalProvider>
+              <CategoryProvider>
+                <App />
+              </CategoryProvider>
+            </AuthModalProvider>
+          </AuthProvider>
+        </SnackbarProvider>
+      </AlertProvider>
     </ThemeModeProvider>
   </React.StrictMode>
 );

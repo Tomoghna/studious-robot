@@ -60,10 +60,10 @@ export function WishlistProvider({ children }) {
         const res = await fetch(`${API_URL}/api/v1/users/addtowhislist/${productId}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
         console.log('addToWishlist response', data);
-        if (res.ok) showSnackbar(data.message || 'Added to wishlist', 'success');
+        if (res.ok) showSnackbar(data.message || 'Added to wishlist', { severity: 'success' });
       } catch (err) {
         console.error('addToWishlist error', err);
-        showSnackbar('Network error while adding to wishlist', 'error');
+        showSnackbar('Network error while adding to wishlist', { severity: 'error' });
       }
     })();
   };
@@ -75,10 +75,10 @@ export function WishlistProvider({ children }) {
       try {
         const res = await fetch(`${API_URL}/api/v1/users/removefromwhislist/${productId}`, { method: 'DELETE', credentials: 'include' });
         const data = await res.json();
-        if (res.ok) showSnackbar(data.message || 'Failed to remove from wishlist', 'success');
+        if (res.ok) showSnackbar(data.message || 'Removed from wishlist', { severity: 'success' });
       } catch (err) {
         console.error('removeFromWishlist error', err);
-        showSnackbar('Network error while removing from wishlist', 'error');
+        showSnackbar('Network error while removing from wishlist', { severity: 'error' });
       }
     })();
   };

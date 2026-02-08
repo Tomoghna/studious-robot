@@ -4,8 +4,6 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import HomeIcon from '@mui/icons-material/Home';
@@ -20,7 +18,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
-import InputBase from '@mui/material/InputBase';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -32,7 +29,7 @@ import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 
-import { useProducts } from "../contexts/ProductContext";
+
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";

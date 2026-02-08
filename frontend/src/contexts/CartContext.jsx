@@ -71,11 +71,11 @@ export function CartProvider({ children }) {
         const res = await fetch(`${API_URL}/api/v1/users/cart/add/${product._id}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
         if (res.ok) {
-          showSnackbar(data.message || 'Failed to add to cart', 'success');
+          showSnackbar(data.message || 'Added to cart', { severity: 'success' });
         }
       } catch (err) {
         console.error('addToCart error', err);
-        showSnackbar('Network error while adding to cart', 'error');
+        showSnackbar('Network error while adding to cart', { severity: 'error' });
       }
     })();
   };
@@ -87,10 +87,10 @@ export function CartProvider({ children }) {
       try {
         const res = await fetch(`${API_URL}/api/v1/users/cart/remove/${productId}`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
-        if (res.ok) showSnackbar(data.message || 'Failed to remove from cart', 'success');
+        if (res.ok) showSnackbar(data.message || 'Removed from cart', { severity: 'success' });
       } catch (err) {
         console.error('removeFromCart error', err);
-        showSnackbar('Network error while removing from cart', 'error');
+        showSnackbar('Network error while removing from cart', { severity: 'error' });
       }
     })();
   };
