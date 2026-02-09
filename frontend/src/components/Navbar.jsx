@@ -4,8 +4,6 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import HomeIcon from '@mui/icons-material/Home';
@@ -20,7 +18,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
-import InputBase from '@mui/material/InputBase';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -30,8 +27,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
+import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 
-import { useProducts } from "../contexts/ProductContext";
+
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -44,7 +42,6 @@ const API_URL = import.meta.env.VITE_SERVER_URL;
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { searchProducts, searchQuery } = useProducts();
   const { wishlistItems } = useWishlist();
   const { getCartItemCount } = useCart();
   const { mode, toggleTheme } = UseThemeMode();
@@ -150,7 +147,7 @@ const Navbar = () => {
       <Divider />
       <Box sx={{ p: 2 }}>{user ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar src={user.avatar} alt={user.name} />
+          <Avatar src={getAvatarFromEmail(user.email)} alt={user.name} />
           <Box>
             <Typography variant="subtitle1">{user.name}</Typography>
             <Typography variant="caption" color="text.secondary">{user.email}</Typography>
@@ -201,9 +198,14 @@ const Navbar = () => {
 
           {/* wishlist and cart removed from top navbar per migration to MUI BottomNav */}
 
-          <IconButton color="inherit" onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate(user.role === 'admin' ? '/admin' : '/account'); } }} aria-label="account">
-            {user ? <Avatar src={user.avatar} sx={{ width: 32, height: 32 }} /> : <AccountCircle />}
-          </IconButton>
+          {user?.role === "admin" && (
+            <IconButton
+              color="inherit"
+              onClick={() => navigate("/admin")}
+            >
+              <Inventory2Icon />
+            </IconButton>
+          )}
         </Box>
       </Toolbar>
 

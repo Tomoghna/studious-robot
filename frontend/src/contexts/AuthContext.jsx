@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { useSnackbar } from "./SnackbarContext";
+import { useAlert } from "./AlertContext";
 
 const AuthContext = createContext();
 
@@ -10,7 +10,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
 
   const API_URL = import.meta.env.VITE_SERVER_URL; //Replace with the backend url
 
@@ -25,16 +25,16 @@ export function AuthProvider({ children }) {
       const data = await res.json();
       if (res.ok && data.data?.user) {
         setUser(data.data.user);
-        showSnackbar(data.message, "success", 3000);
+        showAlert(data.message, "success", 3000);
         return data.data.user;
       }
       else {
-        showSnackbar(data.message || "Login failed", "error", 3000);
+        showAlert(data.message || "Login failed", "error", 3000);
         throw new Error(data.message || "Login failed");
       }
     }
     catch (err) {
-      showSnackbar("Network or server error", "error", 2000);
+      showAlert("Network or server error", "error", 2000);
       console.error(err);
       throw err;
     }
@@ -52,16 +52,16 @@ export function AuthProvider({ children }) {
       const data = await res.json();
       if (res.ok && data.data?.user) {
         setUser(data.data.user);
-        showSnackbar(data.message, "success", 2000);
+        showAlert(data.message, "success", 2000);
         return data.data.user;
       }
       else {
-        showSnackbar(data.message || "Signup failed", "error", 3000);
+        showAlert(data.message || "Signup failed", "error", 3000);
         throw new Error(data.message || "Signup failed");
       }
     }
     catch (err) {
-      showSnackbar("Signup error!", "error", 4000);
+      showAlert("Signup error!", "error", 4000);
       console.error(err);
       throw err;
     }
@@ -76,10 +76,10 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       setUser(null);
-      showSnackbar(data.message, "success", 2000);
+      showAlert(data.message, "success", 2000);
     }
     catch (err) {
-      showSnackbar("Logout failed", "error", 2000);
+      showAlert("Logout failed", "error", 2000);
     }
   };
 
