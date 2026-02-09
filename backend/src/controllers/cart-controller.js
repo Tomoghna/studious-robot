@@ -142,5 +142,5 @@ export {
     addToCart,
     getCart,
     removeFromCart,
-    removeItemCart
+    removeItemCart,
 }

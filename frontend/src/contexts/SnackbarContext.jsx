@@ -1,55 +1,77 @@
-import React, {createContext, useContext, useState, useCallback, useEffect} from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import Slide from "@mui/material/Slide";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 const SnackbarContext = createContext();
-
 export const useSnackbar = () => useContext(SnackbarContext);
 
+export const SnackbarProvider = ({ children }) => {
+  const [queue, setQueue] = useState([]);
+  const [current, setCurrent] = useState(null);
 
-function SlideTransition(props) {
-    return <Slide {...props} direction="down"/>;
-}
+  // 👉 Add snackbar to queue
+  const showSnackbar = useCallback((message, options = {}) => {
+    setQueue((prev) => [...prev, { message, ...options }]);
+  }, []);
 
+  // 👉 When one finishes, show next
+  React.useEffect(() => {
+    if (!current && queue.length > 0) {
+      setCurrent(queue[0]);
+      setQueue((prev) => prev.slice(1));
+    }
+  }, [queue, current]);
 
-export const SnackbarProvider = ({children}) => {
-    const [snackPack, setSnackPack] = useState([]);
-    const [open, setOpen] = useState(false);
-    const [messageInfo, setMessageInfo] = useState(undefined);
+  const handleClose = (_, reason) => {
+    if (reason === "clickaway") return;
+    setCurrent(null);
+  };
 
-    const showSnackbar = useCallback((message, severity = "info", duration = 3000) => {
-        setSnackPack((prev) => [...prev, {message, severity, duration, key: new Date().getTime()}]);
-    }, []);
+  return (
+    <SnackbarContext.Provider value={{ showSnackbar }}>
+      {children}
 
-    useEffect(() => {
-        if (snackPack.length && !messageInfo) {
-            setMessageInfo({...snackPack[0]});
-            setSnackPack((prev) => prev.slice(1));
-            setOpen(true);
-        }
-        else if (snackPack.length && messageInfo && open) {
-            setOpen(false);
-        }
-    }, [snackPack, messageInfo, open]);
-
-    const handleClose = (event, reason) => {
-        if (reason === "clickaway") return;
-        setOpen(false);
-    };
-
-    const handleExited = () => {
-        setMessageInfo(undefined);
-    };
-
-    return (
-        <SnackbarContext.Provider value={{showSnackbar}}>
-            {children}
-            <Snackbar key={messageInfo ? messageInfo.key : undefined} open={open} autoHideDuration={messageInfo?.duration || 3000} onClose={handleClose} TransitionProps={{onExited: handleExited}} TransitionComponent={SlideTransition} anchorOrigin={{vertical: "top", horizontal: "center"}}>
-                {messageInfo ? (
-                    <Alert onClose={handleClose} severity={messageInfo.severity} variant="filled" sx={{ width: "100%", boxShadow: 2, borderRadius: "12px",}}>{messageInfo.message}</Alert>
-                ): null}
-            </Snackbar>
-        </SnackbarContext.Provider>
-    );
+      {current && (
+        <Snackbar
+          open
+          autoHideDuration={3000}
+          onClose={handleClose}
+        >
+          <Alert
+            onClose={handleClose}
+            severity={current.severity || "info"}
+            variant="filled"
+            action={
+              <>
+                {current.undo && (
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      current.undo();
+                      handleClose();
+                    }}
+                  >
+                    UNDO
+                  </Button>
+                )}
+                <IconButton
+                  size="small"
+                  color="inherit"
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
+          >
+            {current.message}
+          </Alert>
+        </Snackbar>
+      )}
+    </SnackbarContext.Provider>
+  );
 };

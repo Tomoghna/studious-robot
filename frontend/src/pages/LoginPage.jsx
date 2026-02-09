@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
 import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, Card, CardContent, CardActions } from '@mui/material';
+import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -185,7 +186,7 @@ const LoginPage = () => {
           <TabPanel value={tabIndex} index={0}>
             <Grid container spacing={2} alignItems="center">
               <Grid item>
-                <Avatar sx={{ width: 72, height: 72 }}>{(user.name || 'U')[0]}</Avatar>
+                <Avatar src={getAvatarFromEmail(user.email)} sx={{ width: 72, height: 72 }}>{(user.name || 'U')[0]}</Avatar>
               </Grid>
               <Grid item xs>
                 <TextField label="Name" fullWidth value={name} onChange={e => { setName(e.target.value); setFormChanged(true); }} sx={{ mb: 1 }} />

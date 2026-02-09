@@ -67,11 +67,6 @@ const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
     return (
         <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
-                <Button variant="outlined" color="inherit" startIcon={<GoogleIcon/>} fullWidth>Continue with Google</Button>
-                <Button variant="outlined" color="inherit" startIcon={<SmartphoneIcon/>} fullWidth>Continue with Mobile</Button>
-
-                <Divider>or</Divider>
-
                 {mode === "signup" && (
                     <TextField label="Full Name" variant="outlined" fullWidth value={name} onChange={(e) => setName(e.target.value)} required/>
                 )}
