@@ -58,9 +58,9 @@ const LoginPage = () => {
 
   const loadOrders = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/orders`, { credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/v1/users/orders/`, { credentials: 'include' });
       const data = await res.json();
-      if (res.ok) setOrders(data.orders || []);
+      if (res.ok) setOrders(data.data || []);
       else showSnackbar(data.message || 'Failed to fetch orders', 'error');
     } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
   };
@@ -268,7 +268,7 @@ const LoginPage = () => {
                   <Card variant="outlined">
                     <CardContent>
                       <Typography fontWeight={600}>Order #{o._id || o.id}</Typography>
-                      <Typography>Status: {o.status}</Typography>
+                      <Typography>Status: {o.orderStatus}</Typography>
                       <Typography>Items: {o.items?.map(i => i.name).join(', ') || o.items}</Typography>
                     </CardContent>
                     <CardActions>
@@ -284,10 +284,12 @@ const LoginPage = () => {
             {selectedOrder && (
               <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 <Typography variant="h6">Order Details</Typography>
-                <Typography>Order ID: {selectedOrder._id || selectedOrder.id}</Typography>
-                <Typography>Status: {selectedOrder.status}</Typography>
-                <Typography>Amount: {selectedOrder.amount || selectedOrder.total}</Typography>
+                <Typography>Order ID: {selectedOrder._id}</Typography>
+                <Typography>Status: {selectedOrder.orderStatus}</Typography>
+                <Typography>Amount: {selectedOrder.productPrice}</Typography>
                 <Typography>Items: {(selectedOrder.items || []).map(it => it.name).join(', ')}</Typography>
+                <Typography>payment: {selectedOrder.payment.method}</Typography>
+                <Typography>Address: {selectedOrder.shippingAddress}</Typography>
                 <Box sx={{ mt: 1 }}>
                   <Button onClick={() => setSelectedOrder(null)}>Close</Button>
                 </Box>
