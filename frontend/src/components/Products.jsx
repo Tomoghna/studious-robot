@@ -142,7 +142,7 @@ const PriceFilter = ({ priceRange, onChange }) => {
 };
 
 export default function Products() {
-  const { products } = useProducts();
+  const { products, isLoading } = useProducts();
   const { categories, loading: loadingCategories } = useCategories();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -196,7 +196,7 @@ export default function Products() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = searchText.trim() === '' || product.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesCategory = selectedCategories.length > 0
-      ? selectedCategories.includes(product.category)
+      ? selectedCategories.includes(product.category.category)
       : true;
     const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
     return matchesCategory && matchesPrice && matchesSearch;
@@ -257,15 +257,15 @@ export default function Products() {
           <Stack spacing={1}>
             {categories.map(category => (
               <FormControlLabel
-                key={category.id}
+                key={category._id}
                 control={
                   <Checkbox
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={() => toggleCategory(category.id)}
+                    checked={selectedCategories.includes(category.category)}
+                    onChange={() => toggleCategory(category.category)}
                     color="primary"
                   />
                 }
-                label={category.name}
+                label={category.category}
                 sx={{
                   '& .MuiFormControlLabel-label': {
                     fontSize: '0.95rem',
@@ -281,6 +281,14 @@ export default function Products() {
       <PriceFilter priceRange={priceRange} onChange={handlePriceChange} />
     </Paper>
   );
+
+  if(isLoading){
+    return(
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

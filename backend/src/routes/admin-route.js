@@ -73,6 +73,6 @@ router
   );
 router
   .route("/category")
-  .get(authMiddleware, authorizeRoles("admin"), restrictToIPs, getCategory);
+  .get(getCategory);
 
 export default router;
