@@ -42,7 +42,7 @@ const TABS = [
 function ProductsTab({ onNotify }) {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
-  const { categories, loading: categoriesLoading } = useCategories();
+  const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -60,6 +60,7 @@ function ProductsTab({ onNotify }) {
       const data = await res.json();
       if (res.ok && data.data) {
         setProducts(data.data.products);
+        refreshCategories();
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -118,10 +119,6 @@ function ProductsTab({ onNotify }) {
 
     form.newImages.forEach((img, idx) => {
       formData.append("images", img.file);
-    });
-
-    formData.forEach((value, key) => {
-      console.log(key, value);
     });
 
     try {
@@ -418,7 +415,7 @@ function ProductsTab({ onNotify }) {
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.price}</TableCell>
                 <TableCell>{p.stock}</TableCell>
-                <TableCell>{p.category}</TableCell>
+                <TableCell>{p.category.category}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => startEdit(p)}>
                     <EditIcon />
@@ -437,7 +434,7 @@ function ProductsTab({ onNotify }) {
 }
 
 function CategoriesTab({ onNotify }) {
-  const { categories, loading: categoriesLoading } = useCategories();
+  const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     name: "",
@@ -487,7 +484,7 @@ function CategoriesTab({ onNotify }) {
       if (res.ok) {
         onNotify && onNotify(data.message, "success");
         setForm({ name: "", image: null, preview: null });
-        fetchCategories();
+        refreshCategories();
       } else throw new Error(data.message || "Failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Create failed", "error");
@@ -504,7 +501,7 @@ function CategoriesTab({ onNotify }) {
       const data = await res.json();
       if (res.ok) {
         onNotify && onNotify(data.message, "success");
-        fetchCategories();
+        refreshCategories();
       } else throw new Error(data.message || "Delete failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Delete failed", "error");
@@ -546,7 +543,7 @@ function CategoriesTab({ onNotify }) {
         onNotify && onNotify(data.message, "success");
         setEditing(null);
         setForm({ name: "", image: null, preview: null });
-        fetchCategories();
+        refreshCategories();
       } else throw new Error(data.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");

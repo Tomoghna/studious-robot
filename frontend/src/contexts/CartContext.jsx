@@ -165,19 +165,27 @@ export function CartProvider({ children }) {
       try {
         if (delta > 0) {
           for (let i = 0; i < delta; i++) {
-            await fetch(`${API_URL}/api/v1/users/cart/add/${productId}`, {
+            const res = await fetch(`${API_URL}/api/v1/users/cart/add/${productId}`, {
               method: "POST",
               credentials: "include",
+              body: JSON.stringify({ quantity: 1 }),
+              headers: {
+                "Content-Type": "application/json",
+              },
             });
-            loadServerCart();
+            if(res.ok){
+              loadServerCart();
+            }
           }
         } else if (delta < 0) {
           for (let i = 0; i < Math.abs(delta); i++) {
-            await fetch(`${API_URL}/api/v1/users/cart/remove/${productId}`, {
+            const res = await fetch(`${API_URL}/api/v1/users/cart/remove/${productId}`, {
               method: "POST",
               credentials: "include",
             });
-            loadServerCart();
+            if(res.ok){
+              loadServerCart();
+            }
           }
         }
       } catch (err) {

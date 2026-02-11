@@ -24,6 +24,7 @@ import Stack from "@mui/material/Stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAuthModal } from "../contexts/AuthModalContext";
+import { CircularProgress } from "@mui/material";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -67,14 +68,12 @@ export default function ProductDetail() {
     fetchProductById();
   }, [id]);
 
-  if (loading) {
-    return (
-      <Container sx={{ py: 8, textAlign: "center" }}>
-        <Typography variant="h4" gutterBottom>
-          Loading...
-        </Typography>
-      </Container>
-    );
+  if(loading){
+    return(
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
   }
 
   if (!product) {
@@ -260,7 +259,7 @@ export default function ProductDetail() {
               <Typography variant="subtitle2" color="text.secondary">
                 Category:
               </Typography>
-              <Typography>{product.category.replace("-", " ")}</Typography>
+              <Typography>{product?.category.category.replace("-", " ")}</Typography>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
