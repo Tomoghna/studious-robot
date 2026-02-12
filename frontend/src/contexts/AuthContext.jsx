@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useAlert } from "./AlertContext";
+import api from "../utils/api";
 
 const AuthContext = createContext();
 
@@ -70,7 +71,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/logout`, {
+      const res = await api.get(`${API_URL}/api/v1/users/logout`, {
         method: "POST",
         credentials: "include",
       });
