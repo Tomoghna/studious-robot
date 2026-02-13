@@ -83,9 +83,21 @@ const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { price, stock } = req.body;
 
+  if (price === undefined || stock === undefined) {
+    throw new apiError(400, "Price and stock are required");
+  }
+
+  if (price <= 0 || stock < 0) {
+    throw new apiError(400, "Invalid price or stock value");
+  }
+
+  let imageUrl;
+  if(req.file?.length){
+    imageUrl = req.files?.map((file) => file.path);
+  }
   const product = await Product.findById(id);
   if (!product) {
-    new apiError(404, "Product not found");
+    throw new apiError(404, "Product not found");
   }
 
   const updatedProduct = await Product.findByIdAndUpdate(
@@ -94,6 +106,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       $set: {
         price,
         stock,
+        images: imageUrl
       },
     },
     {

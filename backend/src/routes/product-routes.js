@@ -26,6 +26,7 @@ router.route("/delete/:id").delete(
 router.route("/update/:id").patch(
     authMiddleware, 
     authorizeRoles("admin"), 
+    upload.array("images", 5),
     updateProduct
 );
 export default router;
