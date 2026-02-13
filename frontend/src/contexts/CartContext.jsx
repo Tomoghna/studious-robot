@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useSnackbar } from "./SnackbarContext";
 import { useAuthModal } from "./AuthModalContext";
+import api from "../utils/api";
 
 const CartContext = createContext();
 
@@ -25,12 +26,9 @@ export function CartProvider({ children }) {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/cart`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok && data.data) {
-        const mapped = data.data.items.map((i) => ({
+      const res = await api.get(`${API_URL}/api/v1/users/cart`);
+      if (res.status === 200 && res.data?.data) {
+        const mapped = res.data.data.items.map((i) => ({
           _id: i.product._id || i.product,
           name: i.product.name,
           price: i.price,
@@ -72,23 +70,16 @@ export function CartProvider({ children }) {
     // sync to server
     (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/users/cart/add/${product._id}`,{ 
-            method: "POST", 
-            credentials: "include",
-            body: JSON.stringify({ quantity }),
-            headers:{
-              "Content-Type": "application/json"
-            }
-          });
-        const data = await res.json();
-        if (res.ok) {
+        const res = await api.post(`${API_URL}/api/v1/users/cart/add/${product._id}`,{
+          quantity
+        });
+        if (res.status === 200) {
           loadServerCart();
-          showSnackbar(data.message || "Failed to add to cart", "success");
+          showSnackbar(res.data?.message || "Failed to add to cart", "success");
         }
       } catch (err) {
         console.error("addToCart error", err);
-        showSnackbar("Network error while adding to cart", "error");
+        showSnackbar(err.message || "Network error while adding to cart", "error");
       }
     })();
   };
@@ -101,18 +92,14 @@ export function CartProvider({ children }) {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
     (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/users/cart/remove/${productId}`,
-          { method: "POST", credentials: "include" },
-        );
-        const data = await res.json();
-        if (res.ok) {
+        const res = await api.post(`${API_URL}/api/v1/users/cart/remove/${productId}`,);
+        if (res.status === 200) {
           loadServerCart();
-          showSnackbar(data.message || "Failed to remove from cart", "success");
+          showSnackbar(res.data?.message || "Failed to remove from cart", "success");
         }
       } catch (err) {
         console.error("removeFromCart error", err);
-        showSnackbar("Network error while removing from cart", "error");
+        showSnackbar(err.message ||"Network error while removing from cart", "error");
       }
     })();
   };
@@ -125,21 +112,14 @@ export function CartProvider({ children }) {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
     (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/users/cart/remove-item/${productId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
-        const data = await res.json();
-        if (res.ok) {
+        const res = await api.delete(`${API_URL}/api/v1/users/cart/remove-item/${productId}`);
+        if (res.status === 200) {
           loadServerCart();
-          showSnackbar(data.message || "Failed to remove from cart", "success");
+          showSnackbar(res.data?.message || "Failed to remove from cart", "success");
         }
       } catch (error) {
         console.error("removeItemCart error", error);
-        showSnackbar("Network error while removing from cart", "error");
+        showSnackbar(error.message || "Network error while removing from cart", "error");
       }
     })();
   };
@@ -165,25 +145,17 @@ export function CartProvider({ children }) {
       try {
         if (delta > 0) {
           for (let i = 0; i < delta; i++) {
-            const res = await fetch(`${API_URL}/api/v1/users/cart/add/${productId}`, {
-              method: "POST",
-              credentials: "include",
-              body: JSON.stringify({ quantity: 1 }),
-              headers: {
-                "Content-Type": "application/json",
-              },
+            const res = await api.post(`${API_URL}/api/v1/users/cart/add/${productId}`, {
+              quantity: 1
             });
-            if(res.ok){
+            if(res.status === 200){
               loadServerCart();
             }
           }
         } else if (delta < 0) {
           for (let i = 0; i < Math.abs(delta); i++) {
-            const res = await fetch(`${API_URL}/api/v1/users/cart/remove/${productId}`, {
-              method: "POST",
-              credentials: "include",
-            });
-            if(res.ok){
+            const res = await api.post(`${API_URL}/api/v1/users/cart/remove/${productId}`);
+            if(res.status === 200){
               loadServerCart();
             }
           }
@@ -213,6 +185,7 @@ export function CartProvider({ children }) {
     getCartItemCount,
     getCartTotal,
     removeItemCart,
+    isLoading
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

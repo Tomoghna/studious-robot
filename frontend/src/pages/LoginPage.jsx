@@ -4,6 +4,7 @@ import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
 import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, Card, CardContent, CardActions } from '@mui/material';
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
+import api from "../utils/api";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -58,28 +59,21 @@ const LoginPage = () => {
 
   const loadOrders = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/orders/`, { credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setOrders(data.data || []);
-      else showSnackbar(data.message || 'Failed to fetch orders', 'error');
-    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+      const res = await api.get(`${API_URL}/api/v1/users/orders/`);
+      if (res.status === 200) setOrders(res.data?.data || []);
+      else showSnackbar(res.data.message || 'Failed to fetch orders', 'error');
+    } catch (err) { console.error(err); showSnackbar(err.message || 'Network error', 'error'); }
   };
 
   const handleProfileSave = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/saveprofile`, {
-        method: 'PATCH', 
-        credentials: 'include', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name,phone })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showSnackbar(data.message, 'success');
+      const res = await api.patch(`${API_URL}/api/v1/users/saveprofile`, { name,phone });
+      if (res.status === 200) {
+        showSnackbar(res.data.message, 'success');
         await fetchUser();
         setFormChanged(false);
-      } else showSnackbar(data.message || 'Update failed', 'error');
-    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+      } else showSnackbar(res.data.message || 'Update failed', 'error');
+    } catch (err) { console.error(err); showSnackbar(err.message || 'Network error', 'error'); }
   };
 
   const handleInput = (e) => {
@@ -97,21 +91,15 @@ const LoginPage = () => {
     const ok = form.address1 && form.state && form.city && form.pin;
     if (!ok) return showSnackbar('Please fill all address fields', 'warning');
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/updateprofile`, {
-        method: 'PATCH', 
-        credentials: 'include', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+      const res = await api.patch(`${API_URL}/api/v1/users/updateprofile`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
           state: form.state, pinCode: form.pin
-        }) 
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showSnackbar(data.message, 'success');
+        });
+      if (res.status === 200) {
+        showSnackbar(res.data.message, 'success');
         await fetchUser();
         setForm(initialForm); setAdding(false);
-      } else showSnackbar(data.message || 'Failed to add address', 'error');
-    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+      } else showSnackbar(res.data.message || 'Failed to add address', 'error');
+    } catch (err) { console.error(err); showSnackbar(err.message || 'Network error', 'error'); }
   };
 
   const startEdit = (addr) => {
@@ -124,30 +112,21 @@ const LoginPage = () => {
   const handleSaveEdit = async () => {
     if (!editingId) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/updateaddress/${editingId}`, {
-        method: 'PATCH', 
-        credentials: 'include', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
-          state: form.state, pinCode: form.pin })
+      const res = await api.patch(`${API_URL}/api/v1/users/updateaddress/${editingId}`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+          state: form.state, pinCode: form.pin 
       });
-      const data = await res.json();
-      if (res.ok) { showSnackbar('Address updated', 'success'); await fetchUser(); setEditingId(null); setAdding(false); setForm(initialForm); }
-      else showSnackbar(data.message || 'Update failed', 'error');
-    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+      if (res.status === 200) { showSnackbar(res.data?.message || 'Address updated', 'success'); await fetchUser(); setEditingId(null); setAdding(false); setForm(initialForm); }
+      else showSnackbar(res.data.message || 'Update failed', 'error');
+    } catch (err) { console.error(err); showSnackbar(err.message || 'Network error', 'error'); }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this address?')) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/deleteaddress/${id}`, { 
-        method: 'DELETE', 
-        credentials: 'include' 
-      });
-      const data = await res.json();
-      if (res.ok) { showSnackbar(data.message, 'success'); await fetchUser(); }
-      else showSnackbar(data.message || 'Delete failed', 'error');
-    } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
+      const res = await api.delete(`${API_URL}/api/v1/users/deleteaddress/${id}`);
+      if (res.status === 200) { showSnackbar(res.data.message, 'success'); await fetchUser(); }
+      else showSnackbar(res.data.message || 'Delete failed', 'error');
+    } catch (err) { console.error(err); showSnackbar(err.message ||'Network error', 'error'); }
   };
 
   const handleCancelEdit = () => { setEditingId(null); setAdding(false); setForm(initialForm); }
@@ -155,10 +134,9 @@ const LoginPage = () => {
   const handleCancelOrder = async (orderId) => {
     if (!confirm('Cancel this order?')) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/orders/cancel/${orderId}`, { method: 'PATCH', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) { showSnackbar('Order cancelled', 'success'); loadOrders(); }
-      else showSnackbar(data.message || 'Cancel failed', 'error');
+      const res = await api.patch(`${API_URL}/api/v1/users/orders/cancel/${orderId}`);
+      if (res.status === 200) { showSnackbar('Order cancelled', 'success'); loadOrders(); }
+      else showSnackbar(res.data.message || 'Cancel failed', 'error');
     } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
   };
 

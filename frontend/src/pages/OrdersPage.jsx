@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
+import api from "../utils/api";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -12,19 +13,13 @@ const OrdersPage = () => {
   const fetchOrders = async () => {
     try {
       if (!user) return;
-      const res = await fetch(`${API_URL}/api/v1/users/orders/`, {
-        credentials: "include",
-      });
-      console.log(res);
-      const data = await res.json();
-      console.log(data)
-      if (res.ok) {
-        console.log(data.data);
-        setOrders(data.data || []);
-      } else showSnackbar(data.message || "Failed to fetch orders", "error");
+      const res = await api.get(`${API_URL}/api/v1/users/orders/`);
+      if (res.status === 200) {
+        setOrders(res.data?.data || []);
+      } else showSnackbar(res.data.message || "Failed to fetch orders", "error");
     } catch (error) {
       console.error(error);
-      showSnackbar("Network error", "error");
+      showSnackbar(error.message || "Network error", "error");
     }
   };
 
@@ -35,20 +30,16 @@ const OrdersPage = () => {
   const handleCancel = async (orderId) => {
     if (!confirm("Cancel this order?")) return;
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/users/orders/cancel/${orderId}`,
-        { method: "PATCH", credentials: "include" },
-      );
-      const data = await res.json();
-      if (res.ok) {
+      const res = await api.patch(`${API_URL}/api/v1/users/orders/cancel/${orderId}`);
+      if (res.status === 200) {
         showSnackbar("Order cancelled", "success");
         setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? data.data : o)),
+          prev.map((o) => (o._id === orderId ? res.data.data : o)),
         );
-      } else showSnackbar(data.message || "Cancel failed", "error");
+      } else showSnackbar(res.data.message || "Cancel failed", "error");
     } catch (err) {
       console.error(err);
-      showSnackbar("Network error", "error");
+      showSnackbar(err.message || "Network error", "error");
     }
   };
 

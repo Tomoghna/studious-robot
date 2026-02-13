@@ -13,7 +13,9 @@ const addToCart = asyncHandler(async (req, res) => {
     if (!product) {
         throw new apiError(404, "Product not found");
     }
-
+    if(!userId){
+        throw new apiError(401, "Unauthorized");
+    }
     const cart = await Cart.findOne({ user: userId });
     if (cart === "undefined" || cart === null) {
         const newCart = await Cart.create({

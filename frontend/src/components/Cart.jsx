@@ -10,12 +10,21 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
+import { CircularProgress } from "@mui/material";
 
 const Cart = () => {
-  const { cartItems, updateQuantity, getCartTotal, removeItemCart, getCartItemCount } = useCart();
+  const { cartItems, updateQuantity, getCartTotal, removeItemCart, getCartItemCount, isLoading} = useCart();
   const navigate = useNavigate();
+  
+  if(isLoading){
+    return(
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
-  if (cartItems.length === 0) {
+  if (!isLoading &&  cartItems.length === 0) {
     return (
       <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
         <Box sx={{ textAlign: 'center' }}>
@@ -26,7 +35,6 @@ const Cart = () => {
       </Box>
     );
   }
-
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>

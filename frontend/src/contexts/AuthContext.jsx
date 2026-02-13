@@ -25,22 +25,21 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       if (res.ok && data.data?.user) {
+        localStorage.setItem("token", data.data.idToken);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
         setUser(data.data.user);
         showAlert(data.message, "success", 3000);
         return data.data.user;
-      }
-      else {
+      } else {
         showAlert(data.message || "Login failed", "error", 3000);
         throw new Error(data.message || "Login failed");
       }
-    }
-    catch (err) {
-      showAlert("Network or server error", "error", 2000);
+    } catch (err) {
+      showAlert( err.message || "Login failed", "error", 2000);
       console.error(err);
       throw err;
     }
   };
-
 
   const signup = async (email, password, name) => {
     try {
@@ -52,49 +51,43 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       if (res.ok && data.data?.user) {
+        localStorage.setItem("token", data.data.idToken);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
         setUser(data.data.user);
         showAlert(data.message, "success", 2000);
         return data.data.user;
-      }
-      else {
+      } else {
         showAlert(data.message || "Signup failed", "error", 3000);
         throw new Error(data.message || "Signup failed");
       }
-    }
-    catch (err) {
-      showAlert("Signup error!", "error", 4000);
+    } catch (err) {
+      showAlert(err.message || "Signup failed" , "error", 4000);
       console.error(err);
       throw err;
     }
   };
 
-
   const logout = async () => {
     try {
-      const res = await api.get(`${API_URL}/api/v1/users/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.json();
-      setUser(null);
-      showAlert(data.message, "success", 2000);
-    }
-    catch (err) {
-      showAlert("Logout failed", "error", 2000);
+      const res = await api.post(`${API_URL}/api/v1/users/logout`);
+      if (res.status === 200) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+        showAlert(res.data.message, "success", 2000);
+      }
+    } catch (err) {
+      showAlert(err.message || "Logout failed", "error", 2000);
     }
   };
 
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/api/v1/users/loggedinuser`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok && data.data) setUser(data.data);
+      const res = await api.get(`${API_URL}/api/v1/users/loggedinuser`);
+      if (res.status === 200 && res.data?.data) setUser(res.data.data);
     } catch (err) {
-      console.error('fetchUser error', err);
+      console.error("fetchUser error", err);
     } finally {
       setLoading(false);
     }

@@ -7,9 +7,18 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { CircularProgress } from "@mui/material";
 
 export default function Wishlist() {
-  const { wishlistItems } = useWishlist();
+  const { wishlistItems, isLoading } = useWishlist();
+
+  if(isLoading){
+    return(
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   if (wishlistItems.length === 0) {
     return (

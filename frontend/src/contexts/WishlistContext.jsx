@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useSnackbar } from "./SnackbarContext";
 import { useAuthModal } from "./AuthModalContext";
+import api from "../utils/api";
 
 const WishlistContext = createContext();
 
@@ -23,13 +24,10 @@ export function WishlistProvider({ children }) {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/getwhislist`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const res = await api.get(`${API_URL}/api/v1/users/getwhislist`);
+      if (res.status === 200) {
         // data is array of product objects
-        const mapped = data.data.map((p) => ({ id: p._id || p.id, ...p }));
+        const mapped = res.data.data.map((p) => ({ id: p._id || p.id, ...p }));
         setWishlistItems(mapped);
       }
     } catch (err) {
@@ -62,13 +60,9 @@ export function WishlistProvider({ children }) {
     });
     (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/users/addtowhislist/${productId}`,
-          { method: "POST", credentials: "include" },
-        );
-        const data = await res.json();
-        if (res.ok)
-          showSnackbar(data.message || "Added to wishlist", "success");
+        const res = await api.post(`${API_URL}/api/v1/users/addtowhislist/${productId}`);
+        if (res.status === 200)
+          showSnackbar(res.data.message || "Added to wishlist", "success");
       } catch (err) {
         console.error("addToWishlist error", err);
         showSnackbar("Network error while adding to wishlist", "error");
@@ -84,14 +78,10 @@ export function WishlistProvider({ children }) {
     setWishlistItems((prev) => prev.filter((item) => item.id !== productId));
     (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/v1/users/removefromwhislist/${productId}`,
-          { method: "DELETE", credentials: "include" },
-        );
-        const data = await res.json();
-        if (res.ok)
+        const res = await api.delete(`${API_URL}/api/v1/users/removefromwhislist/${productId}`);
+        if (res.status === 200)
           showSnackbar(
-            data.message || "Failed to remove from wishlist",
+            res.data.message || "Failed to remove from wishlist",
             "success",
           );
       } catch (err) {

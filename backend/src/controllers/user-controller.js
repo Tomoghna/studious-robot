@@ -43,14 +43,13 @@ const signupUser = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .cookie("token", idToken, options)
-      .cookie("refreshToken", refreshToken, options)
       .json(
         new apiResponse(
           201,
           {
             user: mongoUser,
             idToken,
+            refreshToken,
           },
           "User registered successfully!!!",
         ),
@@ -96,14 +95,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .cookie("token", idToken, options)
-      .cookie("refreshToken", refreshToken, options)
       .json(
         new apiResponse(
           200,
           {
             user,
             idToken,
+            refreshToken,
           },
           "User logged in successfully!!!",
         ),
@@ -138,8 +136,6 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie("token", options)
-    .clearCookie("refreshToken", options)
     .json(new apiResponse(200, [], "User logged out successfully!!!"));
 });
 
@@ -269,6 +265,9 @@ const addToWhislist = asyncHandler(async (req, res) => {
     throw new apiError(400, "Product id is required");
   }
   const user = await User.findById(req.user._id).select("-refreshToken");
+  if(!user){
+    throw new apiError(404, "User not found");
+  }
   if (user.whislist.includes(productId)) {
     throw new apiError(400, "Product already in wishlist");
   }
@@ -347,10 +346,7 @@ const giveReviewsToProduct = asyncHandler(async (req, res) => {
     (review) => review.userId.toString() === user._id.toString(),
   );
   if (alreadyReviewed) {
-    throw new apiError(
-      400,
-      "You have already reviewed this product, please update review if needed!",
-    );
+    throw new apiError(400,"You have already reviewed this product, please update review if needed!");
   } else {
     const review = {
       userId: user._id,
@@ -360,12 +356,10 @@ const giveReviewsToProduct = asyncHandler(async (req, res) => {
     };
     product.reviews.push(review);
     product.reviews.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      (a, b) => new Date(b.ratedAt) - new Date(a.ratedAt),
     );
     product.numOfReviews = product.reviews.length;
-    product.ratings =
-      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
-      product.reviews.length;
+    product.ratings = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
     await product.save();
   }
   return res

@@ -15,6 +15,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
+import api from "../utils/api";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -55,22 +56,16 @@ const CheckoutPage = () => {
 
     const items = cartItems.map((ci) => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/orders/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ items, shippingAddress: selectedAddress, payment: { method: 'COD' } }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showSnackbar('Order created', 'success');
+      const res = await api.post(`${API_URL}/api/v1/users/orders/create`,{ items, shippingAddress: selectedAddress, payment: { method: 'COD' } });
+      if (res.status === 200) {
+        showSnackbar(res.data.message || 'Order created', 'success');
         navigate('/orders');
       } else {
-        showSnackbar(data.message || 'Order creation failed', 'error');
+        showSnackbar(res.data.message || 'Order creation failed', 'error');
       }
     } catch (err) {
       console.error(err);
-      showSnackbar('Network error', 'error');
+      showSnackbar(err.message || 'Network error', 'error');
     }
   };
 

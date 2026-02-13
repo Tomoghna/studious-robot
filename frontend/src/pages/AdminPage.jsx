@@ -29,6 +29,7 @@ import CardActions from "@mui/material/CardActions";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../contexts/CategoryContext";
+import api from "../utils/api";
 
 const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs elsewhere
 
@@ -122,14 +123,9 @@ function ProductsTab({ onNotify }) {
     });
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/products/create`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.post(`${API_URL}/api/v1/admin/products/create`,formData);
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         setForm({
           name: "",
           description: "",
@@ -141,7 +137,7 @@ function ProductsTab({ onNotify }) {
           newImages: [],
         });
         fetchProducts();
-      } else throw new Error(data.message || "Failed");
+      } else throw new Error(res.data.message || "Failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Create failed", "error");
     }
@@ -150,15 +146,11 @@ function ProductsTab({ onNotify }) {
   const handleDelete = async (id) => {
     if (!confirm("Delete this product?")) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/products/delete/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.delete(`${API_URL}/api/v1/admin/products/delete/${id}`);
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         fetchProducts();
-      } else throw new Error(data.message || "Delete failed");
+      } else throw new Error(res.data.message || "Delete failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Delete failed", "error");
     }
@@ -188,21 +180,12 @@ function ProductsTab({ onNotify }) {
     });
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/admin/products/update/${editing}`,
-        {
-          method: "PATCH",
-          body: formData,
-          credentials: "include",
-        },
-      );
-
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.patch(`${API_URL}/api/v1/admin/products/update/${editing}`, formData );
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         setEditing(null);
         fetchProducts();
-      } else throw new Error(data.message || "Update failed");
+      } else throw new Error(res.data.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");
     }
@@ -475,18 +458,14 @@ function CategoriesTab({ onNotify }) {
     formData.append("image", form.image);
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/category/create`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.post(`${API_URL}/api/v1/admin/category/create`, formData);
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         setForm({ name: "", image: null, preview: null });
         refreshCategories();
-      } else throw new Error(data.message || "Failed");
+      } else throw new Error(res.data.message || "Failed");
     } catch (err) {
+      console.error(err)
       onNotify && onNotify(err.message || "Create failed", "error");
     }
   };
@@ -494,15 +473,11 @@ function CategoriesTab({ onNotify }) {
   const handleDelete = async (id) => {
     if (!confirm("Delete this category?")) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/category/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.delete(`${API_URL}/api/v1/admin/category/${id}`);
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         refreshCategories();
-      } else throw new Error(data.message || "Delete failed");
+      } else throw new Error(res.data.message || "Delete failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Delete failed", "error");
     }
@@ -530,21 +505,13 @@ function CategoriesTab({ onNotify }) {
     }
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/admin/category/edit/${editing}`,
-        {
-          method: "PATCH",
-          body: formData,
-          credentials: "include",
-        },
-      );
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await fetch(`${API_URL}/api/v1/admin/category/edit/${editing}`, formData);
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         setEditing(null);
         setForm({ name: "", image: null, preview: null });
         refreshCategories();
-      } else throw new Error(data.message || "Update failed");
+      } else throw new Error(res.data.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");
     }
@@ -693,16 +660,12 @@ function UsersTab({ onNotify }) {
   const fetchUserUidsFromOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/user`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        const usersSet = new Set(data.data.map((o) => o));
+      const res = await api.get(`${API_URL}/api/v1/admin/user`);
+      if (res.status === 200) {
+        const usersSet = new Set(res.data.data.map((o) => o));
         setUsers(Array.from(usersSet));
       } else {
-        onNotify && onNotify(data.message || "Failed to fetch orders", "error");
+        onNotify && onNotify(res.data.message || "Failed to fetch orders", "error");
       }
     } catch (err) {
       console.error(err);
@@ -717,13 +680,9 @@ function UsersTab({ onNotify }) {
 
   const handleBan = async (uid) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/ban/${uid}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) onNotify && onNotify(data.message, "success");
-      else throw new Error(data.message || "Failed");
+      const res = await api.post(`${API_URL}/api/v1/admin/ban/${uid}`);
+      if (res.status === 200) onNotify && onNotify(res.data.message, "success");
+      else throw new Error(res.data.message || "Failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Ban failed", "error");
     }
@@ -731,13 +690,9 @@ function UsersTab({ onNotify }) {
 
   const handleUnban = async (uid) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/unban/${uid}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) onNotify && onNotify(data.message, "success");
-      else throw new Error(data.message || "Failed");
+      const res = await api.post(`${API_URL}/api/v1/admin/unban/${uid}`);
+      if (res.status === 200) onNotify && onNotify(res.data.message, "success");
+      else throw new Error(res.data.message || "Failed");
     } catch (err) {
       onNotify && onNotify(data.message || "Unban failed", "error");
     }
@@ -794,17 +749,14 @@ function OrdersTab({ onNotify }) {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/orders`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setOrders(data.data || []);
+      const res = await api.get(`${API_URL}/api/v1/admin/orders`);
+      if (res.status === 200) {
+        setOrders(res.data.data || []);
       } else
-        onNotify && onNotify(data.message || "Failed to fetch orders", "error");
+        onNotify && onNotify(res.data.message || "Failed to fetch orders", "error");
     } catch (err) {
       console.error(err);
-      onNotify && onNotify("Network error", "error");
+      onNotify && onNotify(err.message || "Network error", "error");
     }
   };
 
@@ -814,17 +766,11 @@ function OrdersTab({ onNotify }) {
 
   const handleStatusChange = async (orderId, status) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/order/${orderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orderStatus: status }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onNotify && onNotify(data.message, "success");
+      const res = await api.patch(`${API_URL}/api/v1/admin/order/${orderId}`, { orderStatus: status });
+      if (res.status === 200) {
+        onNotify && onNotify(res.data.message, "success");
         fetchOrders();
-      } else throw new Error(data.message || "Update failed");
+      } else throw new Error(res.data.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");
     }

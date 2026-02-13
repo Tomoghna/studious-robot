@@ -19,29 +19,27 @@ import {
   updateCategory
 } from "../controllers/category-controller.js";
 import upload from "../middlewares/multer-middleware.js";
-import { restrictToIPs } from "../middlewares/ipWhitelist-middleware.js";
 
 const router = express.Router();
 
 router
   .route("/user")
-  .get(authMiddleware, authorizeRoles("admin"), restrictToIPs, getAllUsers);
+  .get(authMiddleware, authorizeRoles("admin"), getAllUsers);
 
 router
   .route("/ban/:uid")
-  .post(authMiddleware, authorizeRoles("admin"), restrictToIPs, banUser);
+  .post(authMiddleware, authorizeRoles("admin"), banUser);
 router
   .route("/unban/:uid")
-  .post(authMiddleware, authorizeRoles("admin"), restrictToIPs, unbanUser);
+  .post(authMiddleware, authorizeRoles("admin"), unbanUser);
 router
   .route("/orders")
-  .get(authMiddleware, authorizeRoles("admin"), restrictToIPs, getAllOrders);
+  .get(authMiddleware, authorizeRoles("admin"), getAllOrders);
 router
   .route("/order/:orderId")
   .patch(
     authMiddleware,
     authorizeRoles("admin"),
-    restrictToIPs,
     updateOrderStatus,
   );
 
@@ -50,7 +48,6 @@ router
   .post(
     authMiddleware,
     authorizeRoles("admin"),
-    restrictToIPs,
     upload.single("image"),
     createCategory,
   );
@@ -59,7 +56,6 @@ router
   .delete(
     authMiddleware,
     authorizeRoles("admin"),
-    restrictToIPs,
     deleteCategory,
   );
 router
@@ -67,7 +63,6 @@ router
   .patch(
     authMiddleware,
     authorizeRoles("admin"),
-    restrictToIPs,
     upload.single("image"),
     updateCategory
   );

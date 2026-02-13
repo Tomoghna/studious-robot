@@ -25,6 +25,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAuthModal } from "../contexts/AuthModalContext";
 import { CircularProgress } from "@mui/material";
+import api from "../utils/api";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -48,15 +49,10 @@ export default function ProductDetail() {
   async function fetchProductById() {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/api/v1/users/product/${id}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setProduct(data.data);
-        setReviews(data.data.reviews || []);
+      const res = await api.get(`${API_URL}/api/v1/users/product/${id}`);
+      if (res.status === 200) {
+        setProduct(res.data?.data);
+        setReviews(res.data?.data.reviews || []);
       }
     } catch (error) {
       console.log(error);
@@ -128,17 +124,8 @@ export default function ProductDetail() {
           rating: reviewRating,
           comment: reviewText,
         };
-        const res = await fetch(
-          `${API_URL}/api/v1/users/givereview/${product._id}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload),
-          },
-        );
-        const data = await res.json();
-        if (res.ok) {
+        const res = await api.post(`${API_URL}/api/v1/users/givereview/${product._id}`, payload );
+        if (res.status === 200) {
           setReviews((prev) => [
             {
               _id: Date.now().toString(),
@@ -152,43 +139,34 @@ export default function ProductDetail() {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(data.message || "Review added", "success");
+          showSnackbar(res.data?.message || "Review added", "success");
           fetchProductById();
           // optionally refresh product/user
         } else {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(data.message || "Failed to add review", "error");
+          showSnackbar(res.data?.message || "Failed to add review", "error");
         }
       } catch (err) {
         console.error(err);
-        showSnackbar("Network error", "error");
+        showSnackbar(err.message || "Network error", "error");
       }
     })();
   };
 
   const handleUpdateReview = async (rating, comment) => {
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/users/updatereview/${product._id || product.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ rating, comment }),
-        },
-      );
-      const data = await res.json();
-      if (res.ok) {
-        showSnackbar("Review updated", "success");
+      const res = await api.patch(`${API_URL}/api/v1/users/updatereview/${product._id || product.id}`,{ rating, comment });
+      if (res.status === 200) {
+        showSnackbar(res.data?.message || "Review updated", "success");
         // Update local list if necessary; here we will simply refetch user/product in real app
       } else {
-        showSnackbar(data.message || "Update failed", "error");
+        showSnackbar(res.data?.message || "Update failed", "error");
       }
     } catch (err) {
       console.error(err);
-      showSnackbar("Network error", "error");
+      showSnackbar(err.message || "Network error", "error");
     }
   };
 
@@ -324,7 +302,7 @@ export default function ProductDetail() {
             <Stack spacing={2} sx={{ mb: 2 }}>
               <TextField
                 label="Name"
-                value={user?.name}
+                value={user.name}
                 fullWidth
               />
               <Rating
