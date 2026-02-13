@@ -14,7 +14,6 @@ export function WishlistProvider({ children }) {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
   const { openLogin } = useAuthModal();
-  const API_URL = import.meta.env.VITE_SERVER_URL;
 
   // No localStorage fallback: empty wishlist until server provides data when logged in
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -24,7 +23,7 @@ export function WishlistProvider({ children }) {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await api.get(`${API_URL}/api/v1/users/getwhislist`);
+      const res = await api.get(`/api/v1/users/getwhislist`);
       if (res.status === 200) {
         // data is array of product objects
         const mapped = res.data.data.map((p) => ({ id: p._id || p.id, ...p }));
@@ -60,7 +59,7 @@ export function WishlistProvider({ children }) {
     });
     (async () => {
       try {
-        const res = await api.post(`${API_URL}/api/v1/users/addtowhislist/${productId}`);
+        const res = await api.post(`/api/v1/users/addtowhislist/${productId}`);
         if (res.status === 200)
           showSnackbar(res.data.message || "Added to wishlist", "success");
       } catch (err) {
@@ -78,7 +77,7 @@ export function WishlistProvider({ children }) {
     setWishlistItems((prev) => prev.filter((item) => item.id !== productId));
     (async () => {
       try {
-        const res = await api.delete(`${API_URL}/api/v1/users/removefromwhislist/${productId}`);
+        const res = await api.delete(`/api/v1/users/removefromwhislist/${productId}`);
         if (res.status === 200)
           showSnackbar(
             res.data.message || "Failed to remove from wishlist",

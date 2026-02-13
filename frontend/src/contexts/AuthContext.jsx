@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      const res = await api.post(`${API_URL}/api/v1/users/logout`);
+      const res = await api.post(`/api/v1/users/logout`);
       if (res.status === 200) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`${API_URL}/api/v1/users/loggedinuser`);
+      const res = await api.get(`/api/v1/users/loggedinuser`);
       if (res.status === 200 && res.data?.data) setUser(res.data.data);
     } catch (err) {
       console.error("fetchUser error", err);

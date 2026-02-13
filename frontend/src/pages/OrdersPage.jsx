@@ -3,8 +3,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import api from "../utils/api";
 
-const API_URL = import.meta.env.VITE_SERVER_URL;
-
 const OrdersPage = () => {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
@@ -13,7 +11,7 @@ const OrdersPage = () => {
   const fetchOrders = async () => {
     try {
       if (!user) return;
-      const res = await api.get(`${API_URL}/api/v1/users/orders/`);
+      const res = await api.get(`/api/v1/users/orders/`);
       if (res.status === 200) {
         setOrders(res.data?.data || []);
       } else showSnackbar(res.data.message || "Failed to fetch orders", "error");
@@ -30,7 +28,7 @@ const OrdersPage = () => {
   const handleCancel = async (orderId) => {
     if (!confirm("Cancel this order?")) return;
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/orders/cancel/${orderId}`);
+      const res = await api.patch(`/api/v1/users/orders/cancel/${orderId}`);
       if (res.status === 200) {
         showSnackbar("Order cancelled", "success");
         setOrders((prev) =>

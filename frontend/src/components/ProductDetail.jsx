@@ -35,7 +35,6 @@ export default function ProductDetail() {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
-  const API_URL = import.meta.env.VITE_SERVER_URL;
 
   // Reviews state (start from product.reviews if available)
   const [reviews, setReviews] = useState([]);
@@ -49,7 +48,7 @@ export default function ProductDetail() {
   async function fetchProductById() {
     try {
       setLoading(true);
-      const res = await api.get(`${API_URL}/api/v1/users/product/${id}`);
+      const res = await api.get(`/api/v1/users/product/${id}`);
       if (res.status === 200) {
         setProduct(res.data?.data);
         setReviews(res.data?.data.reviews || []);
@@ -124,7 +123,7 @@ export default function ProductDetail() {
           rating: reviewRating,
           comment: reviewText,
         };
-        const res = await api.post(`${API_URL}/api/v1/users/givereview/${product._id}`, payload );
+        const res = await api.post(`/api/v1/users/givereview/${product._id}`, payload );
         if (res.status === 200) {
           setReviews((prev) => [
             {
@@ -157,7 +156,7 @@ export default function ProductDetail() {
 
   const handleUpdateReview = async (rating, comment) => {
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/updatereview/${product._id || product.id}`,{ rating, comment });
+      const res = await api.patch(`/api/v1/users/updatereview/${product._id || product.id}`,{ rating, comment });
       if (res.status === 200) {
         showSnackbar(res.data?.message || "Review updated", "success");
         // Update local list if necessary; here we will simply refetch user/product in real app

@@ -31,7 +31,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../contexts/CategoryContext";
 import api from "../utils/api";
 
-const API_URL = import.meta.env.VITE_SERVER_URL; // adjust if your backend runs elsewhere
+const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const TABS = [
   { key: "upload", label: "Products" },
@@ -123,8 +123,8 @@ function ProductsTab({ onNotify }) {
     });
 
     try {
-      const res = await api.post(`${API_URL}/api/v1/admin/products/create`,formData);
-      if (res.status === 200) {
+      const res = await api.post(`/api/v1/admin/products/create`,formData);
+      if (res.status === 201) {
         onNotify && onNotify(res.data.message, "success");
         setForm({
           name: "",
@@ -146,7 +146,7 @@ function ProductsTab({ onNotify }) {
   const handleDelete = async (id) => {
     if (!confirm("Delete this product?")) return;
     try {
-      const res = await api.delete(`${API_URL}/api/v1/admin/products/delete/${id}`);
+      const res = await api.delete(`/api/v1/admin/products/delete/${id}`);
       if (res.status === 200) {
         onNotify && onNotify(res.data.message, "success");
         fetchProducts();
@@ -172,21 +172,23 @@ function ProductsTab({ onNotify }) {
 
   const handleUpdate = async () => {
     const formData = new FormData();
-    formData.append("price", form.price);
-    formData.append("stock", form.stock);
+    formData.append("price", Number(form.price));
+    formData.append("stock", Number(form.stock));
 
     form.newImages.forEach((img) => {
       formData.append("images", img.file);
     });
 
     try {
-      const res = await api.patch(`${API_URL}/api/v1/admin/products/update/${editing}`, formData );
+      const res = await api.patch(`/api/v1/admin/products/update/${editing}`, formData);
+      console.log(res)
       if (res.status === 200) {
         onNotify && onNotify(res.data.message, "success");
         setEditing(null);
         fetchProducts();
       } else throw new Error(res.data.message || "Update failed");
     } catch (err) {
+      console.error(err)
       onNotify && onNotify(err.message || "Update failed", "error");
     }
   };
@@ -222,7 +224,7 @@ function ProductsTab({ onNotify }) {
                 <em>Select Category</em>
               </MenuItem>
               {categories?.map((cat) => (
-                <MenuItem key={cat._id} value={cat._id}>
+                <MenuItem key={cat._id} value={cat.category}>
                   {cat.category}
                 </MenuItem>
               ))}
@@ -458,8 +460,8 @@ function CategoriesTab({ onNotify }) {
     formData.append("image", form.image);
 
     try {
-      const res = await api.post(`${API_URL}/api/v1/admin/category/create`, formData);
-      if (res.status === 200) {
+      const res = await api.post(`/api/v1/admin/category/create`, formData);
+      if (res.status === 201) {
         onNotify && onNotify(res.data.message, "success");
         setForm({ name: "", image: null, preview: null });
         refreshCategories();
@@ -473,7 +475,7 @@ function CategoriesTab({ onNotify }) {
   const handleDelete = async (id) => {
     if (!confirm("Delete this category?")) return;
     try {
-      const res = await api.delete(`${API_URL}/api/v1/admin/category/${id}`);
+      const res = await api.delete(`/api/v1/admin/category/${id}`);
       if (res.status === 200) {
         onNotify && onNotify(res.data.message, "success");
         refreshCategories();
@@ -505,13 +507,13 @@ function CategoriesTab({ onNotify }) {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/admin/category/edit/${editing}`, formData);
+      const res = await api.patch(`/api/v1/admin/category/edit/${editing}`, formData);
       if (res.status === 200) {
-        onNotify && onNotify(res.data.message, "success");
+        onNotify && onNotify(res.data?.message, "success");
         setEditing(null);
         setForm({ name: "", image: null, preview: null });
         refreshCategories();
-      } else throw new Error(res.data.message || "Update failed");
+      } else throw new Error(res.data?.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");
     }
@@ -660,7 +662,7 @@ function UsersTab({ onNotify }) {
   const fetchUserUidsFromOrders = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`${API_URL}/api/v1/admin/user`);
+      const res = await api.get(`/api/v1/admin/user`);
       if (res.status === 200) {
         const usersSet = new Set(res.data.data.map((o) => o));
         setUsers(Array.from(usersSet));
@@ -680,7 +682,7 @@ function UsersTab({ onNotify }) {
 
   const handleBan = async (uid) => {
     try {
-      const res = await api.post(`${API_URL}/api/v1/admin/ban/${uid}`);
+      const res = await api.post(`/api/v1/admin/ban/${uid}`);
       if (res.status === 200) onNotify && onNotify(res.data.message, "success");
       else throw new Error(res.data.message || "Failed");
     } catch (err) {
@@ -690,7 +692,7 @@ function UsersTab({ onNotify }) {
 
   const handleUnban = async (uid) => {
     try {
-      const res = await api.post(`${API_URL}/api/v1/admin/unban/${uid}`);
+      const res = await api.post(`/api/v1/admin/unban/${uid}`);
       if (res.status === 200) onNotify && onNotify(res.data.message, "success");
       else throw new Error(res.data.message || "Failed");
     } catch (err) {
@@ -749,7 +751,7 @@ function OrdersTab({ onNotify }) {
 
   const fetchOrders = async () => {
     try {
-      const res = await api.get(`${API_URL}/api/v1/admin/orders`);
+      const res = await api.get(`/api/v1/admin/orders`);
       if (res.status === 200) {
         setOrders(res.data.data || []);
       } else
@@ -766,7 +768,7 @@ function OrdersTab({ onNotify }) {
 
   const handleStatusChange = async (orderId, status) => {
     try {
-      const res = await api.patch(`${API_URL}/api/v1/admin/order/${orderId}`, { orderStatus: status });
+      const res = await api.patch(`/api/v1/admin/order/${orderId}`, { orderStatus: status });
       if (res.status === 200) {
         onNotify && onNotify(res.data.message, "success");
         fetchOrders();

@@ -17,8 +17,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import api from "../utils/api";
 
-const API_URL = import.meta.env.VITE_SERVER_URL;
-
 const CheckoutPage = () => {
   const { cartItems, getCartTotal } = useCart();
   const { user } = useAuth();
@@ -56,7 +54,7 @@ const CheckoutPage = () => {
 
     const items = cartItems.map((ci) => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
     try {
-      const res = await api.post(`${API_URL}/api/v1/users/orders/create`,{ items, shippingAddress: selectedAddress, payment: { method: 'COD' } });
+      const res = await api.post(`/api/v1/users/orders/create`,{ items, shippingAddress: selectedAddress, payment: { method: 'COD' } });
       if (res.status === 200) {
         showSnackbar(res.data.message || 'Order created', 'success');
         navigate('/orders');

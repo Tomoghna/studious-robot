@@ -15,8 +15,6 @@ export function CartProvider({ children }) {
   const { showSnackbar } = useSnackbar();
   const { openLogin } = useAuthModal();
 
-  const API_URL = import.meta.env.VITE_SERVER_URL;
-
   // No localStorage fallback: keep cart in memory; server is source of truth when logged in
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +24,7 @@ export function CartProvider({ children }) {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await api.get(`${API_URL}/api/v1/users/cart`);
+      const res = await api.get(`/api/v1/users/cart`);
       if (res.status === 200 && res.data?.data) {
         const mapped = res.data.data.items.map((i) => ({
           _id: i.product._id || i.product,
@@ -70,7 +68,7 @@ export function CartProvider({ children }) {
     // sync to server
     (async () => {
       try {
-        const res = await api.post(`${API_URL}/api/v1/users/cart/add/${product._id}`,{
+        const res = await api.post(`/api/v1/users/cart/add/${product._id}`,{
           quantity
         });
         if (res.status === 200) {
@@ -92,7 +90,7 @@ export function CartProvider({ children }) {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
     (async () => {
       try {
-        const res = await api.post(`${API_URL}/api/v1/users/cart/remove/${productId}`,);
+        const res = await api.post(`/api/v1/users/cart/remove/${productId}`,);
         if (res.status === 200) {
           loadServerCart();
           showSnackbar(res.data?.message || "Failed to remove from cart", "success");
@@ -112,7 +110,7 @@ export function CartProvider({ children }) {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
     (async () => {
       try {
-        const res = await api.delete(`${API_URL}/api/v1/users/cart/remove-item/${productId}`);
+        const res = await api.delete(`/api/v1/users/cart/remove-item/${productId}`);
         if (res.status === 200) {
           loadServerCart();
           showSnackbar(res.data?.message || "Failed to remove from cart", "success");
@@ -145,7 +143,7 @@ export function CartProvider({ children }) {
       try {
         if (delta > 0) {
           for (let i = 0; i < delta; i++) {
-            const res = await api.post(`${API_URL}/api/v1/users/cart/add/${productId}`, {
+            const res = await api.post(`/api/v1/users/cart/add/${productId}`, {
               quantity: 1
             });
             if(res.status === 200){
@@ -154,7 +152,7 @@ export function CartProvider({ children }) {
           }
         } else if (delta < 0) {
           for (let i = 0; i < Math.abs(delta); i++) {
-            const res = await api.post(`${API_URL}/api/v1/users/cart/remove/${productId}`);
+            const res = await api.post(`/api/v1/users/cart/remove/${productId}`);
             if(res.status === 200){
               loadServerCart();
             }

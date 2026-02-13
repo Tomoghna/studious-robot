@@ -6,8 +6,6 @@ import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, 
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 import api from "../utils/api";
 
-const API_URL = import.meta.env.VITE_SERVER_URL;
-
 function TabPanel({ children, value, index }) {
   return (
     <div role="tabpanel" hidden={value !== index}>
@@ -59,7 +57,7 @@ const LoginPage = () => {
 
   const loadOrders = async () => {
     try {
-      const res = await api.get(`${API_URL}/api/v1/users/orders/`);
+      const res = await api.get(`/api/v1/users/orders/`);
       if (res.status === 200) setOrders(res.data?.data || []);
       else showSnackbar(res.data.message || 'Failed to fetch orders', 'error');
     } catch (err) { console.error(err); showSnackbar(err.message || 'Network error', 'error'); }
@@ -67,7 +65,7 @@ const LoginPage = () => {
 
   const handleProfileSave = async () => {
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/saveprofile`, { name,phone });
+      const res = await api.patch(`/api/v1/users/saveprofile`, { name,phone });
       if (res.status === 200) {
         showSnackbar(res.data.message, 'success');
         await fetchUser();
@@ -91,7 +89,7 @@ const LoginPage = () => {
     const ok = form.address1 && form.state && form.city && form.pin;
     if (!ok) return showSnackbar('Please fill all address fields', 'warning');
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/updateprofile`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+      const res = await api.patch(`/api/v1/users/updateprofile`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
           state: form.state, pinCode: form.pin
         });
       if (res.status === 200) {
@@ -112,7 +110,7 @@ const LoginPage = () => {
   const handleSaveEdit = async () => {
     if (!editingId) return;
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/updateaddress/${editingId}`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
+      const res = await api.patch(`/api/v1/users/updateaddress/${editingId}`, { AddLine1: form.address1 + (form.address2? '\n' + form.address2 : ""), city: form.city,
           state: form.state, pinCode: form.pin 
       });
       if (res.status === 200) { showSnackbar(res.data?.message || 'Address updated', 'success'); await fetchUser(); setEditingId(null); setAdding(false); setForm(initialForm); }
@@ -123,7 +121,7 @@ const LoginPage = () => {
   const handleDelete = async (id) => {
     if (!confirm('Delete this address?')) return;
     try {
-      const res = await api.delete(`${API_URL}/api/v1/users/deleteaddress/${id}`);
+      const res = await api.delete(`/api/v1/users/deleteaddress/${id}`);
       if (res.status === 200) { showSnackbar(res.data.message, 'success'); await fetchUser(); }
       else showSnackbar(res.data.message || 'Delete failed', 'error');
     } catch (err) { console.error(err); showSnackbar(err.message ||'Network error', 'error'); }
@@ -134,7 +132,7 @@ const LoginPage = () => {
   const handleCancelOrder = async (orderId) => {
     if (!confirm('Cancel this order?')) return;
     try {
-      const res = await api.patch(`${API_URL}/api/v1/users/orders/cancel/${orderId}`);
+      const res = await api.patch(`/api/v1/users/orders/cancel/${orderId}`);
       if (res.status === 200) { showSnackbar('Order cancelled', 'success'); loadOrders(); }
       else showSnackbar(res.data.message || 'Cancel failed', 'error');
     } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
