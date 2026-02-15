@@ -57,14 +57,15 @@ const Navbar = () => {
 
   const handleCategoryClick = (categoryName) => {
     setMobileOpen(false);
-    navigate(`/products?category=${categoryName.toLowerCase().replace(/\s+/g, '-')}`);
+    setCategoriesOpen(false);
+    navigate(`/products?category=${categoryName.replace(/\s+/g, '-')}`);
   };
 
   const drawer = (
-    <Box sx={{ width: 260 }} role="presentation" onClick={() => setMobileOpen(false)}>
+    <Box sx={{ width: 260 }} role="presentation">
       <List>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/">
+          <ListItemButton component={Link} to="/" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <HomeIcon/>
             </ListItemIcon>
@@ -73,7 +74,7 @@ const Navbar = () => {
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/products">
+          <ListItemButton component={Link} to="/products" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <Inventory2Icon/>
             </ListItemIcon>
@@ -118,7 +119,7 @@ const Navbar = () => {
         </Collapse>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/wishlist">
+          <ListItemButton component={Link} to="/wishlist" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <Badge badgeContent={wishlistItems?.length || 0} color="success">
                 <FavoriteIcon/>
@@ -129,7 +130,7 @@ const Navbar = () => {
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/cart">
+          <ListItemButton component={Link} to="/cart" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <Badge badgeContent={getCartItemCount() || 0} color="success">
                 <ShoppingCartIcon/>
@@ -140,15 +141,16 @@ const Navbar = () => {
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/about">
+          <ListItemButton component={Link} to="/about" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <ThreePTwoToneIcon />
             </ListItemIcon>
             <ListItemText primary="About" />
           </ListItemButton>
         </ListItem>
+
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/contact">
+          <ListItemButton component={Link} to="/contact" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <CallTwoToneIcon />
             </ListItemIcon>

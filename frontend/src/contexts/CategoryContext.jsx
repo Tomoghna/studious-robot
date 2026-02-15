@@ -30,9 +30,9 @@ export function CategoryProvider({ children }) {
       const data = await res.json();
       if (res.ok) {
         setCategories(data.data || []);
-      } else
-        onNotify &&
-          onNotify(data.message || "Failed to fetch categories", "error");
+      } else {
+        setError(data.message || "Failed to fetch categories...");
+      }
     } catch (err) {
       setError(err?.message ?? "Something went wrong");
     } finally {
