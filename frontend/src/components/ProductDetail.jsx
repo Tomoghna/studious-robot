@@ -225,7 +225,7 @@ export default function ProductDetail() {
             {product.isNew && <Chip label="New" color="error" sx={{ mt: 1 }} />}
 
             <Typography variant="h5" color="success.main" sx={{ mt: 2, mb: 2 }}>
-              ${product.price}
+              ₹{product.price}
             </Typography>
 
             <Typography color="text.secondary" sx={{ mb: 3 }}>
@@ -257,7 +257,7 @@ export default function ProductDetail() {
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button variant="contained" onClick={handleBuyNow} fullWidth>
-                Buy Now: ${(product.price * quantity).toFixed(2)}
+                Buy Now: ₹{(product.price * quantity).toFixed(2)}
               </Button>
               <Button variant="outlined" onClick={handleAddToCart} fullWidth>
                 Add to Cart
