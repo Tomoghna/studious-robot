@@ -25,6 +25,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import CategoryIcon from '@mui/icons-material/Category';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ThreePTwoToneIcon from '@mui/icons-material/ThreePTwoTone';
+import CallTwoToneIcon from '@mui/icons-material/CallTwoTone';
 import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
@@ -117,29 +119,39 @@ const Navbar = () => {
 
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/wishlist">
-            <Badge badgeContent={wishlistItems?.length || 0} color="primary">
-              <FavoriteIcon/>
-            </Badge>
+            <ListItemIcon>
+              <Badge badgeContent={wishlistItems?.length || 0} color="success">
+                <FavoriteIcon/>
+              </Badge>
+            </ListItemIcon>
             <ListItemText primary="wishlist"/>
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/cart">
-            <Badge badgeContent={getCartItemCount() || 0} color="primary">
-              <ShoppingCartIcon/>
-            </Badge>
+            <ListItemIcon>
+              <Badge badgeContent={getCartItemCount() || 0} color="success">
+                <ShoppingCartIcon/>
+              </Badge>
+            </ListItemIcon>
             <ListItemText primary="Cart"/>
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/about">
+            <ListItemIcon>
+              <ThreePTwoToneIcon />
+            </ListItemIcon>
             <ListItemText primary="About" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/contact">
+            <ListItemIcon>
+              <CallTwoToneIcon />
+            </ListItemIcon>
             <ListItemText primary="Contact" />
           </ListItemButton>
         </ListItem>

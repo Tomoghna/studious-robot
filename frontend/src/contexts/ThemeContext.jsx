@@ -20,6 +20,13 @@ export const ThemeModeProvider = ({children}) => {
                 paper: mode === "light" ? "#fff" : "#1e1e1e",
             },
         },
+        typography: {
+            fontFamily: "Poppins, sans-serif",
+            h1: { fontWeight: 700 },
+            h2: { fontWeight: 600 },
+            h3: { fontWeight: 500 },
+            button: { textTransform: "none" },
+        },
         shape: {borderRadius: 10},
     }), [mode]);
 
