@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { Link as RouterLink } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
@@ -21,13 +22,13 @@ import RequireAdmin from "./components/RequireAdmin";
 import BackToTop from "./components/BackToTop";
 import CheckoutPage from "./pages/CheckoutPage";
 import BottomNav from "./components/BottomNav";
-import { Skeleton } from "@mui/material";
+import { Skeleton, Fade, Button } from "@mui/material";
 
 export default function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  const { categories, loading: loadingCategories, error } = useCategories();
+  const { categories, loading: loadingCategories, error, refreshCategories } = useCategories();
 
   const images = [
     "/products/product-1.jpg",
@@ -77,17 +78,24 @@ export default function App() {
                               ))}
 
                             {!loadingCategories && (error || categories.length === 0) && (
-                              <Typography
-                                variant="body1"
-                                sx={{ color: "white", textAlign: "center", width: "100%" }}
-                              >
-                                No categories available at the time.
-                              </Typography>
+                              <Box sx={{ width: "100%", textAlign: "center", color: "white", }}>
+                                <Typography
+                                  variant="body1"
+                                  sx={{ color: "white", textAlign: "center", width: "100%" }}
+                                >
+                                  No categories available at the time.
+                                </Typography>
+
+                                {error && (
+                                  <Button variant="contained" color="primary" onClick={refreshCategories} disabled={loadingCategories}>{loadingCategories ? "Retrying..." : "Retry"}</Button>
+                                )}
+                              </Box>
                             )}
 
                             {!loadingCategories && !error && categories.length > 0 &&
                               categories.map((category) => (
-                              <MuiLink href={`/products?category=${category?.category?.replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
+                              <Fade in={!loadingCategories} timeout={600} key={category.id}>
+                                <MuiLink component={RouterLink} to={`/products?category=${category?.category?.replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
                                 <Card sx={{
                                   bgcolor: 'background.paper',
                                   transition: 'transform 0.3s ease-in-out',
@@ -125,7 +133,8 @@ export default function App() {
                                       </Typography>
                                   </CardContent>
                                 </Card>
-                              </MuiLink>
+                                </MuiLink>
+                              </Fade>
                             ))}
                           </Box>
                         </Box>

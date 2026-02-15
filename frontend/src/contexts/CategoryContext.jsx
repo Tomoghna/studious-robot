@@ -20,6 +20,12 @@ export function CategoryProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_SERVER_URL;
 
+  if (!API_URL) {
+    setError("Server URL not configured");
+    setLoading(false);
+    return;
+  }
+
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
@@ -31,9 +37,11 @@ export function CategoryProvider({ children }) {
       if (res.ok) {
         setCategories(data.data || []);
       } else {
+        setCategories([]);
         setError(data.message || "Failed to fetch categories...");
       }
     } catch (err) {
+      setCategories([]);
       setError(err?.message ?? "Something went wrong");
     } finally {
       setLoading(false);
