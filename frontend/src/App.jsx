@@ -21,12 +21,13 @@ import RequireAdmin from "./components/RequireAdmin";
 import BackToTop from "./components/BackToTop";
 import CheckoutPage from "./pages/CheckoutPage";
 import BottomNav from "./components/BottomNav";
+import { Skeleton } from "@mui/material";
 
 export default function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  const { categories, loading: loadingCategories } = useCategories();
+  const { categories, loading: loadingCategories, error } = useCategories();
 
   const images = [
     "/products/product-1.jpg",
@@ -61,7 +62,31 @@ export default function App() {
                             Shop by Categories
                           </Typography>
                           <Box sx={{p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center'}}>
-                            {categories.map((category) => (
+                            {loadingCategories &&
+                              Array.from(new Array(4)).map((_, index) => (
+                                <Card
+                                  key={index}
+                                  sx={{ width: 150, bgcolor: "background.paper" }}
+                                >
+                                  <Skeleton variant="rectangular" height={150} />
+                                  <CardContent>
+                                    <Skeleton variant="text" width="80%" />
+                                    <Skeleton variant="text" width="40%" />
+                                  </CardContent>
+                                </Card>
+                              ))}
+
+                            {!loadingCategories && (error || categories.length === 0) && (
+                              <Typography
+                                variant="body1"
+                                sx={{ color: "white", textAlign: "center", width: "100%" }}
+                              >
+                                No categories available at the time.
+                              </Typography>
+                            )}
+
+                            {!loadingCategories && !error && categories.length > 0 &&
+                              categories.map((category) => (
                               <MuiLink href={`/products?category=${category?.category?.replace(' ', '-')}`} sx={{textDecoration: 'none'}} key={category.id}>
                                 <Card sx={{
                                   bgcolor: 'background.paper',

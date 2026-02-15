@@ -36,7 +36,7 @@ export default function BottomNav() {
       >
         <BottomNavigationAction label="Home" icon={<HomeIcon />} onClick={() => navigate('/')} />
         <BottomNavigationAction label="Products" icon={<StorefrontIcon />} onClick={() => navigate('/products')} />
-        <BottomNavigationAction label="Wishlist" icon={<Badge badgeContent={wishlistItems?.length || 0} color="secondary"><FavoriteIcon /></Badge>} onClick={() => navigate('/wishlist')} />
+        <BottomNavigationAction label="Wishlist" icon={<Badge badgeContent={wishlistItems?.length || 0} color="success"><FavoriteIcon /></Badge>} onClick={() => navigate('/wishlist')} />
         <BottomNavigationAction label="Cart" icon={<Badge badgeContent={getCartItemCount() || 0} color="success"><ShoppingCartIcon /></Badge>} onClick={() => navigate('/cart')} />
         <BottomNavigationAction label="Account" icon={user ? ( <Avatar src={getAvatarFromEmail(user.email)} sx={{ width: 24, height: 24 }} /> ) : ( <AccountCircleIcon /> )} onClick={() => { if (!user) { setIsLoginModalOpen(true); } else { navigate('/LoginPage')}}} />
       </BottomNavigation>
