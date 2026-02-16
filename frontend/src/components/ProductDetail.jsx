@@ -23,6 +23,7 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
+import { useAlert } from "../contexts/AlertContext";
 import { useAuthModal } from "../contexts/AuthModalContext";
 import { CircularProgress } from "@mui/material";
 import api from "../utils/api";
@@ -44,6 +45,7 @@ export default function ProductDetail() {
   const { fetchUser, user } = useAuth();
   const { openLogin } = useAuthModal();
   const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
 
   async function fetchProductById() {
     try {
@@ -114,6 +116,7 @@ export default function ProductDetail() {
     if (!reviewText.trim()) return;
     if(!user){
       openLogin();
+      showAlert("Please login to add a review", "info", 2000);
       return;
     }
     (async () => {
@@ -298,28 +301,32 @@ export default function ProductDetail() {
               Reviews ({reviews.length})
             </Typography>
 
-            <Stack spacing={2} sx={{ mb: 2 }}>
-              <TextField
-                label="Name"
-                value={user.name}
-                fullWidth
-              />
-              <Rating
-                value={reviewRating || 0}
-                onChange={(e, v) => setReviewRating(v || 0)}
-              />
-              <TextField
-                label="Review"
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                fullWidth
-                multiline
-                minRows={3}
-              />
-              <Button variant="contained" onClick={handleAddReview}>
-                Add Review
-              </Button>
-            </Stack>
+            {user ? (
+              <Stack spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                  label="Name"
+                  value={user.name}
+                  fullWidth
+                />
+                <Rating
+                  value={reviewRating || 0}
+                  onChange={(e, v) => setReviewRating(v || 0)}
+                />
+                <TextField
+                  label="Review"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  fullWidth
+                  multiline
+                  minRows={3}
+                />
+                <Button variant="contained" onClick={handleAddReview}>
+                  Add Review
+                </Button>
+              </Stack>
+            ) : (
+              <Typography variant="h6">Please <Button onClick={openLogin} color="primary" variant="outlined">Log In / Sign Up</Button> to add a review.</Typography>
+            )}
 
             <Divider sx={{ mb: 2 }} />
 

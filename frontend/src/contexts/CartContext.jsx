@@ -14,6 +14,7 @@ export function useCart() {
 export function CartProvider({ children }) {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
   const { openLogin } = useAuthModal();
 
   // No localStorage fallback: keep cart in memory; server is source of truth when logged in
