@@ -25,9 +25,9 @@ const Contact = () => {
       id: 'whatsapp',
       title: 'WhatsApp',
       description: 'Chat with us on WhatsApp for quick responses',
-      contact: '+91 98765 43210',
+      contact: '+91 63958 59566',
       icon: WhatsAppIcon,
-      action: () => window.open('https://wa.me/919876543210', '_blank'),
+      action: () => window.open('https://wa.me/916395859566', '_blank'),
       color: '#25D366',
       gradient: 'linear-gradient(135deg, #25D366 0%, #5FE5A8 100%)'
     }
