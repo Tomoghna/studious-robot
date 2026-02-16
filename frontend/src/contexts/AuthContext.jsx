@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useAlert } from "./AlertContext";
+import { useSnackbar } from "./SnackbarContext";
 import api from "../utils/api";
 
 const AuthContext = createContext();
@@ -12,6 +13,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { showAlert } = useAlert();
+  const { showSnackbar } = useSnackbar();
 
   const API_URL = import.meta.env.VITE_SERVER_URL; //Replace with the backend url
 
@@ -85,9 +87,13 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       const res = await api.get(`/api/v1/users/loggedinuser`);
-      if (res.status === 200 && res.data?.data) setUser(res.data.data);
+      if (res.status === 200 && res.data?.data) {
+        setUser(res.data.data);
+        showSnackbar(res.data.message, {severity: "success"});
+      }
     } catch (err) {
       console.error("fetchUser error", err);
+      showSnackbar("Failed to fetch user, Kindly login/signup", {severity: "error"});
     } finally {
       setLoading(false);
     }

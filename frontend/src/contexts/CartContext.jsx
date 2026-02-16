@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { useAlert } from "./AlertContext";
 import { useSnackbar } from "./SnackbarContext";
 import { useAuthModal } from "./AuthModalContext";
 import api from "../utils/api";
@@ -37,6 +38,7 @@ export function CartProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to load server cart", err);
+      showSnackbar("Failed to load cart from server", {severity: "error"});
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +52,7 @@ export function CartProvider({ children }) {
     if (!user) {
       // prompt login instead of using localStorage fallback
       openLogin();
+      showAlert("Please login to add items to cart", "info", 2000);
       return;
     }
     // optimistic UI update
@@ -73,11 +76,11 @@ export function CartProvider({ children }) {
         });
         if (res.status === 200) {
           loadServerCart();
-          showSnackbar(res.data?.message || "Failed to add to cart", "success");
+          showSnackbar(res.data?.message || "Added to cart successfully", {severity: "success"});
         }
       } catch (err) {
         console.error("addToCart error", err);
-        showSnackbar(err.message || "Network error while adding to cart", "error");
+        showSnackbar(err.message || "Network error while adding to cart", {severity: "error"});
       }
     })();
   };
@@ -85,6 +88,7 @@ export function CartProvider({ children }) {
   const removeFromCart = (productId) => {
     if (!user) {
       openLogin();
+      showAlert("Please login to remove items from cart", "info", 2000);
       return;
     }
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
@@ -93,11 +97,11 @@ export function CartProvider({ children }) {
         const res = await api.post(`/api/v1/users/cart/remove/${productId}`,);
         if (res.status === 200) {
           loadServerCart();
-          showSnackbar(res.data?.message || "Failed to remove from cart", "success");
+          showSnackbar(res.data?.message || "Removed from cart successfully", {severity: "success"});
         }
       } catch (err) {
         console.error("removeFromCart error", err);
-        showSnackbar(err.message ||"Network error while removing from cart", "error");
+        showSnackbar(err.message ||"Network error while removing from cart", {severity: "error"});
       }
     })();
   };
@@ -105,6 +109,7 @@ export function CartProvider({ children }) {
   const removeItemCart = async (productId) => {
     if (!user) {
       openLogin();
+      showAlert("Please login to remove items from cart", "info", 2000);
       return;
     }
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
@@ -113,11 +118,11 @@ export function CartProvider({ children }) {
         const res = await api.delete(`/api/v1/users/cart/remove-item/${productId}`);
         if (res.status === 200) {
           loadServerCart();
-          showSnackbar(res.data?.message || "Failed to remove from cart", "success");
+          showSnackbar(res.data?.message || "Removed item from cart successfully", {severity: "success"});
         }
       } catch (error) {
         console.error("removeItemCart error", error);
-        showSnackbar(error.message || "Network error while removing from cart", "error");
+        showSnackbar(error.message || "Network error while removing from cart", {severity: "error"});
       }
     })();
   };
@@ -160,6 +165,7 @@ export function CartProvider({ children }) {
         }
       } catch (err) {
         console.error("updateQuantity sync error", err);
+        useAlert("Something went wrong while updating cart quantity, Please try again!", "error", 2000);
       }
     })();
   };

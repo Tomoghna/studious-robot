@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useSnackbar } from "./SnackbarContext";
+import { useAlert } from "./AlertContext";
 import { useAuthModal } from "./AuthModalContext";
 import api from "../utils/api";
 
@@ -13,6 +14,7 @@ export function useWishlist() {
 export function WishlistProvider({ children }) {
   const { user } = useAuth();
   const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
   const { openLogin } = useAuthModal();
 
   // No localStorage fallback: empty wishlist until server provides data when logged in
@@ -31,6 +33,7 @@ export function WishlistProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to load wishlist", err);
+      showSnackbar("Failed to load wishlist from server", {severity: "error"});
     } finally {
       setIsLoading(false);
     }
@@ -46,6 +49,7 @@ export function WishlistProvider({ children }) {
   const addToWishlist = (product) => {
     if (!user) {
       openLogin();
+      showAlert("Please login to add items to wishlist", "info", 2000);
       return;
     }
 
@@ -61,10 +65,10 @@ export function WishlistProvider({ children }) {
       try {
         const res = await api.post(`/api/v1/users/addtowhislist/${productId}`);
         if (res.status === 200)
-          showSnackbar(res.data.message || "Added to wishlist", "success");
+          showSnackbar(res.data.message || "Added to wishlist", {severity: "success"});
       } catch (err) {
         console.error("addToWishlist error", err);
-        showSnackbar("Network error while adding to wishlist", "error");
+        showSnackbar("Network error while adding to wishlist", {severity: "error"});
       }
     })();
   };
@@ -72,6 +76,7 @@ export function WishlistProvider({ children }) {
   const removeFromWishlist = (productId) => {
     if (!user) {
       openLogin();
+      showAlert("Please login to remove items from wishlist", "info", 2000);
       return;
     }
     setWishlistItems((prev) => prev.filter((item) => item.id !== productId));
@@ -80,12 +85,12 @@ export function WishlistProvider({ children }) {
         const res = await api.delete(`/api/v1/users/removefromwhislist/${productId}`);
         if (res.status === 200)
           showSnackbar(
-            res.data.message || "Failed to remove from wishlist",
-            "success",
+            res.data.message || "Removed from wishlist",
+            {severity: "success"}
           );
       } catch (err) {
         console.error("removeFromWishlist error", err);
-        showSnackbar("Network error while removing from wishlist", "error");
+        showSnackbar("Network error while removing from wishlist", {severity: "error"});
       }
     })();
   };
