@@ -141,18 +141,18 @@ export default function ProductDetail() {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(res.data?.message || "Review added", "success");
+          showSnackbar(res.data?.message || "Review added", {severity: "success"});
           fetchProductById();
           // optionally refresh product/user
         } else {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(res.data?.message || "Failed to add review", "error");
+          showSnackbar(res.data?.message || "Failed to add review", {severity: "error"});
         }
       } catch (err) {
         console.error(err);
-        showSnackbar(err.message || "Network error", "error");
+        showSnackbar(err.message || "Network error", {severity: "error"});
       }
     })();
   };
@@ -325,7 +325,7 @@ export default function ProductDetail() {
                 </Button>
               </Stack>
             ) : (
-              <Typography variant="h6">Please <Button onClick={openLogin} color="primary" variant="outlined">Log In / Sign Up</Button> to add a review.</Typography>
+              <Button onClick={openLogin} color="primary" variant="outlined">Please Log In to add a review</Button>
             )}
 
             <Divider sx={{ mb: 2 }} />
