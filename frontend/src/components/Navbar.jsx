@@ -104,9 +104,9 @@ const Navbar = () => {
               </ListItem>
             ) : categories.length > 0 ? (
               categories.map((category) => (
-                <ListItem key={category._id} disablePadding sx={{ pl: 4 }}>
-                  <ListItemButton onClick={() => handleCategoryClick(category.name)}>
-                    <ListItemText primary={category.name} />
+                <ListItem key={category.id} disablePadding sx={{ pl: 4 }}>
+                  <ListItemButton onClick={() => handleCategoryClick(category.category)}>
+                    <ListItemText primary={category.category} />
                   </ListItemButton>
                 </ListItem>
               ))
