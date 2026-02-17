@@ -7,6 +7,9 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import Collapse from "@mui/material/Collapse";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import NumberSpinner from "../components/NumberSpinner";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -27,6 +30,7 @@ import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
 import { useSnackbar } from "../contexts/SnackbarContext";
+import { useAlert } from "../contexts/AlertContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../contexts/CategoryContext";
 import api from "../utils/api";
@@ -123,7 +127,7 @@ function ProductsTab({ onNotify }) {
     });
 
     try {
-      const res = await api.post(`/api/v1/admin/products/create`,formData);
+      const res = await api.post(`/api/v1/admin/products/create`, formData);
       if (res.status === 201) {
         onNotify && onNotify(res.data.message, "success");
         setForm({
@@ -748,6 +752,11 @@ function UsersTab({ onNotify }) {
 
 function OrdersTab({ onNotify }) {
   const [orders, setOrders] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+
+  const handleAddressToggle = (id) => {
+    setExpanded(prev => (prev === id ? null : id));
+  };
 
   const fetchOrders = async () => {
     try {
@@ -784,6 +793,7 @@ function OrdersTab({ onNotify }) {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell />
               <TableCell>Order ID</TableCell>
               <TableCell>User</TableCell>
               <TableCell>Total</TableCell>
@@ -793,35 +803,73 @@ function OrdersTab({ onNotify }) {
           </TableHead>
           <TableBody>
             {orders.map((o) => (
-              <TableRow key={o._id} hover>
-                <TableCell>{o._id}</TableCell>
-                <TableCell>
-                  {o.user?.name} ({o.user?.email})
-                </TableCell>
-                <TableCell>{o.productPrice}</TableCell>
-                <TableCell>{o.orderStatus}</TableCell>
-                <TableCell>
-                  <FormControl size="small" sx={{ minWidth: 140 }}>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      label="Status"
-                      defaultValue={o.orderStatus}
-                      onChange={(e) =>
-                        handleStatusChange(o._id, e.target.value)
-                      }
-                    >
-                      <MenuItem value="pending">pending</MenuItem>
-                      <MenuItem value="confirmed">confirmed</MenuItem>
-                      <MenuItem value="shipped">shipped</MenuItem>
-                      <MenuItem value="delivered">delivered</MenuItem>
-                      <MenuItem value="cancelled">cancelled</MenuItem>
-                      <MenuItem value="returned">returned</MenuItem>
-                    </Select>
-                  </FormControl>
-                </TableCell>
-              </TableRow>
+              <React.Fragment key={o._id}>
+                <TableRow hover>
+                  <TableCell>
+                    <IconButton size="small" onClick={() => handleAddressToggle(o._id)}>
+                      {expanded === o._id ? (
+                        <KeyboardArrowUpIcon />
+                      ) : (
+                        <KeyboardArrowDownIcon />
+                      )}
+                    </IconButton>
+                  </TableCell>
+
+                  <TableCell>{o._id}</TableCell>
+
+                  <TableCell>
+                    {o.user?.name} ({o.user?.email})
+                  </TableCell>
+
+                  <TableCell>{o.productPrice}</TableCell>
+
+                  <TableCell>{o.orderStatus}</TableCell>
+
+                  <TableCell>
+                    <FormControl size="small" sx={{ minWidth: 140 }}>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={o.orderStatus}
+                        label="Status"
+                        onChange={(e) =>
+                          handleStatusChange(o._id, e.target.value)
+                        }
+                      >
+                        <MenuItem value="pending">pending</MenuItem>
+                        <MenuItem value="confirmed">confirmed</MenuItem>
+                        <MenuItem value="shipped">shipped</MenuItem>
+                        <MenuItem value="delivered">delivered</MenuItem>
+                        <MenuItem value="cancelled">cancelled</MenuItem>
+                        <MenuItem value="returned">returned</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+
+                
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ p: 0 }}>
+                    <Collapse in={expanded === o._id} timeout="auto" unmountOnExit>
+                      <Paper sx={{ m: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+                        <Typography variant="h6" gutterBottom>
+                          Shipping Address
+                        </Typography>
+                        <Typography>
+                          {o.address?.street}, {o.address?.city}
+                        </Typography>
+                        <Typography>
+                          {o.address?.state} - {o.address?.zip}
+                        </Typography>
+                        <Typography>{o.address?.country}</Typography>
+                        <Typography>Phone: {o.address?.phone}</Typography>
+                      </Paper>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableBody>
+
         </Table>
       </Paper>
     </Box>
