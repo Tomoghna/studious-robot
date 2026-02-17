@@ -46,7 +46,7 @@ const ProductCard = ({product}) => {
         addToCart(product, 1);
     };
 
-    const isWishlisted = isInWishlist(product.id);
+    const isWishlisted = isInWishlist(product._id);
 
     const renderRating = (rating = 4.5) => {
         const fullStars = Math.floor(rating);
@@ -88,12 +88,12 @@ const ProductCard = ({product}) => {
                     </Typography>
                 </Link>
                 <Box sx={{ mb: 1 }}>{renderRating(product.rating)}</Box>
-                <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>${product.price}</Typography>
+                <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>₹{product.price}</Typography>
             </CardContent>
 
             <CardActions>
                 <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ flex: 1 }}>Buy Now</Button>
-                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ flex: 1 }}>Add to Bag</Button>
+                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ flex: 1 }}>Add to Cart</Button>
             </CardActions>
         </Card>
     );

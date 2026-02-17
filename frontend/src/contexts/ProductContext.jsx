@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAlert } from "./AlertContext";
+import { useSnackbar } from "./SnackbarContext";
 
 const ProductContext = createContext();
 
@@ -16,6 +18,9 @@ export function ProductProvider({ children }) {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [isLoading, setIsLoading] = useState(true);
 
+  const { showAlert } = useAlert();
+  const { showSnackbar } = useSnackbar();
+
   // Initialize with sample products
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -28,6 +33,7 @@ export function ProductProvider({ children }) {
       }
     } catch (error) {
       console.error("Error fetching products:", error);
+      showAlert("Failed to load products, Please try again later!", "error", 3000);
     } finally {
       setIsLoading(false);
     }

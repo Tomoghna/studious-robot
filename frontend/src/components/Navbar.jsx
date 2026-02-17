@@ -25,6 +25,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import CategoryIcon from '@mui/icons-material/Category';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ThreePTwoToneIcon from '@mui/icons-material/ThreePTwoTone';
+import CallTwoToneIcon from '@mui/icons-material/CallTwoTone';
 import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
@@ -55,14 +57,15 @@ const Navbar = () => {
 
   const handleCategoryClick = (categoryName) => {
     setMobileOpen(false);
-    navigate(`/products?category=${categoryName.toLowerCase().replace(/\s+/g, '-')}`);
+    setCategoriesOpen(false);
+    navigate(`/products?category=${categoryName.replace(/\s+/g, '-')}`);
   };
 
   const drawer = (
-    <Box sx={{ width: 260 }} role="presentation" onClick={() => setMobileOpen(false)}>
+    <Box sx={{ width: 260 }} role="presentation">
       <List>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/">
+          <ListItemButton component={Link} to="/" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <HomeIcon/>
             </ListItemIcon>
@@ -71,7 +74,7 @@ const Navbar = () => {
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/products">
+          <ListItemButton component={Link} to="/products" onClick={() => setMobileOpen(false)}>
             <ListItemIcon>
               <Inventory2Icon/>
             </ListItemIcon>
@@ -101,9 +104,9 @@ const Navbar = () => {
               </ListItem>
             ) : categories.length > 0 ? (
               categories.map((category) => (
-                <ListItem key={category._id} disablePadding sx={{ pl: 4 }}>
-                  <ListItemButton onClick={() => handleCategoryClick(category.name)}>
-                    <ListItemText primary={category.name} />
+                <ListItem key={category.id} disablePadding sx={{ pl: 4 }}>
+                  <ListItemButton onClick={() => handleCategoryClick(category.category)}>
+                    <ListItemText primary={category.category} />
                   </ListItemButton>
                 </ListItem>
               ))
@@ -116,30 +119,41 @@ const Navbar = () => {
         </Collapse>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/wishlist">
-            <Badge badgeContent={wishlistItems?.length || 0} color="primary">
-              <FavoriteIcon/>
-            </Badge>
+          <ListItemButton component={Link} to="/wishlist" onClick={() => setMobileOpen(false)}>
+            <ListItemIcon>
+              <Badge badgeContent={wishlistItems?.length || 0} color="success">
+                <FavoriteIcon/>
+              </Badge>
+            </ListItemIcon>
             <ListItemText primary="wishlist"/>
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/cart">
-            <Badge badgeContent={getCartItemCount() || 0} color="primary">
-              <ShoppingCartIcon/>
-            </Badge>
+          <ListItemButton component={Link} to="/cart" onClick={() => setMobileOpen(false)}>
+            <ListItemIcon>
+              <Badge badgeContent={getCartItemCount() || 0} color="success">
+                <ShoppingCartIcon/>
+              </Badge>
+            </ListItemIcon>
             <ListItemText primary="Cart"/>
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/about">
+          <ListItemButton component={Link} to="/about" onClick={() => setMobileOpen(false)}>
+            <ListItemIcon>
+              <ThreePTwoToneIcon />
+            </ListItemIcon>
             <ListItemText primary="About" />
           </ListItemButton>
         </ListItem>
+
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/contact">
+          <ListItemButton component={Link} to="/contact" onClick={() => setMobileOpen(false)}>
+            <ListItemIcon>
+              <CallTwoToneIcon />
+            </ListItemIcon>
             <ListItemText primary="Contact" />
           </ListItemButton>
         </ListItem>

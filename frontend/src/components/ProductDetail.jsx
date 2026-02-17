@@ -23,6 +23,7 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
+import { useAlert } from "../contexts/AlertContext";
 import { useAuthModal } from "../contexts/AuthModalContext";
 import { CircularProgress } from "@mui/material";
 import api from "../utils/api";
@@ -44,6 +45,7 @@ export default function ProductDetail() {
   const { fetchUser, user } = useAuth();
   const { openLogin } = useAuthModal();
   const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
 
   async function fetchProductById() {
     try {
@@ -114,6 +116,7 @@ export default function ProductDetail() {
     if (!reviewText.trim()) return;
     if(!user){
       openLogin();
+      showAlert("Please login to add a review", "info", 2000);
       return;
     }
     (async () => {
@@ -138,18 +141,18 @@ export default function ProductDetail() {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(res.data?.message || "Review added", "success");
+          showSnackbar(res.data?.message || "Review added", {severity: "success"});
           fetchProductById();
           // optionally refresh product/user
         } else {
           setReviewName("");
           setReviewRating(0);
           setReviewText("");
-          showSnackbar(res.data?.message || "Failed to add review", "error");
+          showSnackbar(res.data?.message || "Failed to add review", {severity: "error"});
         }
       } catch (err) {
         console.error(err);
-        showSnackbar(err.message || "Network error", "error");
+        showSnackbar(err.message || "Network error", {severity: "error"});
       }
     })();
   };
@@ -225,7 +228,7 @@ export default function ProductDetail() {
             {product.isNew && <Chip label="New" color="error" sx={{ mt: 1 }} />}
 
             <Typography variant="h5" color="success.main" sx={{ mt: 2, mb: 2 }}>
-              ${product.price}
+              ₹{product.price}
             </Typography>
 
             <Typography color="text.secondary" sx={{ mb: 3 }}>
@@ -257,7 +260,7 @@ export default function ProductDetail() {
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button variant="contained" onClick={handleBuyNow} fullWidth>
-                Buy Now: ${(product.price * quantity).toFixed(2)}
+                Buy Now: ₹{(product.price * quantity).toFixed(2)}
               </Button>
               <Button variant="outlined" onClick={handleAddToCart} fullWidth>
                 Add to Cart
@@ -298,28 +301,32 @@ export default function ProductDetail() {
               Reviews ({reviews.length})
             </Typography>
 
-            <Stack spacing={2} sx={{ mb: 2 }}>
-              <TextField
-                label="Name"
-                value={user.name}
-                fullWidth
-              />
-              <Rating
-                value={reviewRating || 0}
-                onChange={(e, v) => setReviewRating(v || 0)}
-              />
-              <TextField
-                label="Review"
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                fullWidth
-                multiline
-                minRows={3}
-              />
-              <Button variant="contained" onClick={handleAddReview}>
-                Add Review
-              </Button>
-            </Stack>
+            {user ? (
+              <Stack spacing={2} sx={{ mb: 2 }}>
+                <TextField
+                  label="Name"
+                  value={user.name}
+                  fullWidth
+                />
+                <Rating
+                  value={reviewRating || 0}
+                  onChange={(e, v) => setReviewRating(v || 0)}
+                />
+                <TextField
+                  label="Review"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  fullWidth
+                  multiline
+                  minRows={3}
+                />
+                <Button variant="contained" onClick={handleAddReview}>
+                  Add Review
+                </Button>
+              </Stack>
+            ) : (
+              <Button onClick={openLogin} color="primary" variant="outlined">Please Log In to add a review</Button>
+            )}
 
             <Divider sx={{ mb: 2 }} />
 
