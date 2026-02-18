@@ -5,7 +5,10 @@ import { errorMiddleware } from "./middlewares/error-middleware.js";
 const app = express();
 
 const OPTIONS = {
-  origin:"https://studious-robot-steel.vercel.app/",
+  origin:[
+    "http://localhost:5173",
+    "https://studious-robot-steel.vercel.app",
+  ],
   credentials: true,
 }
 
