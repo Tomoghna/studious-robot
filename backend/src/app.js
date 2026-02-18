@@ -5,11 +5,7 @@ import { errorMiddleware } from "./middlewares/error-middleware.js";
 const app = express();
 
 const OPTIONS = {
-  origin: [
-    //process.env.CLIENT_URL
-    "http://localhost:5173",
-    "http://192.168.0.199:5173",
-  ],
+  origin:"https://studious-robot-steel.vercel.app/",
   credentials: true,
 }
 
