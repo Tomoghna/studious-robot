@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 import { useAlert } from "./AlertContext";
 import { useSnackbar } from "./SnackbarContext";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../utils/firebase";
 import api from "../utils/api";
 
 const AuthContext = createContext();
@@ -42,6 +44,19 @@ export function AuthProvider({ children }) {
       throw err;
     }
   };
+
+  const googleLogin = async () => {
+  const result = await signInWithPopup(auth, googleProvider);
+  const idToken = await result.user.getIdToken();
+
+  const res = await axios.post(
+    `${import.meta.env.VITE_SERVER_URL}/api/v1/users/google-login`,
+    { idToken },
+    { withCredentials: true }
+  );
+
+  return res.data.data; // based on your apiResponse structure
+};
 
   const signup = async (email, password, name) => {
     try {
@@ -103,6 +118,6 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  const value = { user, loading, login, signup, logout, fetchUser };
+  const value = { user, loading, login, signup, logout, fetchUser, googleLogin };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

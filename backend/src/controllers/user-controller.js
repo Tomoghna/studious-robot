@@ -61,6 +61,34 @@ const signupUser = asyncHandler(async (req, res) => {
   }
 });
 
+const googleLogin = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    throw new apiError(400, "ID Token required");
+  }
+
+  // Verify Firebase Token
+  const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+  const { uid, email, name, picture } = decodedToken;
+
+  let user = await User.findOne({ _uid: uid });
+
+  if (!user) {
+    user = await User.create({
+      _uid: uid,
+      name,
+      email,
+      avatar: picture,
+    });
+  }
+   return res.status(200).json(
+    new apiResponse(200, user, "Google login successful")
+  );
+});
+
+
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if ([email, password].some((field) => field?.trim() === "")) {
@@ -406,6 +434,7 @@ const updateReviewsOfUser = asyncHandler(async (req, res) => {
 
 export {
   signupUser,
+  googleLogin,
   loginUser,
   logoutUser,
   loggedInUser,

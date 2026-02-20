@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from "react";
-import {useAuth} from "../contexts/AuthContext";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 // ...existing code...
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -16,95 +16,167 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-const LoginForm = ({onSuccess, mode: initialMode = "signin"}) => {
-    const {login, signup} = useAuth();
-    const [mode, setMode] = useState(initialMode);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [error, setError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    //update mode when initalMode prop changes
-    useEffect(() => {
-        setMode(initialMode);
-        setEmail("");
-        setPassword("");
-        setName("");
-        setError("");
-    }, [initialMode]);
+const LoginForm = ({ onSuccess, mode: initialMode = "signin" }) => {
+  const { login, signup, googleLogin } = useAuth();
+  const [mode, setMode] = useState(initialMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  //update mode when initalMode prop changes
+  useEffect(() => {
+    setMode(initialMode);
+    setEmail("");
+    setPassword("");
+    setName("");
+    setError("");
+  }, [initialMode]);
 
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
-    const handleMouseUpPassword = (event) => {
-        event.preventDefault();
-    };
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (isSubmitting) return;
-        setError("");
-        setIsSubmitting(true);
-        try {
-            let returnedUser = null;
-            if (mode === "signup") {
-                returnedUser = await signup(email, password, name);
-            } else {
-                returnedUser = await login(email, password);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setError("");
+    setIsSubmitting(true);
+    try {
+      let returnedUser = null;
+      if (mode === "signup") {
+        returnedUser = await signup(email, password, name);
+      } else {
+        returnedUser = await login(email, password);
+      }
+
+      // Notify parent to close modal / handle navigation
+      onSuccess && onSuccess(returnedUser);
+    } catch (err) {
+      setError("Invalid credentials or network error.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (isSubmitting) return;
+
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const returnedUser = await googleLogin();
+      onSuccess && onSuccess(returnedUser);
+    } catch (err) {
+      setError("Google login failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Stack spacing={2}>
+        {mode === "signup" && (
+          <TextField
+            label="Full Name"
+            variant="outlined"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        )}
+
+        <TextField
+          label="Email"
+          variant="outlined"
+          type="email"
+          fullWidth
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <FormControl sx={{ m: 1, width: "45ch" }} variant="outlined">
+          <InputLabel htmlFor="filled-adornment-password">Password</InputLabel>
+          <FilledInput
+            id="filled-adornment-password"
+            type={showPassword ? "text" : "password"}
+            onChange={(e) => setPassword(e.target.value)}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label={
+                    showPassword ? "hide the password" : "display the password"
+                  }
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  onMouseUp={handleMouseUpPassword}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
             }
+          />
+        </FormControl>
 
-            // Notify parent to close modal / handle navigation
-            onSuccess && onSuccess(returnedUser);
-        } catch (err) {
-            setError("Invalid credentials or network error.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+        {error && <Alert severity="error">{error}</Alert>}
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <Stack spacing={2}>
-                {mode === "signup" && (
-                    <TextField label="Full Name" variant="outlined" fullWidth value={name} onChange={(e) => setName(e.target.value)} required/>
-                )}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 1, py: 1 }}
+          disabled={isSubmitting}
+        >
+          {mode === "signup" ? "Sign Up" : "Sign In"}
+        </Button>
 
-                <TextField label="Email" variant="outlined" type="email" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} required/>
-                
-                <FormControl sx={{m: 1, width: '45ch'}} variant="outlined">
-                    <InputLabel htmlFor="filled-adornment-password">Password</InputLabel>
-                    <FilledInput
-                        id="filled-adornment-password"
-                        type={showPassword ? 'text' : 'password'}
-                        onChange={(e) => setPassword(e.target.value)}
-                        endAdornment={
-                            <InputAdornment position="end">
-                                <IconButton
-                                    aria-label={
-                                        showPassword ? "hide the password" : "display the password"
-                                    }
-                                    onClick={handleClickShowPassword}
-                                    onMouseDown={handleMouseDownPassword}
-                                    onMouseUp={handleMouseUpPassword}
-                                    edge="end"
-                                >
-                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                </IconButton>
-                            </InputAdornment>
-                        }
-                    />
-                </FormControl>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={isSubmitting}
+        >
+          {mode === "signup" ? "Sign Up" : "Sign In"}
+        </Button>
 
-                {error && <Alert severity="error">{error}</Alert>}
+        {/* Divider */}
+        <Divider>OR</Divider>
 
-                <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 1, py: 1}} disabled={isSubmitting}>
-                    {mode === "signup" ? "Sign Up" : "Sign In"}
-                </Button>
-            </Stack>
-        </form>
-    );
+        {/* ✅ Google Login Button */}
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<GoogleIcon />}
+          onClick={handleGoogleLogin}
+          disabled={isSubmitting}
+        >
+          Continue with Google
+        </Button>
+        <Typography variant="body2" textAlign="center">
+          {mode === "signup"
+            ? "Already have an account?"
+            : "Don't have an account?"}
+        </Typography>
+
+        <Button
+          onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+        >
+          {mode === "signup" ? "Switch to Sign In" : "Switch to Sign Up"}
+        </Button>
+      </Stack>
+    </form>
+  );
 };
 
 export default LoginForm;

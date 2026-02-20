@@ -1,6 +1,7 @@
 import express from 'express';
 import {
     signupUser,
+    googleLogin,
     loginUser,
     logoutUser,
     loggedInUser,
@@ -25,6 +26,7 @@ import { authMiddleware } from '../middlewares/auth-middleware.js';
 const router = express.Router();   
 
 router.route('/register').post(signupUser);
+router.post("/google-login", googleLogin);
 router.route('/login').post(loginUser);
 router.route('/logout').post(authMiddleware, logoutUser);
 router.route('/loggedinuser').get(authMiddleware, loggedInUser);
