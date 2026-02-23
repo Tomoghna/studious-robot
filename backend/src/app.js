@@ -23,7 +23,8 @@ app.use(express.static('public'));
 app.use(cookieParser());
 app.use(
   helmet({
-    crossOriginOpenerPolicy: { policy: "unsafe-none" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginEmbedderPolicy: false
   })
 );
 
