@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAlert } from "./AlertContext";
 import { useSnackbar } from "./SnackbarContext";
-import { signInWithRedirect, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase";
 import api from "../utils/api";
 
@@ -31,50 +31,33 @@ export function AuthProvider({ children }) {
         showAlert(res.data.message, "success", 3000);
         return res.data.data.user;
       }
-
     } catch (err) {
-      showAlert(
-        err.response?.data?.message || "Login failed",
-        "error",
-        3000
-      );
+      showAlert(err.response?.data?.message || "Login failed", "error", 3000);
       throw err;
     }
   };
 
   // ================= GOOGLE LOGIN (Redirect Trigger) =================
+
   const googleLogin = async () => {
-    await signInWithRedirect(auth, googleProvider);
-  };
-
-  // ================= HANDLE GOOGLE REDIRECT =================
-  useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-    console.log("Firebase user:", firebaseUser);
-
-    if (!firebaseUser) {
-      console.log("No firebase user after redirect");
-      return;
-    }
-
     try {
+      const result = await signInWithPopup(auth, googleProvider);
+
+      const firebaseUser = result.user;
       const idToken = await firebaseUser.getIdToken();
-      console.log("Firebase token received");
 
       const res = await api.post("/api/v1/users/google-login", {
         idToken,
       });
 
-      console.log("Backend response:", res.data);
-
       setUser(res.data.data);
+
+      showAlert("Google login successful", "success", 2000);
     } catch (error) {
       console.error("Google login error:", error);
+      showAlert("Google login failed", "error", 3000);
     }
-  });
-
-  return () => unsubscribe();
-}, []);
+  };
 
   // ================= SIGNUP =================
   const signup = async (email, password, name) => {
@@ -90,13 +73,8 @@ export function AuthProvider({ children }) {
         showAlert(res.data.message, "success", 2000);
         return res.data.data.user;
       }
-
     } catch (err) {
-      showAlert(
-        err.response?.data?.message || "Signup failed",
-        "error",
-        3000
-      );
+      showAlert(err.response?.data?.message || "Signup failed", "error", 3000);
       throw err;
     }
   };
@@ -110,13 +88,8 @@ export function AuthProvider({ children }) {
         setUser(null);
         showAlert(res.data.message, "success", 2000);
       }
-
     } catch (err) {
-      showAlert(
-        err.response?.data?.message || "Logout failed",
-        "error",
-        2000
-      );
+      showAlert(err.response?.data?.message || "Logout failed", "error", 2000);
     }
   };
 
@@ -130,14 +103,12 @@ export function AuthProvider({ children }) {
       if (res.status === 200 && res.data?.data) {
         setUser(res.data.data);
       }
-
     } catch (err) {
       console.error("fetchUser error", err);
 
       showSnackbar("Failed to fetch user, Kindly login/signup", {
         severity: "error",
       });
-
     } finally {
       setLoading(false);
     }
@@ -158,9 +129,5 @@ export function AuthProvider({ children }) {
     googleLogin,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
