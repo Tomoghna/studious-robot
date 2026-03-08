@@ -387,36 +387,38 @@ function ProductsTab({ onNotify }) {
         </Box>
       </Paper>
 
-      <Paper elevation={1} sx={{ p: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map((p) => (
-              <TableRow key={p._id} hover>
-                <TableCell>{p.name}</TableCell>
-                <TableCell>{p.price}</TableCell>
-                <TableCell>{p.stock}</TableCell>
-                <TableCell>{p.category.category}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => startEdit(p)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(p._id)} color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+      <Paper elevation={1} sx={{ p: 2, overflowX: "auto" }}>
+        <Box sx={{ minWidth: { xs: "100%", sm: "100%" }, overflowX: "auto" }}>
+          <Table sx={{ minWidth: { xs: 300, sm: "100%" } }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Name</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Price</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Stock</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Category</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {products.map((p) => (
+                <TableRow key={p._id} hover>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.name}</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.price}</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.stock}</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.category.category}</TableCell>
+                  <TableCell>
+                    <IconButton size="small" onClick={() => startEdit(p)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDelete(p._id)} color="error">
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
       </Paper>
     </Box>
   );
@@ -719,31 +721,33 @@ function UsersTab({ onNotify }) {
         {users.length === 0 ? (
           <div>No users found (try refreshing)</div>
         ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>NAME</TableCell>
-                <TableCell>EMAIL</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user._id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleBan(user._uid)}>
-                      <BlockIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleUnban(user._uid)}>
-                      <LockOpenIcon />
-                    </IconButton>
-                  </TableCell>
+          <Box sx={{ overflowX: "auto" }}>
+            <Table sx={{ minWidth: { xs: 300, sm: "100%" } }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>NAME</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>EMAIL</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{user.name}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{user.email}</TableCell>
+                    <TableCell>
+                      <IconButton size="small" onClick={() => handleBan(user._uid)}>
+                        <BlockIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleUnban(user._uid)}>
+                        <LockOpenIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
         )}
       </Paper>
     </Box>
@@ -789,88 +793,127 @@ function OrdersTab({ onNotify }) {
 
   return (
     <Box>
-      <Paper sx={{ p: 1 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell>Order ID</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Total</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((o) => (
-              <React.Fragment key={o._id}>
-                <TableRow hover>
-                  <TableCell>
-                    <IconButton size="small" onClick={() => handleAddressToggle(o._id)}>
-                      {expanded === o._id ? (
-                        <KeyboardArrowUpIcon />
-                      ) : (
-                        <KeyboardArrowDownIcon />
-                      )}
-                    </IconButton>
-                  </TableCell>
+      <Paper sx={{ p: 1, overflowX: "auto" }}>
+        <Box sx={{ minWidth: { xs: 400, sm: "100%" }, overflowX: "auto" }}>
+          <Table sx={{ minWidth: { xs: 400, sm: "100%" } }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }} />
+                <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>Order ID</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>User</TableCell>
+                <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>Total</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((o) => (
+                <React.Fragment key={o._id}>
+                  <TableRow hover>
+                    <TableCell>
+                      <IconButton size="small" onClick={() => handleAddressToggle(o._id)}>
+                        {expanded === o._id ? (
+                          <KeyboardArrowUpIcon fontSize="small" />
+                        ) : (
+                          <KeyboardArrowDownIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </TableCell>
 
-                  <TableCell>{o._id}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{o._id}</TableCell>
 
-                  <TableCell>
-                    {o.user?.name} ({o.user?.email})
-                  </TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>
+                      {o.user?.name} ({o.user?.email})
+                    </TableCell>
 
-                  <TableCell>{o.productPrice}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{o.productPrice}</TableCell>
+                  </TableRow>
 
-                  <TableCell>{o.orderStatus}</TableCell>
+                  
+                  <TableRow>
+                    <TableCell colSpan={4} sx={{ p: 0 }}>
+                      <Collapse in={expanded === o._id} timeout="auto" unmountOnExit>
+                        <Paper sx={{ m: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+                          <Box sx={{ mb: 3 }}>
+                            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "0.9rem", sm: "1.25rem" } }}>
+                              Order Status & Actions
+                            </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                                Status: <strong>{o.orderStatus}</strong>
+                              </Typography>
+                              <FormControl size="small" sx={{ minWidth: { xs: 120, sm: 140 } }}>
+                                <InputLabel sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>Update Status</InputLabel>
+                                <Select
+                                  value={o.orderStatus}
+                                  label="Update Status"
+                                  onChange={(e) =>
+                                    handleStatusChange(o._id, e.target.value)
+                                  }
+                                  sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}
+                                >
+                                  <MenuItem value="pending">pending</MenuItem>
+                                  <MenuItem value="confirmed">confirmed</MenuItem>
+                                  <MenuItem value="shipped">shipped</MenuItem>
+                                  <MenuItem value="delivered">delivered</MenuItem>
+                                  <MenuItem value="cancelled">cancelled</MenuItem>
+                                  <MenuItem value="returned">returned</MenuItem>
+                                </Select>
+                              </FormControl>
+                            </Box>
+                          </Box>
 
-                  <TableCell>
-                    <FormControl size="small" sx={{ minWidth: 140 }}>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={o.orderStatus}
-                        label="Status"
-                        onChange={(e) =>
-                          handleStatusChange(o._id, e.target.value)
-                        }
-                      >
-                        <MenuItem value="pending">pending</MenuItem>
-                        <MenuItem value="confirmed">confirmed</MenuItem>
-                        <MenuItem value="shipped">shipped</MenuItem>
-                        <MenuItem value="delivered">delivered</MenuItem>
-                        <MenuItem value="cancelled">cancelled</MenuItem>
-                        <MenuItem value="returned">returned</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </TableCell>
-                </TableRow>
+                          <Box sx={{ mb: 3 }}>
+                            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "0.9rem", sm: "1.25rem" } }}>
+                              Products
+                            </Typography>
+                            {o.items && o.items.length > 0 ? (
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" }, fontWeight: "bold" }}>Product ID</TableCell>
+                                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" }, fontWeight: "bold" }}>Name</TableCell>
+                                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" }, fontWeight: "bold" }}>Quantity</TableCell>
+                                    <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" }, fontWeight: "bold" }}>Price</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {o.items.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.name}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.quantity}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.price}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            ) : (
+                              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>No products found</Typography>
+                            )}
+                          </Box>
 
-                
-                <TableRow>
-                  <TableCell colSpan={6} sx={{ p: 0 }}>
-                    <Collapse in={expanded === o._id} timeout="auto" unmountOnExit>
-                      <Paper sx={{ m: 2, p: 2, backgroundColor: "#f9f9f9" }}>
-                        <Typography variant="h6" gutterBottom>
-                          Shipping Address
-                        </Typography>
-                        <Typography>
-                          {o.address?.street}, {o.address?.city}
-                        </Typography>
-                        <Typography>
-                          {o.address?.state} - {o.address?.zip}
-                        </Typography>
-                        <Typography>{o.address?.country}</Typography>
-                        <Typography>Phone: {o.address?.phone}</Typography>
-                      </Paper>
-                    </Collapse>
-                  </TableCell>
-                </TableRow>
-              </React.Fragment>
-            ))}
-          </TableBody>
+                          <Box>
+                            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "0.9rem", sm: "1.25rem" } }}>
+                              Shipping Address
+                            </Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                              {o.address?.street}, {o.address?.city}
+                            </Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                              {o.address?.state} - {o.address?.zip}
+                            </Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{o.address?.country}</Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone: {o.address?.phone}</Typography>
+                          </Box>
+                        </Paper>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
+              ))}
+            </TableBody>
 
-        </Table>
+          </Table>
+        </Box>
       </Paper>
     </Box>
   );
@@ -891,13 +934,22 @@ export default function AdminPage() {
           Admin Dashboard {user ? `- ${user.name}` : ""}
         </Typography>
 
-        <Paper sx={{ mb: 3 }} elevation={2}>
+        <Paper sx={{ mb: 3, overflowX: "auto" }} elevation={2}>
           <Tabs
             value={activeTab}
             onChange={(e, v) => setActiveTab(v)}
             indicatorColor="primary"
             textColor="primary"
-            variant="fullWidth"
+            variant={{ xs: "scrollable", sm: "fullWidth" }}
+            scrollButtons="auto"
+            sx={{
+              "& .MuiTab-root": {
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                padding: { xs: "8px 12px", sm: "12px 16px" },
+                minWidth: { xs: "auto", sm: "auto" },
+                flex: { sm: 1 },
+              },
+            }}
           >
             {TABS.map((t) => (
               <Tab key={t.key} label={t.label} />
@@ -905,7 +957,7 @@ export default function AdminPage() {
           </Tabs>
         </Paper>
 
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: 3, overflowX: "hidden" }}>
           {activeTab === 0 && <ProductsTab onNotify={onNotify} />}
           {activeTab === 1 && <CategoriesTab onNotify={onNotify} />}
           {activeTab === 2 && <UsersTab onNotify={onNotify} />}
