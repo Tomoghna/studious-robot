@@ -140,7 +140,7 @@ const LoginPage = () => {
 
   if (!user) {
     return (
-      <Box sx={{ maxWidth: 640, mx: 'auto', px: 2, py: 6 }}>
+      <Box sx={{ maxWidth: { xs: '100%', md: 640 }, mx: 'auto', px: { xs: 1, sm: 2 }, py: 6 }}>
         <Typography variant="h5" gutterBottom>Login</Typography>
         <Typography gutterBottom>Please log in to manage your account, addresses and orders.</Typography>
         <Box sx={{ mt: 3 }}><LoginForm /></Box>
@@ -149,11 +149,19 @@ const LoginPage = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 960, mx: 'auto', px: 2, py: 4 }}>
+    <Box sx={{ maxWidth: { xs: '100%', md: 960 }, mx: 'auto', px: { xs: 1, sm: 2 }, py: 4 }}>
       <Typography variant="h5" gutterBottom>Account Management</Typography>
-      <Card variant="outlined">
+      <Card elevation={2} sx={{ width: '100%' }}>
         <CardContent>
-          <Tabs value={tabIndex} onChange={handleTab} aria-label="account tabs">
+          <Tabs 
+            value={tabIndex} 
+            onChange={handleTab} 
+            aria-label="account tabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
             <Tab label="Account Info" />
             <Tab label="Manage Addresses" />
             <Tab label="Orders" />
@@ -180,7 +188,7 @@ const LoginPage = () => {
               <Grid container spacing={2}>
                 {addresses.map(addr => (
                   <Grid item xs={12} md={6} key={addr._id || addr.id}>
-                    <Card variant="outlined">
+                    <Card elevation={1}>
                       <CardContent>
                         <Typography fontWeight={600}>{user.name}</Typography>
                         <Typography>{(addr.AddLine1)}</Typography>
@@ -204,18 +212,18 @@ const LoginPage = () => {
             )}
 
             {adding && (
-              <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Box sx={{ mt: 2, p: { xs: 1, sm: 2 }, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}><TextField label="Address Line 1" name="address1" fullWidth value={form.address1} onChange={handleInput} /></Grid>
                   <Grid item xs={12}><TextField label="Address Line 2" name="address2" fullWidth value={form.address2} onChange={handleInput} /></Grid>
-                  <Grid item xs={12} md={6}><TextField label="Pin Code" name="pin" fullWidth value={form.pin} onChange={handleInput} /></Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}><TextField label="Pin Code" name="pin" fullWidth value={form.pin} onChange={handleInput} /></Grid>
+                  <Grid item xs={12} sm={6}>
                     <TextField select label="State" name="state" fullWidth value={form.state} onChange={handleStateChange}>
                       <MenuItem value="">Select State</MenuItem>
                       {STATES.map(s => <MenuItem key={s.name} value={s.name}>{s.name}</MenuItem>)}
                     </TextField>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField select label="City" name="city" fullWidth value={form.city} onChange={handleInput} disabled={!form.state}>
                       <MenuItem value="">Select City</MenuItem>
                       {(STATES.find(s => s.name === form.state)?.cities || []).map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
@@ -241,7 +249,7 @@ const LoginPage = () => {
             <Grid container spacing={2}>
               {orders.map(o => (
                 <Grid item xs={12} md={6} key={o._id || o.id}>
-                  <Card variant="outlined">
+                  <Card elevation={1}>
                     <CardContent>
                       <Typography fontWeight={600}>Order #{o._id || o.id}</Typography>
                       <Typography>Status: {o.orderStatus}</Typography>
