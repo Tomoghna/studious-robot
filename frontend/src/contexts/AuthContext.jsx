@@ -49,10 +49,11 @@ export function AuthProvider({ children }) {
       const res = await api.post("/api/v1/users/google-login", {
         idToken,
       });
+      console.log("Google login response:", res.data);
 
-      setUser(res.data.data);
-
+      setUser(res.data.data.user);
       showAlert("Google login successful", "success", 2000);
+      return res.data.data.user;
     } catch (error) {
       console.error("Google login error:", error);
       showAlert("Google login failed", "error", 3000);
