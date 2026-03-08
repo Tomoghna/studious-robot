@@ -49,27 +49,32 @@ export function AuthProvider({ children }) {
 
   // ================= HANDLE GOOGLE REDIRECT =================
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) return;
+  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    console.log("Firebase user:", firebaseUser);
 
-      try {
-        const idToken = await firebaseUser.getIdToken();
+    if (!firebaseUser) {
+      console.log("No firebase user after redirect");
+      return;
+    }
 
-        const res = await api.post("/api/v1/users/google-login", {
-          idToken,
-        });
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      console.log("Firebase token received");
 
-        setUser(res.data.data);
+      const res = await api.post("/api/v1/users/google-login", {
+        idToken,
+      });
 
-        console.log("Google login successful");
+      console.log("Backend response:", res.data);
 
-      } catch (error) {
-        console.error("Google auth error:", error);
-      }
-    });
+      setUser(res.data.data);
+    } catch (error) {
+      console.error("Google login error:", error);
+    }
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
 
   // ================= SIGNUP =================
   const signup = async (email, password, name) => {
