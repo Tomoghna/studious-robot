@@ -14,32 +14,30 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const { showAlert } = useAlert();
   const { showSnackbar } = useSnackbar();
 
-  const API_URL = import.meta.env.VITE_SERVER_URL; //Replace with the backend url
-
+  // ================= LOGIN =================
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+      const res = await api.post("/api/v1/users/login", {
+        email,
+        password,
       });
-      const data = await res.json();
-      if (res.ok && data.data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        setUser(data.data.user);
-        showAlert(data.message, "success", 3000);
-        return data.data.user;
-      } else {
-        showAlert(data.message || "Login failed", "error", 3000);
-        throw new Error(data.message || "Login failed");
+
+      if (res.data?.data?.user) {
+        setUser(res.data.data.user);
+        showAlert(res.data.message, "success", 3000);
+        return res.data.data.user;
       }
+
     } catch (err) {
-      showAlert(err.message || "Login failed", "error", 2000);
-      console.error(err);
+      showAlert(
+        err.response?.data?.message || "Login failed",
+        "error",
+        3000
+      );
       throw err;
     }
   };
@@ -49,35 +47,22 @@ export function AuthProvider({ children }) {
     await signInWithRedirect(auth, googleProvider);
   };
 
-  // ================= HANDLE REDIRECT RESULT =================
-
+  // ================= HANDLE GOOGLE REDIRECT =================
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("Auth state changed:", firebaseUser);
-
-      if (!firebaseUser) {
-        return;
-      }
+      if (!firebaseUser) return;
 
       try {
         const idToken = await firebaseUser.getIdToken();
 
-        const res = await fetch(`${API_URL}/api/v1/users/google-login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ idToken }),
+        const res = await api.post("/api/v1/users/google-login", {
+          idToken,
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || "Google login failed");
-        }
-        localStorage.setItem("user", JSON.stringify(data.data));
-
-        setUser(data.data);
+        setUser(res.data.data);
 
         console.log("Google login successful");
+
       } catch (error) {
         console.error("Google auth error:", error);
       }
@@ -86,63 +71,75 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  // ================= SIGNUP =================
   const signup = async (email, password, name) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name, email, password }),
+      const res = await api.post("/api/v1/users/register", {
+        name,
+        email,
+        password,
       });
-      const data = await res.json();
-      if (res.ok && data.data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-        setUser(data.data.user);
-        showAlert(data.message, "success", 2000);
-        return data.data.user;
-      } else {
-        showAlert(data.message || "Signup failed", "error", 3000);
-        throw new Error(data.message || "Signup failed");
+
+      if (res.data?.data?.user) {
+        setUser(res.data.data.user);
+        showAlert(res.data.message, "success", 2000);
+        return res.data.data.user;
       }
+
     } catch (err) {
-      showAlert(err.message || "Signup failed", "error", 4000);
-      console.error(err);
+      showAlert(
+        err.response?.data?.message || "Signup failed",
+        "error",
+        3000
+      );
       throw err;
     }
   };
 
+  // ================= LOGOUT =================
   const logout = async () => {
     try {
-      const res = await api.post(`/api/v1/users/logout`);
+      const res = await api.post("/api/v1/users/logout");
+
       if (res.status === 200) {
-        localStorage.removeItem("user");
         setUser(null);
         showAlert(res.data.message, "success", 2000);
       }
+
     } catch (err) {
-      showAlert(err.message || "Logout failed", "error", 2000);
+      showAlert(
+        err.response?.data?.message || "Logout failed",
+        "error",
+        2000
+      );
     }
   };
 
+  // ================= FETCH LOGGED IN USER =================
   const fetchUser = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/api/v1/users/loggedinuser`);
+
+      const res = await api.get("/api/v1/users/loggedinuser");
+
       if (res.status === 200 && res.data?.data) {
         setUser(res.data.data);
-        showSnackbar(res.data.message, { severity: "success" });
       }
+
     } catch (err) {
       console.error("fetchUser error", err);
+
       showSnackbar("Failed to fetch user, Kindly login/signup", {
         severity: "error",
       });
+
     } finally {
       setLoading(false);
     }
   };
 
-  React.useEffect(() => {
+  // ================= INITIAL USER CHECK =================
+  useEffect(() => {
     fetchUser();
   }, []);
 
@@ -155,5 +152,10 @@ export function AuthProvider({ children }) {
     fetchUser,
     googleLogin,
   };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
