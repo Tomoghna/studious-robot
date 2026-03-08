@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAlert } from "./AlertContext";
 import { useSnackbar } from "./SnackbarContext";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect, onAuthStateChanged } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase";
 import api from "../utils/api";
 
@@ -29,7 +29,6 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       if (res.ok && data.data?.user) {
-        localStorage.setItem("token", data.data.idToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
         setUser(data.data.user);
         showAlert(data.message, "success", 3000);
@@ -39,24 +38,53 @@ export function AuthProvider({ children }) {
         throw new Error(data.message || "Login failed");
       }
     } catch (err) {
-      showAlert( err.message || "Login failed", "error", 2000);
+      showAlert(err.message || "Login failed", "error", 2000);
       console.error(err);
       throw err;
     }
   };
 
+  // ================= GOOGLE LOGIN (Redirect Trigger) =================
   const googleLogin = async () => {
-  const result = await signInWithPopup(auth, googleProvider);
-  const idToken = await result.user.getIdToken();
+    await signInWithRedirect(auth, googleProvider);
+  };
 
-  const res = await axios.post(
-    `${import.meta.env.VITE_SERVER_URL}/api/v1/users/google-login`,
-    { idToken },
-    { withCredentials: true }
-  );
+  // ================= HANDLE REDIRECT RESULT =================
 
-  return res.data.data; // based on your apiResponse structure
-};
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("Auth state changed:", firebaseUser);
+
+      if (!firebaseUser) {
+        return;
+      }
+
+      try {
+        const idToken = await firebaseUser.getIdToken();
+
+        const res = await fetch(`${API_URL}/api/v1/users/google-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ idToken }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Google login failed");
+        }
+        localStorage.setItem("user", JSON.stringify(data.data));
+
+        setUser(data.data);
+
+        console.log("Google login successful");
+      } catch (error) {
+        console.error("Google auth error:", error);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const signup = async (email, password, name) => {
     try {
@@ -68,7 +96,6 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       if (res.ok && data.data?.user) {
-        localStorage.setItem("token", data.data.idToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
         setUser(data.data.user);
         showAlert(data.message, "success", 2000);
@@ -78,7 +105,7 @@ export function AuthProvider({ children }) {
         throw new Error(data.message || "Signup failed");
       }
     } catch (err) {
-      showAlert(err.message || "Signup failed" , "error", 4000);
+      showAlert(err.message || "Signup failed", "error", 4000);
       console.error(err);
       throw err;
     }
@@ -88,7 +115,6 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.post(`/api/v1/users/logout`);
       if (res.status === 200) {
-        localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
         showAlert(res.data.message, "success", 2000);
@@ -104,11 +130,13 @@ export function AuthProvider({ children }) {
       const res = await api.get(`/api/v1/users/loggedinuser`);
       if (res.status === 200 && res.data?.data) {
         setUser(res.data.data);
-        showSnackbar(res.data.message, {severity: "success"});
+        showSnackbar(res.data.message, { severity: "success" });
       }
     } catch (err) {
       console.error("fetchUser error", err);
-      showSnackbar("Failed to fetch user, Kindly login/signup", {severity: "error"});
+      showSnackbar("Failed to fetch user, Kindly login/signup", {
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -118,6 +146,14 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  const value = { user, loading, login, signup, logout, fetchUser, googleLogin };
+  const value = {
+    user,
+    loading,
+    login,
+    signup,
+    logout,
+    fetchUser,
+    googleLogin,
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

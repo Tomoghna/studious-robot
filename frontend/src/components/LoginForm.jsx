@@ -141,15 +141,6 @@ const LoginForm = ({ onSuccess, mode: initialMode = "signin" }) => {
           {mode === "signup" ? "Sign Up" : "Sign In"}
         </Button>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={isSubmitting}
-        >
-          {mode === "signup" ? "Sign Up" : "Sign In"}
-        </Button>
-
         {/* Divider */}
         <Divider>OR</Divider>
 
