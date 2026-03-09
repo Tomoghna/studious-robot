@@ -26,9 +26,9 @@ const Cart = () => {
 
   if (!isLoading &&  cartItems.length === 0) {
     return (
-      <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+      <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 2, sm: 4 } }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h4" gutterBottom>Your cart is empty</Typography>
+          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }} gutterBottom>Your cart is empty</Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>Looks like you haven't added any items yet</Typography>
           <Button component={Link} to="/products" variant="contained" color="primary">Continue Shopping</Button>
         </Box>
@@ -36,32 +36,34 @@ const Cart = () => {
     );
   }
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Container sx={{ py: { xs: 2, sm: 4 } }}>
+      <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' }, mb: 2 }}>
         Shopping Cart ({getCartItemCount()} items)
       </Typography>
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 4 }}>
         <Grid item xs={12} md={8}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {cartItems.map((item) => (
-              <Paper key={item._id} sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-                <Link to={`/product/${item._id}`} style={{ width: 96, height: 96 }}>
-                  <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+              <Paper key={item._id} sx={{ p: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1.5, sm: 2 }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+                <Link to={`/product/${item._id}`} style={{ width: '100%', flexShrink: 0 }}>
+                  <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 8, maxWidth: '120px' }} />
                 </Link>
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
                   <Link to={`/product/${item._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{item.name}</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal' }}>{item.name}</Typography>
                   </Link>
-                  <Typography color="text.secondary">Price: ₹{item.price}</Typography>
+                  <Typography color="text.secondary" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>Price: ₹{item.price}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <IconButton onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</IconButton>
-                  <Typography sx={{ width: 32, textAlign: 'center' }}>{item.quantity}</Typography>
-                  <IconButton onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</IconButton>
-                </Box>
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant="h6">₹{(item.price * item.quantity).toFixed(2)}</Typography>
-                  <Button color="error" onClick={() => removeItemCart(item._id)}>Remove</Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-start' } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton size="small" onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</IconButton>
+                    <Typography sx={{ width: 32, textAlign: 'center', fontSize: '0.9rem' }}>{item.quantity}</Typography>
+                    <IconButton size="small" onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</IconButton>
+                  </Box>
+                  <Box sx={{ textAlign: { xs: 'right', sm: 'right' } }}>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>₹{(item.price * item.quantity).toFixed(2)}</Typography>
+                    <Button color="error" size="small" onClick={() => removeItemCart(item._id)}>Remove</Button>
+                  </Box>
                 </Box>
               </Paper>
             ))}
@@ -69,18 +71,18 @@ const Cart = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>Order Summary</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', color: 'text.secondary', mb: 1 }}>
+          <Paper sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} gutterBottom>Order Summary</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', color: 'text.secondary', mb: 1, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               <span>Subtotal</span>
               <span>₹{getCartTotal().toFixed(2)}</span>
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', color: 'text.secondary', mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', color: 'text.secondary', mb: 2, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               <span>Shipping</span>
               <span>Free</span>
             </Box>
             <Divider sx={{ my: 2 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, mb: 2, fontSize: { xs: '0.95rem', sm: '1rem' } }}>
               <span>Total</span>
               <span>₹{getCartTotal().toFixed(2)}</span>
             </Box>
