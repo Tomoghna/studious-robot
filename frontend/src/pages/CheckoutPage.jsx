@@ -84,9 +84,9 @@ const CheckoutPage = () => {
           {selectedAddress ? (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 1, bgcolor: 'background.paper', boxShadow: 1 }}>
               <Box>
-                <Typography sx={{ fontWeight: 600 }}>{selectedAddress.fullName}</Typography>
-                <Typography sx={{ color: 'text.secondary' }}>{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}</Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>{selectedAddress.phone}</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{user.name}</Typography>
+                <Typography sx={{ color: 'text.secondary' }}>{selectedAddress.AddLine1}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.pinCode}</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>{user.phone}</Typography>
               </Box>
               <Button variant="text" onClick={() => setAddressOpen((s) => !s)}>Change</Button>
             </Box>
@@ -99,7 +99,7 @@ const CheckoutPage = () => {
               {user.address.map((addr, idx) => (
                 <React.Fragment key={idx}>
                   <ListItem button selected={selectedAddress === addr} onClick={() => { setSelectedAddress(addr); setAddressOpen(false); }}>
-                    <ListItemText primary={addr.fullName} secondary={`${addr.street}, ${addr.city}, ${addr.state}, ${addr.zip} • ${addr.phone}`} />
+                    <ListItemText primary={user.name} secondary={`${addr.AddLine1}, ${addr.city}, ${addr.state}, ${addr.pinCode} • ${user.phone}`} />
                     {addr.defaultAddress && <Typography variant="caption" color="primary">Default</Typography>}
                   </ListItem>
                   <Divider />
