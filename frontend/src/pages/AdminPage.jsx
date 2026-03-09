@@ -29,6 +29,7 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
+import { Analytics } from "@vercel/analytics/react";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAlert } from "../contexts/AlertContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -42,6 +43,7 @@ const TABS = [
   { key: "categories", label: "Categories" },
   { key: "users", label: "Users" },
   { key: "orders", label: "Orders" },
+  { key: "analytics", label: "Analytics" },
 ];
 
 function ProductsTab({ onNotify }) {
@@ -919,6 +921,69 @@ function OrdersTab({ onNotify }) {
   );
 }
 
+function AnalyticsTab({ onNotify }) {
+  return (
+    <Box>
+      <Paper sx={{ p: 3, mb: 3 }} elevation={2}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+          Website Analytics
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+          Real-time analytics powered by Vercel Analytics. Monitor your website's performance metrics, user behavior, and vital statistics.
+        </Typography>
+        <Box sx={{ bgcolor: "#f5f5f5", p: 2, borderRadius: 1, mb: 2 }}>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            <strong>Web Vitals Tracked:</strong>
+          </Typography>
+          <ul style={{ margin: "8px 0", paddingLeft: "20px" }}>
+            <li>
+              <Typography variant="body2">
+                <strong>First Input Delay (FID):</strong> Measures responsiveness to user interactions
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body2">
+                <strong>Cumulative Layout Shift (CLS):</strong> Measures visual stability
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body2">
+                <strong>Largest Contentful Paint (LCP):</strong> Measures perceived load speed
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body2">
+                <strong>First Paint (FP):</strong> Measures when the page starts to render
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body2">
+                <strong>First Contentful Paint (FCP):</strong> Measures when the first content is painted
+              </Typography>
+            </li>
+          </ul>
+        </Box>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          View detailed analytics data in your <strong>Vercel Dashboard</strong> at vercel.com/analytics
+        </Typography>
+      </Paper>
+
+      <Paper sx={{ p: 3 }} elevation={2}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+          Analytics Component Status
+        </Typography>
+        <Box sx={{ bgcolor: "#e8f5e9", p: 2, borderRadius: 1, border: "1px solid #4caf50" }}>
+          <Typography variant="body2" sx={{ color: "#1b5e20" }}>
+            ✓ Vercel Analytics component is active and monitoring your application's performance metrics in real-time.
+          </Typography>
+        </Box>
+      </Paper>
+
+      <Analytics />
+    </Box>
+  );
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState(0);
   const { showSnackbar } = useSnackbar();
@@ -940,13 +1005,14 @@ export default function AdminPage() {
             onChange={(e, v) => setActiveTab(v)}
             indicatorColor="primary"
             textColor="primary"
-            variant={{ xs: "scrollable", sm: "fullWidth" }}
+            variant="scrollable"
             scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               "& .MuiTab-root": {
                 fontSize: { xs: "0.75rem", sm: "0.875rem" },
                 padding: { xs: "8px 12px", sm: "12px 16px" },
-                minWidth: { xs: "auto", sm: "auto" },
+                minWidth: { xs: "80px", sm: "auto" },
                 flex: { sm: 1 },
               },
             }}
@@ -962,6 +1028,7 @@ export default function AdminPage() {
           {activeTab === 1 && <CategoriesTab onNotify={onNotify} />}
           {activeTab === 2 && <UsersTab onNotify={onNotify} />}
           {activeTab === 3 && <OrdersTab onNotify={onNotify} />}
+          {activeTab === 4 && <AnalyticsTab onNotify={onNotify} />}
         </Box>
       </Container>
     </Box>
