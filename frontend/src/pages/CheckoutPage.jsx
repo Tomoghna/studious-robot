@@ -86,6 +86,7 @@ const CheckoutPage = () => {
       const res = await api.post("/api/v1/users/orders/create", payload);
 
       const { order, razorpayOrder } = res.data.data;
+      console.log(order, razorpayOrder)
       const orderId = order._id;
 
       // Store orderId in localStorage for persistence across redirects
@@ -116,7 +117,7 @@ const CheckoutPage = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
             });
-
+            console.log("Res",verifyRes)
             if (verifyRes.status === 200) {
               localStorage.removeItem('pendingOrderId'); // Clear on success
               showSnackbar("Payment successful", "success");
