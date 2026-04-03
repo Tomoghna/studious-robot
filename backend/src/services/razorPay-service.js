@@ -33,7 +33,8 @@ router.post(
 
       if (event.event === "payment.captured") {
         const payment = event.payload.payment.entity;
-        const orderId = payment.order_id;
+        console.log("payment",payment);
+        const orderId = payment.order._id;
 
         const order = await Order.findOne({
           "payment.razorpayOrderId": orderId,
@@ -72,13 +73,14 @@ router.post(
             );
           }
         }
+        console.log("razorpay",order)
 
         await order.save();
       }
 
       if (event.event === "payment.failed") {
         const payment = event.payload.payment.entity;
-        const orderId = payment.order_id;
+        const orderId = payment.order._id;
 
         const order = await Order.findOne({
           "payment.razorpayOrderId": orderId,
