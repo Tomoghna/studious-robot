@@ -30,6 +30,7 @@ const CheckoutPage = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressOpen, setAddressOpen] = useState(false);
+  const [orderId, setOrderId] = useState(null); // Add this for persistence
 
   useEffect(() => {
     if (user?.address?.length) {
@@ -38,6 +39,13 @@ const CheckoutPage = () => {
       setSelectedAddress(defaultAddr);
     } else {
       setSelectedAddress(null);
+    }
+
+    // Check for pending orderId in localStorage (e.g., after redirect)
+    const storedOrderId = localStorage.getItem('pendingOrderId');
+    if (storedOrderId) {
+      setOrderId(storedOrderId);
+      // Optionally, you can add logic here to verify the payment if redirected
     }
   }, [user]);
 
@@ -78,6 +86,11 @@ const CheckoutPage = () => {
       const res = await api.post("/api/v1/users/orders/create", payload);
 
       const { order, razorpayOrder } = res.data.data;
+      const orderId = order._id;
+
+      // Store orderId in localStorage for persistence across redirects
+      localStorage.setItem('pendingOrderId', orderId);
+      setOrderId(orderId);
 
       // COD flow
       if (paymentMethod === "COD") {
@@ -98,13 +111,14 @@ const CheckoutPage = () => {
         handler: async function (response) {
           try {
             const verifyRes = await api.post("/api/v1/payment/verify-payment", {
-              orderId: order._id,
+              orderId,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
             });
 
             if (verifyRes.status === 200) {
+              localStorage.removeItem('pendingOrderId'); // Clear on success
               showSnackbar("Payment successful", "success");
               navigate("/orders");
             } else {
@@ -121,6 +135,7 @@ const CheckoutPage = () => {
 
         modal: {
           ondismiss: function () {
+            localStorage.removeItem('pendingOrderId'); // Clear on cancel
             showSnackbar("Payment cancelled", "error");
           },
         },
@@ -143,6 +158,7 @@ const CheckoutPage = () => {
       const razorpay = new window.Razorpay(options);
 
       razorpay.on("payment.failed", function (response) {
+        localStorage.removeItem('pendingOrderId'); // Clear on failure
         showSnackbar(response.error.description || "Payment failed", "error");
       });
 

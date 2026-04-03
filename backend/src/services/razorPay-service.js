@@ -13,9 +13,10 @@ router.post(
   async (req, res, next) => {
     try {
       const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
+      if (!secret) {
+        throw new apiError(500, "Webhook secret is missing");
+      }
       const signature = req.headers["x-razorpay-signature"];
-
       if (!signature) {
         throw new apiError(400, "Signature missing");
       }
@@ -33,25 +34,31 @@ router.post(
 
       if (event.event === "payment.captured") {
         const payment = event.payload.payment.entity;
-        console.log("payment",payment);
-        const orderId = payment.order._id;
+        const razorpayOrderId = payment.order_id;
 
         const order = await Order.findOne({
-          "payment.razorpayOrderId": orderId,
+          "payment.razorpayOrderId": razorpayOrderId,
         });
 
         if (!order) {
           throw new apiError(404, "Order not found");
         }
 
+        // Prevent duplicate stock reduction if webhook is triggered again
+        if (order.payment.status === "paid") {
+          return res.status(200).json(
+            new apiResponse(200, [], "Order already processed")
+          );
+        }
+
         order.payment.status = "paid";
         order.payment.razorpayPaymentId = payment.id;
+        order.payment.razorpayOrderId = razorpayOrderId;
         order.payment.transactionId = payment.id;
         order.orderStatus = "confirmed";
 
         for (const item of order.items) {
           const product = await Product.findById(item.product);
-
           if (!product) {
             throw new apiError(
               404,
@@ -59,31 +66,30 @@ router.post(
             );
           }
 
-          if (product.stock >= item.quantity) {
-            product.stock -= item.quantity;
-
-            await product.save();
-
-            item.price = product.price;
-            item.name = product.name;
-          } else {
+          if (product.stock < item.quantity) {
             throw new apiError(
               400,
               `Only ${product.stock} items left in stock for product ${product.name}`
             );
           }
+
+          product.stock -= item.quantity;
+          await product.save();
+
+          item.price = product.price;
+          item.name = product.name;
         }
-        console.log("razorpay",order)
 
         await order.save();
       }
 
       if (event.event === "payment.failed") {
         const payment = event.payload.payment.entity;
-        const orderId = payment.order._id;
+
+        const razorpayOrderId = payment.order_id;
 
         const order = await Order.findOne({
-          "payment.razorpayOrderId": orderId,
+          "payment.razorpayOrderId": razorpayOrderId,
         });
 
         if (!order) {
@@ -127,7 +133,7 @@ router.post("/verify-payment", async (req, res, next) => {
 
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
+      .update(body)
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
@@ -141,14 +147,6 @@ router.post("/verify-payment", async (req, res, next) => {
     if (!order) {
       throw new apiError(404, "Order not found");
     }
-
-    order.payment.razorpayPaymentId = razorpay_payment_id;
-    order.payment.razorpayOrderId = razorpay_order_id;
-    order.payment.transactionId = razorpay_payment_id;
-    order.payment.status = "paid";
-    order.orderStatus = "confirmed";
-
-    await order.save();
 
     return res.status(200).json(
       new apiResponse(
@@ -164,6 +162,5 @@ router.post("/verify-payment", async (req, res, next) => {
     next(error);
   }
 });
-
 
 export default router;
