@@ -44,26 +44,26 @@ const Cart = () => {
         <Grid item xs={12} md={8}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {cartItems.map((item) => (
-              <Paper key={item._id} sx={{ p: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1.5, sm: 2 }, alignItems: { xs: 'flex-start', sm: 'center' } }}>
-                <Link to={`/product/${item._id}`} style={{ width: '100%', flexShrink: 0 }}>
-                  <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 8, maxWidth: '120px' }} />
-                </Link>
-                <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
-                  <Link to={`/product/${item._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal' }}>{item.name}</Typography>
+              <Paper key={item._id} sx={{ p: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0, width: { xs: '100%', sm: 'auto' }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
+                  <Link to={`/product/${item._id}`} style={{ flexShrink: 0, minWidth: 120 }}>
+                    <img src={item.images[0]} alt={item.name} style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }} />
                   </Link>
-                  <Typography color="text.secondary" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>Price: ₹{item.price}</Typography>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Link to={`/product/${item._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</Typography>
+                    </Link>
+                    <Typography color="text.secondary" sx={{ fontSize: { xs: '0.85rem', sm: '1rem' }, whiteSpace: 'nowrap' }}>Price: ₹{item.price}</Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-start' } }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'row', sm: 'column' }, alignItems: { xs: 'center', sm: 'flex-end' }, gap: { xs: 1, sm: 1 }, width: { xs: '100%', sm: 'auto' } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'background.paper', borderRadius: 1, p: '2px 6px' }}>
                     <IconButton size="small" onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</IconButton>
                     <Typography sx={{ width: 32, textAlign: 'center', fontSize: '0.9rem' }}>{item.quantity}</Typography>
                     <IconButton size="small" onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</IconButton>
                   </Box>
-                  <Box sx={{ textAlign: { xs: 'right', sm: 'right' } }}>
-                    <Typography variant="h6" sx={{ fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>₹{(item.price * item.quantity).toFixed(2)}</Typography>
-                    <Button color="error" size="small" onClick={() => removeItemCart(item._id)}>Remove</Button>
-                  </Box>
+                  <Typography variant="h6" sx={{ fontSize: { xs: '0.95rem', sm: '1.25rem' }, mt: { xs: 0, sm: 1 } }}>₹{(item.price * item.quantity).toFixed(2)}</Typography>
+                  <Button color="error" size="small" onClick={() => removeItemCart(item._id)}>Remove</Button>
                 </Box>
               </Paper>
             ))}
