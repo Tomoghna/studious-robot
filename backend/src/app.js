@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middlewares/error-middleware.js";
+import razorpayWebhookRoutes from "./services/razorPay-service.js";
 import helmet from "helmet";
 const app = express();
 
@@ -16,6 +17,9 @@ const OPTIONS = {
 app.use(cors(
     OPTIONS
 ));
+
+//razorpay payment
+app.use("/api/v1/payment", razorpayWebhookRoutes);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -4,73 +4,82 @@ import { Order } from "../models/order-model.js";
 import { Product } from "../models/product-model.js";
 import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
-import { validateRazorpaySignature } from "../services/razorPay-service.js";
 
 
 const createOrder = asyncHandler(async (req, res) => {
-    const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET
-    });
-    const { items, shippingAddress, payment } = req.body;
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
 
-    if ([items, shippingAddress, payment].some((field) => field?.trim === "")) {
-        throw new apiError(400, "All fields are required!")
+  const { items, shippingAddress, payment } = req.body;
+
+  if (!items?.length || !shippingAddress || !payment) {
+    throw new apiError(400, "All fields are required!");
+  }
+
+  let productPrice = 0;
+  let razorpayOrder = null;
+
+  for (const item of items) {
+    const product = await Product.findById(item.product);
+
+    if (!product) {
+      throw new apiError(
+        404,
+        `Product with ID ${item.product} not found`
+      );
     }
-    let productPrice = 0;
-    let  razorpayOrder;
+
+    if (product.stock < item.quantity) {
+      throw new apiError(
+        400,
+        `Only ${product.stock} items left in stock for ${product.name}`
+      );
+    }
+
+    item.price = product.price;
+    item.name = product.name;
+
+    productPrice += product.price * item.quantity;
 
     if (payment === "COD") {
-        for (const item of items) {
-            const product = await Product.findById(item.product);
-            if (!product) {
-                throw new apiError(404, `Product with ID ${item.product} not found`);
-            }
-            if (product.stock < item.quantity) {
-                throw new apiError(400, `Only ${product.stock} items left in stock for product ${product.name}`);
-            }
-            product.stock -= item.quantity;
-            await product.save();
-            item.price = product.price;
-            item.name = product.name;
-            productPrice += item.price * item.quantity;
-        }
-    } else {
-        //create orderId from razorpay
-        razorpayOrder = razorpay.orders.create({
-            amount: productPrice * 100,
-            currency: "INR",
-            receipt: `receipt_order_${Date.now()}`,
-            payment_capture: 0
-        })
+      product.stock -= item.quantity;
+      await product.save();
     }
+  }
 
-    const order = await Order.create({
-        user: req.user._id,
-        items,
-        productPrice,
-        shippingAddress,
-        payment: {
-            method: payment,
-            status: payment === "COD" ? "COD" : "pending",
-            razorpayOrderId: razorpayOrder ? razorpayOrder.id : null
-        }
+  if (payment === "Razorpay") {
+    razorpayOrder = await razorpay.orders.create({
+      amount: productPrice * 100,
+      currency: "INR",
+      receipt: `receipt_order_${Date.now()}`,
     });
+  }
 
-    if (payment === "Razorpay") {
-        validateRazorpaySignature();
-    }
+  const order = await Order.create({
+    user: req.user._id,
+    items,
+    productPrice,
+    shippingAddress,
+    payment: {
+      method: payment,
+      status: payment === "COD" ? "unpaid" : "pending",
+      razorpayOrderId: razorpayOrder ? razorpayOrder.id : null,
+    },
+  });
 
-    return res
-        .status(201)
-        .json(
-            new apiResponse(
-                201,
-                order,
-                "Order created successfully!!!"
-            )
-        )
-})
+  return res.status(201).json(
+    new apiResponse(
+      201,
+      {
+        order,
+        razorpayOrder,
+      },
+      "Order created successfully!!!"
+    )
+  );
+});
 
 const getOrders = asyncHandler(async (req, res) => {
     const orders = await Order.find({ user: req.user._id }).populate("items.product");

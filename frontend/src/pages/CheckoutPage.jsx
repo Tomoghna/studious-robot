@@ -42,31 +42,122 @@ const CheckoutPage = () => {
   const handleBack = () => setActiveStep((s) => Math.max(s - 1, 0));
 
   const handleCreateOrder = async () => {
+  try {
     if (!selectedAddress) {
-      showSnackbar('Please select an address', 'error');
+      showSnackbar("Please select an address", "error");
       return;
     }
 
     if (!cartItems || cartItems.length === 0) {
-      showSnackbar('Your cart is empty', 'error');
+      showSnackbar("Your cart is empty", "error");
       return;
     }
 
-    const items = cartItems.map((ci) => ({ product: ci.id, quantity: ci.quantity, price: ci.price }));
-    try {
-      const res = await api.post(`/api/v1/users/orders/create`,{ items, shippingAddress: selectedAddress, payment: { method: 'COD' } });
-      if (res.status === 200) {
-        showSnackbar(res.data.message || 'Order created', 'success');
-        navigate('/orders');
-      } else {
-        showSnackbar(res.data.message || 'Order creation failed', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      showSnackbar(err.message || 'Network error', 'error');
-    }
-  };
+    const items = cartItems.map((item) => ({
+      product: item.id,
+      quantity: item.quantity,
+    }));
 
+    const payload = {
+      items,
+      shippingAddress: {
+        fullName: selectedAddress.fullName,
+        phone: selectedAddress.phone,
+        address: selectedAddress.address,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        postalCode: selectedAddress.postalCode,
+        country: selectedAddress.country || "India",
+      },
+      payment: paymentMethod, // "COD" or "Razorpay"
+    };
+
+    const res = await api.post("/api/v1/users/orders/create", payload);
+
+    const { order, razorpayOrder } = res.data.data;
+
+    // COD flow
+    if (paymentMethod === "COD") {
+      showSnackbar("Order placed successfully", "success");
+      navigate("/orders");
+      return;
+    }
+
+    // Razorpay flow
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      order_id: razorpayOrder.id,
+      name: "Your Store Name",
+      description: "Order Payment",
+
+      handler: async function (response) {
+        try {
+          const verifyRes = await api.post(
+            "/api/v1/payment/verify-payment",
+            {
+              orderId: order._id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            }
+          );
+
+          if (verifyRes.status === 200) {
+            showSnackbar("Payment successful", "success");
+            navigate("/orders");
+          } else {
+            showSnackbar("Payment verification failed", "error");
+          }
+        } catch (error) {
+          console.error(error);
+          showSnackbar(
+            error?.response?.data?.message || "Payment verification failed",
+            "error"
+          );
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          showSnackbar("Payment cancelled", "error");
+        },
+      },
+
+      prefill: {
+        name: user?.name || "",
+        email: user?.email || "",
+        contact: user?.phone || "",
+      },
+
+      notes: {
+        orderId: order._id,
+      },
+
+      theme: {
+        color: "#111827",
+      },
+    };
+
+    const razorpay = new window.Razorpay(options);
+
+    razorpay.on("payment.failed", function (response) {
+      showSnackbar(
+        response.error.description || "Payment failed",
+        "error"
+      );
+    });
+
+    razorpay.open();
+  } catch (err) {
+    console.error(err);
+    showSnackbar(
+      err?.response?.data?.message || err.message || "Order creation failed",
+      "error"
+    );
+  }
+};
   return (
     <Box sx={{ maxWidth: 920, mx: 'auto', py: 6, px: 2 }}>
       <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
