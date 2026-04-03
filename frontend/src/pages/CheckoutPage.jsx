@@ -84,17 +84,19 @@ const CheckoutPage = () => {
       };
 
       const res = await api.post("/api/v1/users/orders/create", payload);
+      console.log(res);
 
       const { order, razorpayOrder } = res.data.data;
       console.log(order, razorpayOrder)
-      const orderId = order._id;
+      const currentOrderId = order._id; // Capture order ID before callback
 
       // Store orderId in localStorage for persistence across redirects
-      localStorage.setItem('pendingOrderId', orderId);
-      setOrderId(orderId);
+      localStorage.setItem('pendingOrderId', currentOrderId);
+      setOrderId(currentOrderId);
 
       // COD flow
       if (paymentMethod === "COD") {
+        localStorage.removeItem('pendingOrderId');
         showSnackbar("Order placed successfully", "success");
         navigate("/orders");
         return;
@@ -111,8 +113,15 @@ const CheckoutPage = () => {
 
         handler: async function (response) {
           try {
+            // Use captured orderId from closure, fallback to localStorage
+            const orderIdToVerify = currentOrderId || localStorage.getItem('pendingOrderId');
+            
+            if (!orderIdToVerify) {
+              throw new Error("Order ID not found. Please try again.");
+            }
+            
             const verifyRes = await api.post("/api/v1/payment/verify-payment", {
-              orderId,
+              orderId: orderIdToVerify,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,

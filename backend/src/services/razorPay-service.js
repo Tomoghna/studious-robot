@@ -46,9 +46,9 @@ router.post(
 
         // Prevent duplicate stock reduction if webhook is triggered again
         if (order.payment.status === "paid") {
-          return res.status(200).json(
-            new apiResponse(200, [], "Order already processed")
-          );
+          return res
+            .status(200)
+            .json(new apiResponse(200, [], "Order already processed"));
         }
 
         order.payment.status = "paid";
@@ -62,14 +62,14 @@ router.post(
           if (!product) {
             throw new apiError(
               404,
-              `Product with ID ${item.product} not found`
+              `Product with ID ${item.product} not found`,
             );
           }
 
           if (product.stock < item.quantity) {
             throw new apiError(
               400,
-              `Only ${product.stock} items left in stock for product ${product.name}`
+              `Only ${product.stock} items left in stock for product ${product.name}`,
             );
           }
 
@@ -102,17 +102,21 @@ router.post(
         await order.save();
       }
 
-      return res.status(200).json(
-        new apiResponse(200, [], "Webhook handled successfully")
-      );
+      return res
+        .status(200)
+        .json(new apiResponse(200, [], "Webhook handled successfully"));
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 router.post("/verify-payment", async (req, res, next) => {
   try {
+    if (!req.body) {
+      throw new apiError(400, "Request body is empty");
+    }
+
     const {
       orderId,
       razorpay_payment_id,
@@ -120,12 +124,19 @@ router.post("/verify-payment", async (req, res, next) => {
       razorpay_signature,
     } = req.body;
 
-    if (
-      !orderId ||
-      !razorpay_payment_id ||
-      !razorpay_order_id ||
-      !razorpay_signature
-    ) {
+    // Log for debugging
+    console.log("Verify payment request:", {
+      orderId,
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+    });
+
+    if (!orderId) {
+      throw new apiError(400, "Order ID is required");
+    }
+
+    if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
       throw new apiError(400, "All payment fields are required");
     }
 
@@ -155,8 +166,8 @@ router.post("/verify-payment", async (req, res, next) => {
           orderId: order._id,
           paymentId: razorpay_payment_id,
         },
-        "Payment verified successfully"
-      )
+        "Payment verified successfully",
+      ),
     );
   } catch (error) {
     next(error);
