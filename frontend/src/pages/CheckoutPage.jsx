@@ -60,20 +60,17 @@ const CheckoutPage = () => {
       }
 
       const items = cartItems.map((item) => ({
-        product: item.id,
+        product: item._id,
         quantity: item.quantity,
       }));
 
       const payload = {
         items,
         shippingAddress: {
-          fullName: selectedAddress.fullName,
-          phone: selectedAddress.phone,
-          address: selectedAddress.address,
+          AddLine1: selectedAddress.AddLine1,
           city: selectedAddress.city,
           state: selectedAddress.state,
-          postalCode: selectedAddress.postalCode,
-          country: selectedAddress.country || "India",
+          pinCode: selectedAddress.pinCode,
         },
         payment: paymentMethod, // "COD" or "Razorpay"
       };
