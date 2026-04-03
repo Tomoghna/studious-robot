@@ -13,6 +13,7 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   const { items, shippingAddress, payment } = req.body;
+  console.log("order",items, shippingAddress, payment)
 
   if (!items?.length || !shippingAddress || !payment) {
     throw new apiError(400, "All fields are required!");
@@ -68,6 +69,7 @@ const createOrder = asyncHandler(async (req, res) => {
       razorpayOrderId: razorpayOrder ? razorpayOrder.id : null,
     },
   });
+  console.log("created", order)
 
   return res.status(201).json(
     new apiResponse(

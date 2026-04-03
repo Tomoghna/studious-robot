@@ -66,12 +66,12 @@ const CheckoutPage = () => {
 
       const payload = {
         items,
-        shippingAddress: {
-          AddLine1: selectedAddress.AddLine1,
-          city: selectedAddress.city,
-          state: selectedAddress.state,
-          pinCode: selectedAddress.pinCode,
-        },
+        shippingAddress: `
+          AddLine1: ${selectedAddress.AddLine1},
+          city: ${selectedAddress.city},
+          state: ${selectedAddress.state},
+          pinCode: ${selectedAddress.pinCode},
+        `,
         payment: paymentMethod, // "COD" or "Razorpay"
       };
 
