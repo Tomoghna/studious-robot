@@ -9,7 +9,7 @@ const app = express();
 const OPTIONS = {
   origin:[
     "http://localhost:5173",
-    "https://studious-robot-eta.vercel.app",
+    "https://mayurhamsa.com",
   ],
   credentials: true,
 }
