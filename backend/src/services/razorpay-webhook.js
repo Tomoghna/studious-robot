@@ -12,10 +12,13 @@ router.post(
   express.raw({ type: "application/json" }),
   async (req, res, next) => {
     try {
+      console.log("webhook hit")
       const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+      console.log("sec", secret)
       if (!secret) {
         throw new apiError(500, "Webhook secret is missing");
       }
+      console.log("sig", signature)
       const signature = req.headers["x-razorpay-signature"];
       if (!signature) {
         throw new apiError(400, "Signature missing");
@@ -25,6 +28,8 @@ router.post(
       shasum.update(req.body);
 
       const generatedSignature = shasum.digest("hex");
+
+      console.log("gene", generatedSignature)
 
       if (generatedSignature !== signature) {
         throw new apiError(400, "Invalid signature");
