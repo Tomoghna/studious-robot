@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useCategories } from '../contexts/CategoryContext';
 import { useSearchParams } from 'react-router-dom';
@@ -105,13 +105,15 @@ const PriceFilter = ({ priceRange, onChange }) => {
   }, [priceRange]);
 
   const handleMinChange = (value) => {
-    const newRange = { ...localRange, min: parseInt(value) || 0 };
+    const parsed = parseInt(value);
+    const newRange = { ...localRange, min: Number.isNaN(parsed) ? 0 : parsed };
     setLocalRange(newRange);
     debouncedOnChange(newRange);
   };
 
   const handleMaxChange = (value) => {
-    const newRange = { ...localRange, max: parseInt(value) || 1000 };
+    const parsed = parseInt(value);
+    const newRange = { ...localRange, max: Number.isNaN(parsed) ? priceRange.max : parsed };
     setLocalRange(newRange);
     debouncedOnChange(newRange);
   };
@@ -155,6 +157,19 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
 
+  const defaultMaxPrice = useMemo(
+    () => Math.max(1000, ...products.map((product) => product.price || 0)),
+    [products],
+  );
+
+  useEffect(() => {
+    if (products.length === 0) return;
+    setPriceRange((prevRange) => ({
+      min: prevRange.min,
+      max: prevRange.max < defaultMaxPrice ? defaultMaxPrice : prevRange.max,
+    }));
+  }, [defaultMaxPrice, products.length]);
+
   // Initialize selected categories from URL parameter
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -190,7 +205,7 @@ export default function Products() {
   };
 
   const hasActiveFilters = () => {
-    return selectedCategories.length > 0 || priceRange.min > 0 || priceRange.max < 1000;
+    return selectedCategories.length > 0 || priceRange.min > 0 || priceRange.max < defaultMaxPrice;
   };
 
   const filteredProducts = products.filter(product => {
@@ -215,7 +230,7 @@ export default function Products() {
   const clearFilters = () => {
     setSelectedCategories([]);
     setSearchParams({});
-    setPriceRange({ min: 0, max: 1000 });
+    setPriceRange({ min: 0, max: defaultMaxPrice });
     setCurrentPage(1);
   };
 
@@ -333,7 +348,7 @@ export default function Products() {
               }}
               size="small"
             >
-              Filters {hasActiveFilters() && `(${selectedCategories.length + (priceRange.min > 0 || priceRange.max < 1000 ? 1 : 0)})`}
+              Filters {hasActiveFilters() && `(${selectedCategories.length + (priceRange.min > 0 || priceRange.max < defaultMaxPrice ? 1 : 0)})`}
             </Button>
           )}
         </Box>
