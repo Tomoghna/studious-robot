@@ -30,7 +30,6 @@ const CheckoutPage = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressOpen, setAddressOpen] = useState(false);
-  const [orderId, setOrderId] = useState(null); // Add this for persistence
 
   useEffect(() => {
     if (user?.address?.length) {
@@ -40,15 +39,7 @@ const CheckoutPage = () => {
     } else {
       setSelectedAddress(null);
     }
-
-    // Check for pending orderId in localStorage (e.g., after redirect)
-    const storedOrderId = localStorage.getItem('pendingOrderId');
-    if (storedOrderId) {
-      setOrderId(storedOrderId);
-      // Optionally, you can add logic here to verify the payment if redirected
-    }
-  }, [user]);
-
+  });
   const steps = ["Address", "Review", "Payment"];
 
   const handleNext = () =>
@@ -84,19 +75,13 @@ const CheckoutPage = () => {
       };
 
       const res = await api.post("/api/v1/users/orders/create", payload);
-      console.log(res);
 
       const { order, razorpayOrder } = res.data.data;
-      console.log(order, razorpayOrder)
-      const currentOrderId = order._id; // Capture order ID before callback
-
-      // Store orderId in localStorage for persistence across redirects
-      localStorage.setItem('pendingOrderId', currentOrderId);
-      setOrderId(currentOrderId);
+      const currentOrderId = order._id;
 
       // COD flow
       if (paymentMethod === "COD") {
-        localStorage.removeItem('pendingOrderId');
+        localStorage.removeItem("pendingOrderId");
         showSnackbar("Order placed successfully", "success");
         navigate("/orders");
         return;
@@ -108,27 +93,23 @@ const CheckoutPage = () => {
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         order_id: razorpayOrder.id,
-        name: "Your Store Name",
+        name: "Mayur Hamsa",
         description: "Order Payment",
 
         handler: async function (response) {
           try {
-            // Use captured orderId from closure, fallback to localStorage
-            const orderIdToVerify = currentOrderId || localStorage.getItem('pendingOrderId');
-            
-            if (!orderIdToVerify) {
+            if (!currentOrderId) {
               throw new Error("Order ID not found. Please try again.");
             }
-            
+
             const verifyRes = await api.post("/api/v1/payment/verify-payment", {
-              orderId: orderIdToVerify,
+              orderId: currentOrderId,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
             });
-            console.log("Res",verifyRes)
             if (verifyRes.status === 200) {
-              localStorage.removeItem('pendingOrderId'); // Clear on success
+              localStorage.removeItem("pendingOrderId"); // Clear on success
               showSnackbar("Payment successful", "success");
               navigate("/orders");
             } else {
@@ -145,7 +126,7 @@ const CheckoutPage = () => {
 
         modal: {
           ondismiss: function () {
-            localStorage.removeItem('pendingOrderId'); // Clear on cancel
+            localStorage.removeItem("pendingOrderId"); // Clear on cancel
             showSnackbar("Payment cancelled", "error");
           },
         },
@@ -168,7 +149,7 @@ const CheckoutPage = () => {
       const razorpay = new window.Razorpay(options);
 
       razorpay.on("payment.failed", function (response) {
-        localStorage.removeItem('pendingOrderId'); // Clear on failure
+        localStorage.removeItem("pendingOrderId"); // Clear on failure
         showSnackbar(response.error.description || "Payment failed", "error");
       });
 

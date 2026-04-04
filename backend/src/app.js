@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middlewares/error-middleware.js";
-import razorpayWebhookRoutes from "./services/razorPay-service.js";
+import razorpayWebhookRoutes from "./services/razorpay-webhook.js";
+import razorpayVerifyPayment from "./services/razorpay-verifyPayment.js";
 import helmet from "helmet";
 const app = express();
 
@@ -18,8 +19,13 @@ app.use(cors(
     OPTIONS
 ));
 
-//razorpay payment
-app.use("/api/v1/payment", razorpayWebhookRoutes);
+//razorpay webhook
+app.use(
+  "/api/v1/payment",
+  express.raw({ type: "application/json" }),
+  razorpayWebhookRoutes
+);
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,8 +38,15 @@ app.use(
   })
 );
 
-
 app.set('trust proxy', true);
+//razorpay verify-payment
+app.use("/api/v1/payment", razorpayVerifyPayment);
+
+
+//health-check
+app.get('/api/health', (req, res)=>{
+    res.status(200).json({ status: "Mayur Hamsa! Health check successful..." });
+})
 
 //Routes
 import userRoutes from "./routes/user-route.js";
