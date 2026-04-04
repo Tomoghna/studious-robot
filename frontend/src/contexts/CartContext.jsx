@@ -27,7 +27,6 @@ export function CartProvider({ children }) {
     setIsLoading(true);
     try {
       const res = await api.get(`/api/v1/users/cart`);
-      console.log(res);
       if (res.status === 200 && res.data?.data) {
         const mapped = res.data.data.items.map((i) => ({
           _id: i.product?._id || i.product,
@@ -40,7 +39,6 @@ export function CartProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to load server cart", err);
-      showSnackbar("Failed to load cart from server", {severity: "error"});
     } finally {
       setIsLoading(false);
     }

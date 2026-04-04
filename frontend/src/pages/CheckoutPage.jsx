@@ -78,7 +78,6 @@ const CheckoutPage = () => {
 
       const { order, razorpayOrder } = res.data.data;
       const currentOrderId = order._id;
-      console.log(order, razorpayOrder)
 
       // COD flow
       if (paymentMethod === "COD") {
@@ -98,8 +97,6 @@ const CheckoutPage = () => {
         description: "Order Payment",
 
         handler: async function (response) {
-          console.log("response", response)
-          console.log("orderId", currentOrderId)
           try {
             if (!currentOrderId) {
               throw new Error("Order ID not found. Please try again.");

@@ -1,7 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import apiError from "../utils/apiError.js";
 import apiResponse from "../utils/apiResponse.js";
-import { Product } from "../models/product-model.js";
 import { Category } from "../models/category-model.js";
 
 const createCategory = asyncHandler(async (req, res) => {
@@ -18,7 +17,7 @@ const createCategory = asyncHandler(async (req, res) => {
   let categoryDoc = await Category.findOne({ category });
   if (!categoryDoc) {
     categoryDoc = await Category.create({
-      category,
+      category: category.trim(),
       image,
     });
   }

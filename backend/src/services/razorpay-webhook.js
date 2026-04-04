@@ -59,13 +59,6 @@ router.post("/",
           throw new apiError(404, "Order not found");
         }
 
-        // Prevent duplicate webhook processing
-        if (order.stockReduced) {
-          return res.status(200).json(
-            new apiResponse(200, [], "Order already processed"),
-          );
-        }
-
         await session.startTransaction();
 
         order.payment.status = "paid";

@@ -363,12 +363,12 @@ function ProductsTab({ onNotify }) {
 
         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
           {!editing ? (
-            <Button variant="contained" onClick={handleCreate}>
+            <Button variant="contained" onClick={handleCreate} disabled={isLoading}>
               {isLoading ? "Creating..." : "Create Product"}
             </Button>
           ) : (
             <>
-              <Button variant="contained" onClick={handleUpdate}>
+              <Button variant="contained" onClick={handleUpdate} disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save"}
               </Button>
               <Button
@@ -610,12 +610,12 @@ function CategoriesTab({ onNotify }) {
 
         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
           {!editing ? (
-            <Button variant="contained" onClick={handleCreate}>
+            <Button variant="contained" onClick={handleCreate} disabled={isLoading}>
               {isLoading ? "Creating..." : "Create Category"}
             </Button>
           ) : (
             <>
-              <Button variant="contained" onClick={handleUpdate}>
+              <Button variant="contained" onClick={handleUpdate} disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save"}
               </Button>
               <Button
