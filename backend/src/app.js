@@ -21,7 +21,7 @@ app.use(cors(
 
 //razorpay webhook
 app.use(
-  "/api/v1/payment",
+  "/pay",
   express.raw({ type: "application/json" }),
   razorpayWebhookRoutes
 );
