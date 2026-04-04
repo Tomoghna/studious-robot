@@ -91,7 +91,7 @@ const CheckoutPage = () => {
       // Razorpay flow
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: (razorpayOrder.amount * 100),
+        amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         order_id: razorpayOrder.id,
         name: "Mayur Hamsa",

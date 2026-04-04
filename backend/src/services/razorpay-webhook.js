@@ -31,14 +31,17 @@ router.post(
       }
 
       const event = JSON.parse(req.body.toString("utf-8"));
+      console.log("event", event)
 
-      if (event.event === "payment.captured") {
+      if (event.event === "payment.captured" || event.event === "order.paid" ) {
         const payment = event.payload.payment.entity;
         const razorpayOrderId = payment.order_id;
 
         const order = await Order.findOne({
           "payment.razorpayOrderId": razorpayOrderId,
         });
+
+        console.log("order", order);
 
         if (!order) {
           throw new apiError(404, "Order not found");
