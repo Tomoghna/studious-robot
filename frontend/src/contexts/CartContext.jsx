@@ -27,9 +27,10 @@ export function CartProvider({ children }) {
     setIsLoading(true);
     try {
       const res = await api.get(`/api/v1/users/cart`);
+      console.log(res);
       if (res.status === 200 && res.data?.data) {
         const mapped = res.data.data.items.map((i) => ({
-          _id: i.product._id || i.product,
+          _id: i.product?._id || i.product,
           name: i.product.name,
           price: i.price,
           images: i.product.images || [],

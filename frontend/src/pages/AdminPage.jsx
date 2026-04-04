@@ -47,6 +47,7 @@ const TABS = [
 ];
 
 function ProductsTab({ onNotify }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
   const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
@@ -127,7 +128,7 @@ function ProductsTab({ onNotify }) {
     form.newImages.forEach((img, idx) => {
       formData.append("images", img.file);
     });
-
+    setIsLoading(true);
     try {
       const res = await api.post(`/api/v1/admin/products/create`, formData);
       if (res.status === 201) {
@@ -146,6 +147,8 @@ function ProductsTab({ onNotify }) {
       } else throw new Error(res.data.message || "Failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Create failed", "error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -184,7 +187,7 @@ function ProductsTab({ onNotify }) {
     form.newImages.forEach((img) => {
       formData.append("images", img.file);
     });
-
+    setIsLoading(true);
     try {
       const res = await api.patch(`/api/v1/admin/products/update/${editing}`, formData);
       console.log(res)
@@ -196,6 +199,8 @@ function ProductsTab({ onNotify }) {
     } catch (err) {
       console.error(err)
       onNotify && onNotify(err.message || "Update failed", "error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -359,12 +364,12 @@ function ProductsTab({ onNotify }) {
         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
           {!editing ? (
             <Button variant="contained" onClick={handleCreate}>
-              Create Product
+              {isLoading ? "Creating..." : "Create Product"}
             </Button>
           ) : (
             <>
               <Button variant="contained" onClick={handleUpdate}>
-                Save
+                {isLoading ? "Saving..." : "Save"}
               </Button>
               <Button
                 variant="outlined"
@@ -427,6 +432,7 @@ function ProductsTab({ onNotify }) {
 }
 
 function CategoriesTab({ onNotify }) {
+  const [isLoading, setIsLoading] = useState(false);
   const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
@@ -466,7 +472,8 @@ function CategoriesTab({ onNotify }) {
     const formData = new FormData();
     formData.append("category", form.name);
     formData.append("image", form.image);
-
+    
+    setIsLoading(true);
     try {
       const res = await api.post(`/api/v1/admin/category/create`, formData);
       if (res.status === 201) {
@@ -477,6 +484,8 @@ function CategoriesTab({ onNotify }) {
     } catch (err) {
       console.error(err)
       onNotify && onNotify(err.message || "Create failed", "error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -513,7 +522,7 @@ function CategoriesTab({ onNotify }) {
     if (form.image) {
       formData.append("image", form.image);
     }
-
+    setIsLoading(true);
     try {
       const res = await api.patch(`/api/v1/admin/category/edit/${editing}`, formData);
       if (res.status === 200) {
@@ -524,6 +533,8 @@ function CategoriesTab({ onNotify }) {
       } else throw new Error(res.data?.message || "Update failed");
     } catch (err) {
       onNotify && onNotify(err.message || "Update failed", "error");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -600,12 +611,12 @@ function CategoriesTab({ onNotify }) {
         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
           {!editing ? (
             <Button variant="contained" onClick={handleCreate}>
-              Create Category
+              {isLoading ? "Creating..." : "Create Category"}
             </Button>
           ) : (
             <>
               <Button variant="contained" onClick={handleUpdate}>
-                Save
+                {isLoading ? "Saving..." : "Save"}
               </Button>
               <Button
                 variant="outlined"
@@ -680,8 +691,9 @@ function UsersTab({ onNotify }) {
     } catch (err) {
       console.error(err);
       onNotify && onNotify("Network error", "error");
+    }finally{
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -769,6 +781,7 @@ function OrdersTab({ onNotify }) {
       const res = await api.get(`/api/v1/admin/orders`);
       if (res.status === 200) {
         setOrders(res.data.data || []);
+        console.log("order", orders)
       } else
         onNotify && onNotify(res.data.message || "Failed to fetch orders", "error");
     } catch (err) {

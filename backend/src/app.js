@@ -5,50 +5,52 @@ import { errorMiddleware } from "./middlewares/error-middleware.js";
 import razorpayWebhookRoutes from "./services/razorpay-webhook.js";
 import razorpayVerifyPayment from "./services/razorpay-verifyPayment.js";
 import helmet from "helmet";
+
 const app = express();
 
 const OPTIONS = {
-  origin:[
+  origin: [
     "http://localhost:5173",
     "https://mayurhamsa.com",
   ],
   credentials: true,
-}
+};
 
-app.use(cors(
-    OPTIONS
-));
+app.use(cors(OPTIONS));
+app.use(cookieParser());
 
-//razorpay webhook
 app.use(
-  "/pay",
+  helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+
+app.set("trust proxy", true);
+
+
+app.use(
+  "/webhook",
   express.raw({ type: "application/json" }),
-  razorpayWebhookRoutes
+  razorpayWebhookRoutes,
 );
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
-app.use(cookieParser());
-app.use(
-  helmet({
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-    crossOriginEmbedderPolicy: false
-  })
-);
+app.use(express.static("public"));
 
-app.set('trust proxy', true);
-//razorpay verify-payment
+// Razorpay verify-payment
 app.use("/api/v1/payment", razorpayVerifyPayment);
 
+// Health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "Mayur Hamsa! Health check successful...",
+  });
+});
 
-//health-check
-app.get('/api/health', (req, res)=>{
-    res.status(200).json({ status: "Mayur Hamsa! Health check successful..." });
-})
-
-//Routes
+// Routes
 import userRoutes from "./routes/user-route.js";
 import cartRoutes from "./routes/cart-route.js";
 import productRoutes from "./routes/product-routes.js";

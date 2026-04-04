@@ -155,11 +155,10 @@ export default function App() {
                                   )}
                                 </Box>
                               )}
-
                               {!loadingCategories && !error && categories.length > 0 &&
                                 categories.map((category) => (
                                   <Fade in={!loadingCategories} timeout={600} key={category.id}>
-                                    <MuiLink component={RouterLink} to={`/products?category=${category?.category?.replace(' ', '-')}`} sx={{ textDecoration: 'none' }} key={category.id}>
+                                    <MuiLink component={RouterLink} to={`/products?category=${category?.category?.trim()?.replace(' ', '-')}`} sx={{ textDecoration: 'none' }} key={category.id}>
                                       <Card sx={{
                                         bgcolor: 'background.paper',
                                         transition: 'transform 0.3s ease-in-out',

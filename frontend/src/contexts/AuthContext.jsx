@@ -106,10 +106,6 @@ export function AuthProvider({ children }) {
       }
     } catch (err) {
       console.error("fetchUser error", err);
-
-      showSnackbar("Failed to fetch user, Kindly login/signup", {
-        severity: "error",
-      });
     } finally {
       setLoading(false);
     }

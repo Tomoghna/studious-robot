@@ -1,5 +1,6 @@
 import express from "express";
 import crypto from "crypto";
+import mongoose from "mongoose";
 import { Product } from "../models/product-model.js";
 import { Order } from "../models/order-model.js";
 import apiError from "../utils/apiError.js";
@@ -7,66 +8,74 @@ import apiResponse from "../utils/apiResponse.js";
 
 const router = express.Router();
 
-router.post(
-  "/webhook",
+router.post("/",
   express.raw({ type: "application/json" }),
   async (req, res, next) => {
+    const session = await mongoose.startSession();
+
     try {
-      console.log("webhook hit")
+      console.log("Webhook hit");
+
       const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-      console.log("sec", secret)
+
       if (!secret) {
         throw new apiError(500, "Webhook secret is missing");
       }
-      console.log("sig", signature)
+
       const signature = req.headers["x-razorpay-signature"];
+
       if (!signature) {
         throw new apiError(400, "Signature missing");
       }
 
-      const shasum = crypto.createHmac("sha256", secret);
-      shasum.update(req.body);
+      const generatedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(req.body)
+        .digest("hex");
 
-      const generatedSignature = shasum.digest("hex");
+      const isValidSignature = crypto.timingSafeEqual(
+        Buffer.from(generatedSignature),
+        Buffer.from(signature),
+      );
 
-      console.log("gene", generatedSignature)
-
-      if (generatedSignature !== signature) {
+      if (!isValidSignature) {
         throw new apiError(400, "Invalid signature");
       }
 
-      const event = JSON.parse(req.body.toString("utf-8"));
-      console.log("event", event)
+      const event = JSON.parse(req.body.toString("utf8"));
 
-      if (event.event === "payment.captured" || event.event === "order.paid" ) {
+      console.log("Webhook event:", event.event);
+
+      // Handle successful payment
+      if (event.event === "payment.captured") {
         const payment = event.payload.payment.entity;
         const razorpayOrderId = payment.order_id;
 
         const order = await Order.findOne({
           "payment.razorpayOrderId": razorpayOrderId,
-        });
-
-        console.log("order", order);
+        }).session(session);
 
         if (!order) {
           throw new apiError(404, "Order not found");
         }
 
-        // Prevent duplicate stock reduction if webhook is triggered again
-        if (order.payment.status === "paid") {
-          return res
-            .status(200)
-            .json(new apiResponse(200, [], "Order already processed"));
+        // Prevent duplicate webhook processing
+        if (order.stockReduced) {
+          return res.status(200).json(
+            new apiResponse(200, [], "Order already processed"),
+          );
         }
+
+        await session.startTransaction();
 
         order.payment.status = "paid";
         order.payment.razorpayPaymentId = payment.id;
-        order.payment.razorpayOrderId = razorpayOrderId;
         order.payment.transactionId = payment.id;
         order.orderStatus = "confirmed";
 
         for (const item of order.items) {
-          const product = await Product.findById(item.product);
+          const product = await Product.findById(item.product).session(session);
+
           if (!product) {
             throw new apiError(
               404,
@@ -74,31 +83,45 @@ router.post(
             );
           }
 
+          // If payment succeeded but stock is not enough
           if (product.stock < item.quantity) {
-            throw new apiError(
-              400,
-              `Only ${product.stock} items left in stock for product ${product.name}`,
+            order.orderStatus = "stock_issue";
+
+            await order.save({ session });
+            await session.commitTransaction();
+            session.endSession();
+
+            return res.status(200).json(
+              new apiResponse(
+                200,
+                [],
+                `Payment received but stock issue occurred for product ${product.name}`,
+              ),
             );
           }
 
           product.stock -= item.quantity;
-          await product.save();
+          await product.save({ session });
 
           item.price = product.price;
           item.name = product.name;
         }
 
-        await order.save();
+        order.stockReduced = true;
+
+        await order.save({ session });
+
+        await session.commitTransaction();
       }
 
+      // Handle failed payment
       if (event.event === "payment.failed") {
         const payment = event.payload.payment.entity;
-
         const razorpayOrderId = payment.order_id;
 
         const order = await Order.findOne({
           "payment.razorpayOrderId": razorpayOrderId,
-        });
+        }).session(session);
 
         if (!order) {
           throw new apiError(404, "Order not found");
@@ -107,13 +130,17 @@ router.post(
         order.payment.status = "failed";
         order.orderStatus = "pending";
 
-        await order.save();
+        await order.save({ session });
       }
+
+      session.endSession();
 
       return res
         .status(200)
         .json(new apiResponse(200, [], "Webhook handled successfully"));
     } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
       next(error);
     }
   },
