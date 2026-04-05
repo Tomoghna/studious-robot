@@ -9,9 +9,7 @@ import Typography from "@mui/material/Typography";
 import GoogleIcon from "@mui/icons-material/Google";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import Alert from "@mui/material/Alert";
-import { FilledInput, IconButton } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
+import { IconButton } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -104,18 +102,19 @@ const LoginForm = ({ onSuccess, mode: initialMode = "signin" }) => {
           required
         />
 
-        <FormControl sx={{ m: 1, width: "45ch" }} variant="outlined">
-          <InputLabel htmlFor="filled-adornment-password">Password</InputLabel>
-          <FilledInput
-            id="filled-adornment-password"
-            type={showPassword ? "text" : "password"}
-            onChange={(e) => setPassword(e.target.value)}
-            endAdornment={
+        <TextField
+          label="Password"
+          variant="outlined"
+          type={showPassword ? "text" : "password"}
+          fullWidth
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          InputProps={{
+            endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  aria-label={
-                    showPassword ? "hide the password" : "display the password"
-                  }
+                  aria-label={showPassword ? "hide the password" : "display the password"}
                   onClick={handleClickShowPassword}
                   onMouseDown={handleMouseDownPassword}
                   onMouseUp={handleMouseUpPassword}
@@ -124,9 +123,9 @@ const LoginForm = ({ onSuccess, mode: initialMode = "signin" }) => {
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
-            }
-          />
-        </FormControl>
+            ),
+          }}
+        />
 
         {error && <Alert severity="error">{error}</Alert>}
 
