@@ -126,7 +126,7 @@ export default function App() {
                             <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 4 }}>
                               Shop by Categories
                             </Typography>
-                            <Box sx={{ p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                            <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                               {loadingCategories &&
                                 Array.from(new Array(4)).map((_, index) => (
                                   <Card
