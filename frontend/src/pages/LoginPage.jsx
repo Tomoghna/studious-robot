@@ -215,16 +215,17 @@ const LoginPage = () => {
               <Box sx={{ mt: 2, p: { xs: 1, sm: 2 }, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}><TextField label="Address Line 1" name="address1" fullWidth value={form.address1} onChange={handleInput} /></Grid>
-                  <Grid item xs={12}><TextField label="Address Line 2" name="address2" fullWidth value={form.address2} onChange={handleInput} /></Grid>
+                  <Grid item xs={12}><TextField label="Address Line 2 (Optional)" name="address2" fullWidth value={form.address2} onChange={handleInput} /></Grid>
                   <Grid item xs={12} sm={6}><TextField label="Pin Code" name="pin" fullWidth value={form.pin} onChange={handleInput} /></Grid>
+                  <Grid item xs={12}><TextField label="Phone Number" fullWidth value={user.phone} disabled /></Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField select label="State" name="state" fullWidth value={form.state} onChange={handleStateChange}>
+                    <TextField select label="State" name="state" fullWidth sx={{minWidth: 150,}} value={form.state} onChange={handleStateChange}>
                       <MenuItem value="">Select State</MenuItem>
                       {STATES.map(s => <MenuItem key={s.name} value={s.name}>{s.name}</MenuItem>)}
                     </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField select label="City" name="city" fullWidth value={form.city} onChange={handleInput} disabled={!form.state}>
+                    <TextField select label="City" name="city" fullWidth sx={{minWidth: 150,}} value={form.city} onChange={handleInput} disabled={!form.state}>
                       <MenuItem value="">Select City</MenuItem>
                       {(STATES.find(s => s.name === form.state)?.cities || []).map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
                     </TextField>
