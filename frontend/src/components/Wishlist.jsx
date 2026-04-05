@@ -24,7 +24,7 @@ export default function Wishlist() {
     return (
       <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h4" component="h2" gutterBottom>Your wishlist is empty</Typography>
+          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }} gutterBottom>Your wishlist is empty</Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>Save your favorite items to your wishlist</Typography>
           <Button component={Link} to="/products" variant="contained" color="primary">Browse Products</Button>
         </Box>

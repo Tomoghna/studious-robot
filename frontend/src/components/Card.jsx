@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
+import ShareIcon from '@mui/icons-material/Share';
 
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
@@ -46,6 +47,17 @@ const ProductCard = ({product}) => {
         addToCart(product, 1);
     };
 
+    const handleShare = (e) => {
+        e.preventDefault();
+        if (navigator.share) {
+            navigator.share({
+                title: product.name,
+                text: `Check out ${product.name} for ₹${product.price}`,
+                url: window.location.href
+            }).catch(() => {});
+        }
+    };
+
     const isWishlisted = isInWishlist(product._id);
 
     const renderRating = (rating = 4.5) => {
@@ -76,9 +88,14 @@ const ProductCard = ({product}) => {
                 {product.isNew && (
                     <Chip label="New" color="error" size="small" sx={{ position: 'absolute', top: 8, left: 8 }} />
                 )}
-                <IconButton onClick={handleWishlistToggle} aria-label="toggle wishlist" sx={{ position: 'absolute', top: 8, right: 8, bgcolor: isWishlisted ? 'error.main' : 'background.paper' }}>
-                    <FavoriteIcon sx={{ color: isWishlisted ? '#fff' : 'inherit' }} />
-                </IconButton>
+                <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <IconButton onClick={handleWishlistToggle} aria-label="toggle wishlist" size="small" sx={{ bgcolor: isWishlisted ? 'error.main' : 'background.paper' }}>
+                        <FavoriteIcon sx={{ color: isWishlisted ? '#fff' : 'inherit', fontSize: 20 }} />
+                    </IconButton>
+                    <IconButton onClick={handleShare} aria-label="share" size="small" sx={{ bgcolor: 'background.paper' }}>
+                        <ShareIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                </Box>
             </Box>
 
             <CardContent sx={{ flexGrow: 1 }}>
@@ -91,9 +108,9 @@ const ProductCard = ({product}) => {
                 <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>₹{product.price}</Typography>
             </CardContent>
 
-            <CardActions>
-                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ flex: 1 }}>Buy Now</Button>
-                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ flex: 1 }}>Add to Cart</Button>
+            <CardActions sx={{ flexDirection: 'column', gap: 1, p: 2 }}>
+                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ width: '100%' }}>Buy Now</Button>
+                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ width: '100%' }}>Add to Cart</Button>
             </CardActions>
         </Card>
     );
