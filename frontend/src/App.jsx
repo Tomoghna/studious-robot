@@ -24,6 +24,7 @@ const ProductDetail = lazy(() => import("./components/ProductDetail"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 
 export default function App() {
   const theme = useTheme();
@@ -33,8 +34,6 @@ export default function App() {
 
   const images = [
     "/products/product-1.jpg",
-    "/products/product-2.jpg",
-    "/products/product-3.jpg",
   ];
 
   const PageSkeleton = () => {
@@ -107,7 +106,7 @@ export default function App() {
             <Router>
               <Navbar />
               {/* Global horizontal margin wrapper */}
-              <Box sx={{ px: { xs: 2, md: 4, lg: 8 } }}>
+              <Box sx={{ px: { xs: 2, md: 4, lg: 8 }, pb: { xs: '70px', md: 0 } }}>
 
                 <Routes>
                   <Route
@@ -126,7 +125,7 @@ export default function App() {
                             <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', mb: 4 }}>
                               Shop by Categories
                             </Typography>
-                            <Box sx={{ p: 2, bgcolor: 'rgb(107, 114, 128)', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                            <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                               {loadingCategories &&
                                 Array.from(new Array(4)).map((_, index) => (
                                   <Card
@@ -215,6 +214,7 @@ export default function App() {
                   <Route path="/LoginPage" element={<Suspense fallback={<PageSkeleton />}><LoginPage /></Suspense>} />
                   <Route path="/admin" element={<RequireAdmin><Suspense fallback={<PageSkeleton />}><AdminPage /></Suspense></RequireAdmin>} />
                   <Route path="/checkout" element={<Suspense fallback={<PageSkeleton />}><CheckoutPage /></Suspense>} />
+                  <Route path="/order-success" element={<Suspense fallback={<PageSkeleton />}><OrderSuccessPage /></Suspense>} />
                 </Routes>
 
                 <BottomNav />
