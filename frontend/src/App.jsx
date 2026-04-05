@@ -34,8 +34,6 @@ export default function App() {
 
   const images = [
     "/products/product-1.jpg",
-    "/products/product-2.jpg",
-    "/products/product-3.jpg",
   ];
 
   const PageSkeleton = () => {
