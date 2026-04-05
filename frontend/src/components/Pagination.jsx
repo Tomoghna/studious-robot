@@ -1,48 +1,61 @@
 import React from 'react';
+import { Box, Button, Stack } from '@mui/material';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
+
+  const pageButtonSx = {
+    minWidth: 36,
+    width: 36,
+    height: 36,
+    borderRadius: 2,
+    textTransform: 'none',
+    fontSize: '0.875rem',
+    px: 0,
+  };
+
   return (
-    <div className="flex items-center justify-center mt-8 gap-2">
-      <button
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, gap: 1 }}>
+      <Button
+        variant="outlined"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`px-3 py-1 rounded-lg ${
-          currentPage === 1
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-            : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-        }`}
+        sx={{ borderRadius: 2, textTransform: 'none', px: 2, minWidth: 90 }}
       >
         Previous
-      </button>
-      
-      {pages.map(page => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`w-8 h-8 rounded-lg ${
-            currentPage === page
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-      
-      <button
+      </Button>
+
+      <Stack direction="row" spacing={1}>
+        {pages.map((page) => (
+          <Button
+            key={page}
+            onClick={() => onPageChange(page)}
+            variant={currentPage === page ? 'contained' : 'outlined'}
+            color={currentPage === page ? 'primary' : 'inherit'}
+            sx={{
+              ...pageButtonSx,
+              borderColor: currentPage === page ? 'primary.main' : 'divider',
+              bgcolor: currentPage === page ? 'primary.main' : 'background.paper',
+              color: currentPage === page ? 'common.white' : 'text.primary',
+              '&:hover': {
+                bgcolor: currentPage === page ? 'primary.dark' : 'action.hover',
+              },
+            }}
+          >
+            {page}
+          </Button>
+        ))}
+      </Stack>
+
+      <Button
+        variant="outlined"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`px-3 py-1 rounded-lg ${
-          currentPage === totalPages
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-            : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-        }`}
+        sx={{ borderRadius: 2, textTransform: 'none', px: 2, minWidth: 90 }}
       >
         Next
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };
 

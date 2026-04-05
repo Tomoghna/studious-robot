@@ -107,7 +107,7 @@ export default function App() {
             <Router>
               <Navbar />
               {/* Global horizontal margin wrapper */}
-              <Box sx={{ px: { xs: 2, md: 4, lg: 8 } }}>
+              <Box sx={{ px: { xs: 2, md: 4, lg: 8 }, pb: { xs: '70px', md: 0 } }}>
 
                 <Routes>
                   <Route
