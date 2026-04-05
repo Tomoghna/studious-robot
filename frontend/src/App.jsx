@@ -24,6 +24,7 @@ const ProductDetail = lazy(() => import("./components/ProductDetail"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 
 export default function App() {
   const theme = useTheme();
@@ -215,6 +216,7 @@ export default function App() {
                   <Route path="/LoginPage" element={<Suspense fallback={<PageSkeleton />}><LoginPage /></Suspense>} />
                   <Route path="/admin" element={<RequireAdmin><Suspense fallback={<PageSkeleton />}><AdminPage /></Suspense></RequireAdmin>} />
                   <Route path="/checkout" element={<Suspense fallback={<PageSkeleton />}><CheckoutPage /></Suspense>} />
+                  <Route path="/order-success" element={<Suspense fallback={<PageSkeleton />}><OrderSuccessPage /></Suspense>} />
                 </Routes>
 
                 <BottomNav />

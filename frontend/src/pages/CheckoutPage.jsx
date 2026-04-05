@@ -83,7 +83,7 @@ const CheckoutPage = () => {
       if (paymentMethod === "COD") {
         localStorage.removeItem("pendingOrderId");
         showSnackbar("Order placed successfully", "success");
-        navigate("/orders");
+        navigate("/order-success", { state: { orderId: currentOrderId, paymentMethod: "COD" } });
         return;
       }
 
@@ -110,7 +110,7 @@ const CheckoutPage = () => {
             });
             if (verifyRes.status === 200) {
               showSnackbar("Payment successful", "success");
-              navigate("/orders");
+              navigate("/order-success", { state: { orderId: currentOrderId, paymentMethod: "Razorpay" } });
             } else {
               showSnackbar("Payment verification failed", "error");
             }
