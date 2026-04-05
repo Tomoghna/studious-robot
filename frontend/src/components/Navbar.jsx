@@ -4,8 +4,8 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import HomeIcon from '@mui/icons-material/Home';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -29,6 +29,8 @@ import ThreePTwoToneIcon from '@mui/icons-material/ThreePTwoTone';
 import CallTwoToneIcon from '@mui/icons-material/CallTwoTone';
 import Collapse from '@mui/material/Collapse';
 import CircularProgress from "@mui/material/CircularProgress";
+import Switch from '@mui/material/Switch';
+import { styled } from '@mui/material/styles';
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 
 
@@ -40,6 +42,41 @@ import { useCategories } from "../contexts/CategoryContext";
 import LoginModal from "./LoginModal";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
+
+const ThemeSwitch = styled(Switch)(({ theme }) => ({
+  width: 45,
+  height: 25,
+  padding: 0,
+  '& .MuiSwitch-switchBase': {
+    padding: 2,
+    '&.Mui-checked': {
+      transform: 'translateX(20px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === 'dark' ? '#4d4d4d' : '#1976d2',
+      },
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxSizing: 'border-box',
+    width: 24,
+    height: 24,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.mode === 'dark' ? '#0f4a74' : '#fff',
+    '& svg': {
+      width: 25,
+      height: 25,
+    },
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 17,
+    opacity: 1,
+    backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#cfd8dc',
+  },
+}));
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -206,9 +243,13 @@ const Navbar = () => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton color="inherit" onClick={toggleTheme} aria-label="toggle theme">
-            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
+          <ThemeSwitch
+            checked={mode === 'dark'}
+            onChange={toggleTheme}
+            inputProps={{ 'aria-label': 'toggle theme' }}
+            icon={<LightModeIcon sx={{ width: 23, height: 23, color: '#f1a312' }} />}
+            checkedIcon={<DarkModeIcon sx={{ width: 23, height: 23, color: '#ffffff' }} />}
+          />
 
           {/* wishlist and cart removed from top navbar per migration to MUI BottomNav */}
 
