@@ -779,6 +779,7 @@ function OrdersTab({ onNotify }) {
   const fetchOrders = async () => {
     try {
       const res = await api.get(`/api/v1/admin/orders`);
+      console.log(res)
       if (res.status === 200) {
         setOrders(res.data.data || []);
         console.log("order", orders)

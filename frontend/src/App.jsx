@@ -24,6 +24,7 @@ const ProductDetail = lazy(() => import("./components/ProductDetail"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const Orders = lazy(() => import("./pages/OrdersPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 
 export default function App() {
@@ -157,7 +158,7 @@ export default function App() {
                               {!loadingCategories && !error && categories.length > 0 &&
                                 categories.map((category) => (
                                   <Fade in={!loadingCategories} timeout={600} key={category.id}>
-                                    <MuiLink component={RouterLink} to={`/products?category=${category?.category?.trim()?.replace(' ', '-')}`} sx={{ textDecoration: 'none' }} key={category.id}>
+                                    <MuiLink component={RouterLink} to={`/products?category=${category?.category}`} sx={{ textDecoration: 'none' }} key={category.id}>
                                       <Card sx={{
                                         bgcolor: 'background.paper',
                                         transition: 'transform 0.3s ease-in-out',
@@ -214,6 +215,7 @@ export default function App() {
                   <Route path="/LoginPage" element={<Suspense fallback={<PageSkeleton />}><LoginPage /></Suspense>} />
                   <Route path="/admin" element={<RequireAdmin><Suspense fallback={<PageSkeleton />}><AdminPage /></Suspense></RequireAdmin>} />
                   <Route path="/checkout" element={<Suspense fallback={<PageSkeleton />}><CheckoutPage /></Suspense>} />
+                  <Route path="/orders" element={<Suspense fallback={<PageSkeleton />}> <Orders/></Suspense>} />
                   <Route path="/order-success" element={<Suspense fallback={<PageSkeleton />}><OrderSuccessPage /></Suspense>} />
                 </Routes>
 
