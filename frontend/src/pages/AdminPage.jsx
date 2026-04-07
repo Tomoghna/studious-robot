@@ -784,8 +784,9 @@ function OrdersTab({ onNotify }) {
   const fetchOrders = async () => {
     try {
       const res = await api.get(`/api/v1/admin/orders`);
+      console.log(res)
       if (res.status === 200) {
-        setOrders(res.data.data || []);
+        setOrders(res.data.data);
         console.log("order", orders)
       } else
         onNotify && onNotify(res.data.message || "Failed to fetch orders", "error");
@@ -898,7 +899,7 @@ function OrdersTab({ onNotify }) {
                                 <TableBody>
                                   {o.items.map((item, index) => (
                                     <TableRow key={index}>
-                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product._id}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.name}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.quantity}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.price}</TableCell>

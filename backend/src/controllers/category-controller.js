@@ -17,7 +17,7 @@ const createCategory = asyncHandler(async (req, res) => {
   let categoryDoc = await Category.findOne({ category });
   if (!categoryDoc) {
     categoryDoc = await Category.create({
-      category: category.trim(),
+      category: category.trim()?.replace(' ', '-'),
       image,
     });
   }

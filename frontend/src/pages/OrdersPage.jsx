@@ -56,7 +56,7 @@ const OrdersPage = () => {
           <li key={order._id} className="border p-4 rounded-lg">
             <h2 className="font-semibold">Order {order._id}</h2>
             <p>Status: {order.orderStatus}</p>
-            <p>Total: ₹{order.totalPrice}</p>
+            <p>Total: ₹{order.productPrice}</p>
             <div className="mt-2">
               <button
                 className="bg-red-500 text-white px-3 py-1 rounded"
