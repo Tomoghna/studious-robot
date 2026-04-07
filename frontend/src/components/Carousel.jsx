@@ -4,43 +4,25 @@ import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const Carousel = ({ images, autoplayInterval = 5000 }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
+const Carousel = ({ images, currentIndex, onIndexChange, onImageClick }) => {
+    const [internalIndex, setInternalIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
-    const autoplayTimerRef = useRef(null);
 
-    const startAutoplay = () => {
-        stopAutoplay();
-        autoplayTimerRef.current = setInterval(() => {
-            goToNext();
-        }, autoplayInterval);
-    };
-
-    const stopAutoplay = () => {
-        if (autoplayTimerRef.current) {
-            clearInterval(autoplayTimerRef.current);
-        }
-    };
-
-    useEffect(() => {
-        startAutoplay();
-        return () => stopAutoplay();
-    }, [images.length]);
+    const isControlled = currentIndex !== undefined && onIndexChange !== undefined;
+    const index = isControlled ? currentIndex : internalIndex;
+    const setIndex = isControlled ? onIndexChange : setInternalIndex;
 
     const goToPrevious = () => {
-        setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
-        startAutoplay();
+        setIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
     };
 
     const goToNext = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-        startAutoplay();
+        setIndex((prevIndex) => (prevIndex + 1) % images.length);
     };
 
     const goToSlide = (index) => {
-        setCurrentIndex(index);
-        startAutoplay();
+        setIndex(index);
     };
 
     const handleTouchStart = (e) => {
@@ -74,14 +56,14 @@ const Carousel = ({ images, autoplayInterval = 5000 }) => {
         <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
             <Box
                 sx={{ display: 'flex', transition: 'transform 500ms ease-out', minHeight: { xs: 240, sm: 320, md: 420 } }}
-                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                style={{ transform: `translateX(-${index * 100}%)` }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
                 {images.map((image, index) => (
                     <Box key={index} sx={{ minWidth: '100%', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                        <Box component="img" src={image} alt={`Slide ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} sx={{ width: '100%', height: 'auto', maxHeight: { xs: 240, sm: 320, md: 420 }, objectFit: 'contain', display: 'block' }} />
+                        <Box component="img" src={image} alt={`Slide ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} sx={{ width: '100%', height: 'auto', maxHeight: { xs: 240, sm: 320, md: 420 }, objectFit: 'contain', display: 'block', cursor: onImageClick ? 'zoom-in' : 'default' }} onClick={onImageClick ? () => onImageClick(index) : undefined} />
                     </Box>
                 ))}
             </Box>
@@ -96,8 +78,8 @@ const Carousel = ({ images, autoplayInterval = 5000 }) => {
 
             {/* Slide Indicators */}
             <Box sx={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 1 }}>
-                {images.map((_, index) => (
-                    <Box key={index} onClick={() => goToSlide(index)} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: index === currentIndex ? 'common.white' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }} />
+                {images.map((_, i) => (
+                    <Box key={i} onClick={() => goToSlide(i)} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: i === index ? 'common.white' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }} />
                 ))}
             </Box>
         </Box>

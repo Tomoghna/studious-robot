@@ -21,6 +21,9 @@ import Avatar from "@mui/material/Avatar";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAlert } from "../contexts/AlertContext";
@@ -36,6 +39,10 @@ export default function ProductDetail() {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomImageIndex, setZoomImageIndex] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // Reviews state (start from product.reviews if available)
   const [reviews, setReviews] = useState([]);
@@ -176,16 +183,14 @@ export default function ProductDetail() {
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
           <Paper sx={{ overflow: "hidden" }}>
-            <Carousel images={product.images} autoplayInterval={4000} />
+            <Carousel images={product.images} currentIndex={currentImageIndex} onIndexChange={setCurrentImageIndex} onImageClick={(index) => { setZoomImageIndex(index); setZoomOpen(true); }} />
           </Paper>
           <Grid container spacing={2} sx={{ mt: 2 }}>
             {product?.images?.map((image, index) => (
               <Grid key={index} item xs={3}>
                 <Button
                   sx={{ p: 0, minWidth: 0 }}
-                  onClick={() => {
-                    /* thumbnail click: could set carousel index */
-                  }}
+                  onClick={() => setCurrentImageIndex(index)}
                 >
                   <Box
                     component="img"
@@ -196,6 +201,7 @@ export default function ProductDetail() {
                       height: 80,
                       objectFit: "cover",
                       borderRadius: 1,
+                      border: index === currentImageIndex ? '2px solid #1976d2' : 'none',
                     }}
                   />
                 </Button>
@@ -379,6 +385,46 @@ export default function ProductDetail() {
           </Paper>
         </Grid>
       </Grid>
+
+      <Dialog open={zoomOpen} onClose={() => { setZoomOpen(false); setZoomLevel(1); }} maxWidth="lg" fullWidth>
+        <DialogContent sx={{ position: 'relative', p: 0, bgcolor: 'black', overflow: 'hidden' }}>
+          <IconButton
+            onClick={() => { setZoomOpen(false); setZoomLevel(1); }}
+            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', bgcolor: 'rgba(0,0,0,0.5)', zIndex: 1 }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '80vh',
+              overflow: 'auto',
+              cursor: zoomLevel > 1 ? 'zoom-out' : 'zoom-in'
+            }}
+            onClick={() => setZoomLevel(zoomLevel > 1 ? 1 : 2)}
+            onWheel={(e) => {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? -0.1 : 0.1;
+              setZoomLevel(prev => Math.max(0.5, Math.min(3, prev + delta)));
+            }}
+          >
+            <Box
+              component="img"
+              src={product?.images?.[zoomImageIndex]}
+              alt={`${product?.name} zoom`}
+              sx={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                transform: `scale(${zoomLevel})`,
+                transition: 'transform 0.2s ease'
+              }}
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 }
