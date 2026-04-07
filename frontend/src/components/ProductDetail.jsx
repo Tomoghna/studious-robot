@@ -72,7 +72,6 @@ export default function ProductDetail() {
       </Box>
     )
   }
-  console.log(product.stock)
   if (!product) {
     return (
       <Container sx={{ py: 8, textAlign: "center" }}>
