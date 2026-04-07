@@ -114,10 +114,12 @@ export default function App() {
                     path="/"
                     element={
                       <main>
-                        <Banner />
+                        <Box sx={{ width: '100vw', position: 'relative', left: '50%', right: '50%', mx: '-50vw' }}>
+                          <Banner />
+                        </Box>
                         <Container maxWidth="lg" sx={{ py: 4 }}>
                           {/* Hero Carousel */}
-                          <Box sx={{ my: 4 }}>
+                          <Box sx={{ my: 4, width: '100vw', position: 'relative', left: '50%', right: '50%', mx: '-50vw' }}>
                             <Carousel images={images} />
                           </Box>
 

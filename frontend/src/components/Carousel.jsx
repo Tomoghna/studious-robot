@@ -73,15 +73,15 @@ const Carousel = ({ images, autoplayInterval = 5000 }) => {
     return (
         <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
             <Box
-                sx={{ display: 'flex', transition: 'transform 500ms ease-out', height: { xs: 300, sm: 400, md: 500 } }}
+                sx={{ display: 'flex', transition: 'transform 500ms ease-out', minHeight: { xs: 240, sm: 320, md: 420 } }}
                 style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             >
                 {images.map((image, index) => (
-                    <Box key={index} sx={{ minWidth: '100%', flexShrink: 0 }}>
-                        <Box component="img" src={image} alt={`Slide ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Box key={index} sx={{ minWidth: '100%', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+                        <Box component="img" src={image} alt={`Slide ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} sx={{ width: '100%', height: 'auto', maxHeight: { xs: 240, sm: 320, md: 420 }, objectFit: 'contain', display: 'block' }} />
                     </Box>
                 ))}
             </Box>
