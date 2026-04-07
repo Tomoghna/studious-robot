@@ -183,14 +183,19 @@ function ProductsTab({ onNotify }) {
     const formData = new FormData();
     formData.append("price", Number(form.price));
     formData.append("stock", Number(form.stock));
+    formData.append("description", form.description);
 
+    // Send existing images as JSON string
+    formData.append("existingImages", JSON.stringify(form.images));
+
+    // Send new images to upload
     form.newImages.forEach((img) => {
       formData.append("images", img.file);
     });
+
     setIsLoading(true);
     try {
       const res = await api.patch(`/api/v1/admin/products/update/${editing}`, formData);
-      console.log(res)
       if (res.status === 200) {
         onNotify && onNotify(res.data.message, "success");
         setEditing(null);
