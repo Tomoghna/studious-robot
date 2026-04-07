@@ -315,7 +315,8 @@ const CheckoutPage = () => {
                       : "1px solid #e0e0e0",
                 }}
               >
-{/*                <FormControlLabel
+{/*
+                <FormControlLabel
                   value="COD"
                   control={<Radio />}
                   label="Cash on Delivery"
