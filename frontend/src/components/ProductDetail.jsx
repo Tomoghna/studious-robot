@@ -272,7 +272,7 @@ export default function ProductDetail() {
               </Button>
             </Box>
           </Paper>
-
+{/*
           <Paper sx={{ p: 3, mt: 3 }}>
             <Typography variant="h6" gutterBottom>
               Product Details
@@ -300,7 +300,7 @@ export default function ProductDetail() {
             </Typography>
             <Typography>Clean with dry cloth, avoid direct sunlight</Typography>
           </Paper>
-
+*/}
           <Paper sx={{ p: 3, mt: 3 }}>
             <Typography variant="h6" gutterBottom>
               Reviews ({reviews.length})
