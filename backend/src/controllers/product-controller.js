@@ -81,33 +81,58 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { price, stock } = req.body;
+  const { price, stock, description, existingImages } = req.body;
 
-  if (price === undefined || stock === undefined) {
-    throw new apiError(400, "Price and stock are required");
+  if (price === undefined || stock === undefined || description === undefined) {
+    throw new apiError(400, "Price, stock, and description are required");
   }
 
   if (price <= 0 || stock < 0) {
     throw new apiError(400, "Invalid price or stock value");
   }
 
-  let imageUrl;
-  if(req.file?.length){
-    imageUrl = req.files?.map((file) => file.path);
-  }
   const product = await Product.findById(id);
   if (!product) {
     throw new apiError(404, "Product not found");
   }
 
+  // Build update object
+  const updateData = {
+    price,
+    stock,
+    description,
+  };
+
+  // Handle images - combine existing and new images
+  let allImages = [];
+
+  // Parse and add existing images that weren't removed
+  if (existingImages) {
+    try {
+      const parsedImages = typeof existingImages === 'string' 
+        ? JSON.parse(existingImages) 
+        : existingImages;
+      allImages = Array.isArray(parsedImages) ? parsedImages : [];
+    } catch (e) {
+      allImages = [];
+    }
+  }
+
+  // Add new uploaded images
+  if (req.files && req.files.length > 0) {
+    const newImageUrls = req.files.map((file) => file.path);
+    allImages = [...allImages, ...newImageUrls];
+  }
+
+  // Only update images field if we have images
+  if (allImages.length > 0) {
+    updateData.images = allImages;
+  }
+
   const updatedProduct = await Product.findByIdAndUpdate(
     id,
     {
-      $set: {
-        price,
-        stock,
-        images: imageUrl
-      },
+      $set: updateData,
     },
     {
       new: true,
