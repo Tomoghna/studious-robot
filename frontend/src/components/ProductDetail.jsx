@@ -100,12 +100,16 @@ export default function ProductDetail() {
   }
 
   const handleQuantityChange = (newQuantity) => {
-    if (newQuantity >= 1) {
+    if (newQuantity >= 1 && newQuantity <= product.stock) {
       setQuantity(newQuantity);
     }
   };
 
   const handleAddToCart = () => {
+    if (quantity > product.stock) {
+      showSnackbar("Not enough stock available", { severity: "error" });
+      return;
+    }
     addToCart(product, quantity);
   };
 
@@ -235,6 +239,7 @@ export default function ProductDetail() {
             </Box>
 
             {product.isNew && <Chip label="New" color="error" sx={{ mt: 1 }} />}
+            {product.stock === 0 && <Chip label="Out of Stock" color="error" sx={{ mt: 1 }} />}
 
             <Typography variant="h5" color="success.main" sx={{ mt: 2, mb: 2 }}>
               ₹{product.price}
@@ -255,6 +260,7 @@ export default function ProductDetail() {
               <Button
                 variant="outlined"
                 onClick={() => handleQuantityChange(quantity - 1)}
+                disabled={quantity <= 1}
               >
                 -
               </Button>
@@ -262,16 +268,28 @@ export default function ProductDetail() {
               <Button
                 variant="outlined"
                 onClick={() => handleQuantityChange(quantity + 1)}
+                disabled={quantity >= product.stock}
               >
                 +
               </Button>
             </Box>
 
+            {product.stock < 5 && product.stock > 0 && (
+              <Typography variant="body2" color="warning.main" sx={{ mb: 2 }}>
+                Only {product.stock} left in stock
+              </Typography>
+            )}
+            {product.stock === 0 && (
+              <Typography variant="body2" color="error.main" sx={{ mb: 2 }}>
+                Out of stock
+              </Typography>
+            )}
+
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Button variant="contained" onClick={handleBuyNow} fullWidth>
+              <Button variant="contained" onClick={handleBuyNow} fullWidth disabled={product.stock === 0}>
                 Buy Now: ₹{(product.price * quantity).toFixed(2)}
               </Button>
-              <Button variant="outlined" onClick={handleAddToCart} fullWidth>
+              <Button variant="outlined" onClick={handleAddToCart} fullWidth disabled={product.stock === 0}>
                 Add to Cart
               </Button>
             </Box>
