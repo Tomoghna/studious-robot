@@ -44,6 +44,10 @@ const ProductCard = ({product}) => {
 
     const handleAddToCart = (e) => {
         e.preventDefault();
+        if (product.stock < 1) {
+            // Should be disabled, but just in case
+            return;
+        }
         addToCart(product, 1);
     };
 
@@ -53,7 +57,7 @@ const ProductCard = ({product}) => {
             navigator.share({
                 title: product.name,
                 text: `Check out ${product.name} for ₹${product.price}`,
-                url: window.location.href
+                url: `${window.location.origin}/product/${product._id}`
             }).catch(() => {});
         }
     };
@@ -88,6 +92,9 @@ const ProductCard = ({product}) => {
                 {product.isNew && (
                     <Chip label="New" color="error" size="small" sx={{ position: 'absolute', top: 8, left: 8 }} />
                 )}
+                {product.stock === 0 && (
+                    <Chip label="Out of Stock" color="error" size="small" sx={{ position: 'absolute', top: product.isNew ? 40 : 8, left: 8 }} />
+                )}
                 <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <IconButton onClick={handleWishlistToggle} aria-label="toggle wishlist" size="small" sx={{ bgcolor: isWishlisted ? 'error.main' : 'background.paper' }}>
                         <FavoriteIcon sx={{ color: isWishlisted ? '#fff' : 'inherit', fontSize: 20 }} />
@@ -109,8 +116,8 @@ const ProductCard = ({product}) => {
             </CardContent>
 
             <CardActions sx={{ flexDirection: 'column', gap: 1, p: 2 }}>
-                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ width: '100%' }}>Buy Now</Button>
-                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ width: '100%' }}>Add to Cart</Button>
+                <Button size="small" variant="contained" color="primary" component={Link} to={`/product/${product._id}`} sx={{ width: '100%' }} disabled={product.stock === 0}>Buy Now</Button>
+                <Button size="small" variant="outlined" onClick={handleAddToCart} sx={{ width: '100%' }} disabled={product.stock === 0}>Add to Cart</Button>
             </CardActions>
         </Card>
     );
