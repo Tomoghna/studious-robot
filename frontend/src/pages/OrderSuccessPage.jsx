@@ -74,7 +74,7 @@ const OrderSuccessPage = () => {
 
         {/* Order Details */}
         {orderId && (
-          <Box sx={{ mb: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
+          <Box sx={{ mb: 4, p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               Order Details
             </Typography>

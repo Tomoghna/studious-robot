@@ -15,9 +15,9 @@ const Contact = () => {
       id: 'email',
       title: 'Email Us',
       description: 'Send us your inquiries and feedback',
-      contact: 'contact@artshop.com',
+      contact: 'Artmayurhamsa@gmail.com',
       icon: EmailIcon,
-      action: () => window.location.href = 'mailto:contact@artshop.com',
+      action: () => window.location.href = 'mailto:Artmayurhamsa@gmail.com',
       color: '#FF6B6B',
       gradient: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%)'
     },

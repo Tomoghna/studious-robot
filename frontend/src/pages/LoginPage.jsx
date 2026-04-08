@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
 import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, Card, CardContent, CardActions } from '@mui/material';
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 import api from "../utils/api";
+import { State, City } from "country-state-city";
 
 function TabPanel({ children, value, index }) {
   return (
@@ -14,16 +16,15 @@ function TabPanel({ children, value, index }) {
   );
 }
 
-const STATES = [
-  { name: "Maharashtra", cities: ["Mumbai", "Pune", "Nagpur"] },
-  { name: "Delhi", cities: ["New Delhi", "Dwarka", "Rohini"] },
-  { name: "Karnataka", cities: ["Bengaluru", "Mysuru", "Mangalore"] },
-];
+const states = State.getStatesOfCountry("IN");
+
+
 
 const LoginPage = () => {
   const { user, fetchUser } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const [tabIndex, setTabIndex] = useState(0);
+  const location = useLocation();
+  const [tabIndex, setTabIndex] = useState(location.state?.tab || 0);
   const [formChanged, setFormChanged] = useState(false);
 
   // local account state
@@ -37,6 +38,7 @@ const LoginPage = () => {
   const [form, setForm] = useState(initialForm);
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [cities, setCities] = useState([]);
 
   // orders
   const [orders, setOrders] = useState([]);
@@ -81,8 +83,17 @@ const LoginPage = () => {
   };
 
   const handleStateChange = (e) => {
-    setForm(prev => ({ ...prev, state: e.target.value, city: '' }));
-    setFormChanged(true);
+    const stateCode = e.target.value;
+
+    const cities = City.getCitiesOfState("IN", stateCode);
+
+    setForm({
+      ...form,
+      state: stateCode,
+      city: ""
+    });
+
+    setCities(cities);
   };
 
   const handleAddAddress = async () => {
@@ -221,13 +232,13 @@ const LoginPage = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField select label="State" name="state" fullWidth sx={{minWidth: 150,}} value={form.state} onChange={handleStateChange}>
                       <MenuItem value="">Select State</MenuItem>
-                      {STATES.map(s => <MenuItem key={s.name} value={s.name}>{s.name}</MenuItem>)}
+                      {states.map((s) => (<MenuItem key={s.isoCode} value={s.isoCode}>{s.name}</MenuItem>))}
                     </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField select label="City" name="city" fullWidth sx={{minWidth: 150,}} value={form.city} onChange={handleInput} disabled={!form.state}>
                       <MenuItem value="">Select City</MenuItem>
-                      {(STATES.find(s => s.name === form.state)?.cities || []).map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                      {cities.map((c) => (<MenuItem key={c.name} value={c.name}>{c.name}</MenuItem>))}
                     </TextField>
                   </Grid>
                 </Grid>
