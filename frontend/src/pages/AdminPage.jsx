@@ -1026,7 +1026,7 @@ function OrdersTab({ onNotify }) {
                   <TableRow>
                     <TableCell colSpan={4} sx={{ p: 0 }}>
                       <Collapse in={expanded === o._id} timeout="auto" unmountOnExit>
-                        <Paper sx={{ m: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+                        <Paper sx={{ m: 2, p: 2, backgroundColor: "action.hover" }}>
                           <Box sx={{ mb: 3 }}>
                             <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "0.9rem", sm: "1.25rem" } }}>
                               Order Status & Actions
