@@ -39,7 +39,7 @@ const CheckoutPage = () => {
     } else {
       setSelectedAddress(null);
     }
-  });
+  }, [user?.address]);
   const steps = ["Address", "Review", "Payment"];
 
   const handleNext = () =>
@@ -233,10 +233,9 @@ const CheckoutPage = () => {
           <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
             <Button
               variant="contained"
-              onClick={handleNext}
-              disabled={!selectedAddress}
+              onClick={selectedAddress ? handleNext : () => navigate('/LoginPage', { state: { tab: 1 } })}
             >
-              Continue
+              {selectedAddress ? "Continue" : "Add an Address"}
             </Button>
             <Button variant="outlined" onClick={() => navigate(-1)}>
               Cancel

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
@@ -22,7 +23,8 @@ const states = State.getStatesOfCountry("IN");
 const LoginPage = () => {
   const { user, fetchUser } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const [tabIndex, setTabIndex] = useState(0);
+  const location = useLocation();
+  const [tabIndex, setTabIndex] = useState(location.state?.tab || 0);
   const [formChanged, setFormChanged] = useState(false);
 
   // local account state
