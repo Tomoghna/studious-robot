@@ -29,6 +29,7 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
 import { Analytics } from "@vercel/analytics/react";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useAlert } from "../contexts/AlertContext";
@@ -39,12 +40,185 @@ import api from "../utils/api";
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
 const TABS = [
+  { key: "banners", label: "Banners" },
   { key: "upload", label: "Products" },
   { key: "categories", label: "Categories" },
   { key: "users", label: "Users" },
   { key: "orders", label: "Orders" },
   { key: "analytics", label: "Analytics" },
 ];
+
+function BannersTab({ onNotify }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [banners, setBanners] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({
+    image: null,
+    preview: null,
+  });
+
+  const handleChange = (k) => (e) =>
+    setForm((s) => ({ ...s, [k]: e.target.value }));
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((prev) => ({
+          ...prev,
+          image: file,
+          preview: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreate = async () => {
+    // Placeholder for create banner
+    onNotify && onNotify("Create banner functionality coming soon", "info");
+  };
+
+  const handleDelete = async (id) => {
+    // Placeholder for delete banner
+    onNotify && onNotify("Delete banner functionality coming soon", "info");
+  };
+
+  const startEdit = (banner) => {
+    // Placeholder for edit banner
+    onNotify && onNotify("Edit banner functionality coming soon", "info");
+  };
+
+  const handleUpdate = async () => {
+    // Placeholder for update banner
+    onNotify && onNotify("Update banner functionality coming soon", "info");
+  };
+
+  return (
+    <Box>
+      <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Create / Edit Banner
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              Banner Image
+            </Typography>
+
+            {form.preview && (
+              <Box sx={{ mb: 3 }}>
+                <Card sx={{ maxWidth: 300 }}>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={form.preview}
+                    alt="Preview"
+                  />
+                  {form.image && (
+                    <CardActions sx={{ p: 1 }}>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            image: null,
+                            preview: null,
+                          }))
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </CardActions>
+                  )}
+                </Card>
+              </Box>
+            )}
+
+            <input
+              accept="image/*"
+              id="upload-banner-image"
+              type="file"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+            <label htmlFor="upload-banner-image">
+              <Button variant="contained" component="span">
+                {form.preview ? "Change Image" : "Upload Image"}
+              </Button>
+            </label>
+          </Box>
+        </Box>
+
+        <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
+          {!editing ? (
+            <Button variant="contained" onClick={handleCreate} disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Banner"}
+            </Button>
+          ) : (
+            <>
+              <Button variant="contained" onClick={handleUpdate} disabled={isLoading}>
+                {isLoading ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setEditing(null);
+                  setForm({ image: null, preview: null });
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
+        </Box>
+      </Paper>
+
+      <Paper elevation={1} sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Banners List
+        </Typography>
+        {banners.length === 0 ? (
+          <Typography color="textSecondary">No banners found</Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {banners.map((banner) => (
+              <Grid item xs={12} sm={6} md={4} key={banner._id}>
+                <Card>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={banner.image}
+                    alt="Banner"
+                  />
+                  <CardActions sx={{ justifyContent: "flex-end", p: 1 }}>
+                    <IconButton size="small" onClick={() => startEdit(banner)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(banner._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Paper>
+    </Box>
+  );
+}
 
 function ProductsTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -899,7 +1073,7 @@ function OrdersTab({ onNotify }) {
                                 <TableBody>
                                   {o.items.map((item, index) => (
                                     <TableRow key={index}>
-                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product._id}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product?._id || 'N/A'}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.name}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.quantity}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.price}</TableCell>
@@ -1043,11 +1217,12 @@ export default function AdminPage() {
         </Paper>
 
         <Box sx={{ mt: 3, overflowX: "hidden" }}>
-          {activeTab === 0 && <ProductsTab onNotify={onNotify} />}
-          {activeTab === 1 && <CategoriesTab onNotify={onNotify} />}
-          {activeTab === 2 && <UsersTab onNotify={onNotify} />}
-          {activeTab === 3 && <OrdersTab onNotify={onNotify} />}
-          {activeTab === 4 && <AnalyticsTab onNotify={onNotify} />}
+          {activeTab === 0 && <BannersTab onNotify={onNotify} />}
+          {activeTab === 1 && <ProductsTab onNotify={onNotify} />}
+          {activeTab === 2 && <CategoriesTab onNotify={onNotify} />}
+          {activeTab === 3 && <UsersTab onNotify={onNotify} />}
+          {activeTab === 4 && <OrdersTab onNotify={onNotify} />}
+          {activeTab === 5 && <AnalyticsTab onNotify={onNotify} />}
         </Box>
       </Container>
     </Box>
