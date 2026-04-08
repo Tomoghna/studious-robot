@@ -43,6 +43,10 @@ export default function ProductDetail() {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomImageIndex, setZoomImageIndex] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
 
   // Reviews state (start from product.reviews if available)
   const [reviews, setReviews] = useState([]);
@@ -386,29 +390,90 @@ export default function ProductDetail() {
         </Grid>
       </Grid>
 
-      <Dialog open={zoomOpen} onClose={() => { setZoomOpen(false); setZoomLevel(1); }} maxWidth="lg" fullWidth>
-        <DialogContent sx={{ position: 'relative', p: 0, bgcolor: 'black', overflow: 'hidden' }}>
+      <Dialog 
+        open={zoomOpen} 
+        onClose={() => { setZoomOpen(false); setZoomLevel(1); setPanX(0); setPanY(0); }} 
+        maxWidth="lg" 
+        fullWidth
+      >
+        <DialogContent sx={{ position: 'relative', p: 0, bgcolor: 'black', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <IconButton
-            onClick={() => { setZoomOpen(false); setZoomLevel(1); }}
-            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', bgcolor: 'rgba(0,0,0,0.5)', zIndex: 1 }}
+            onClick={() => { setZoomOpen(false); setZoomLevel(1); setPanX(0); setPanY(0); }}
+            sx={{ position: 'absolute', top: 8, right: 8, color: 'white', bgcolor: 'rgba(0,0,0,0.5)', zIndex: 10 }}
           >
             <CloseIcon />
           </IconButton>
+
+          {/* Main Image View */}
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              height: '80vh',
-              overflow: 'auto',
-              cursor: zoomLevel > 1 ? 'zoom-out' : 'zoom-in'
+              height: '70vh',
+              overflow: 'hidden',
+              cursor: isPanning ? 'grabbing' : (zoomLevel > 1 ? 'grab' : 'zoom-in'),
+              position: 'relative',
+              touchAction: 'none'
             }}
-            onClick={() => setZoomLevel(zoomLevel > 1 ? 1 : 2)}
+            onClick={() => zoomLevel === 1 && setZoomLevel(2)}
             onWheel={(e) => {
               e.preventDefault();
               const delta = e.deltaY > 0 ? -0.1 : 0.1;
               setZoomLevel(prev => Math.max(0.5, Math.min(3, prev + delta)));
             }}
+            onMouseDown={(e) => {
+              if (zoomLevel > 1) {
+                setIsPanning(true);
+                setLastPan({ x: e.clientX - panX, y: e.clientY - panY });
+              }
+            }}
+            onMouseMove={(e) => {
+              if (isPanning && zoomLevel > 1) {
+                setPanX(e.clientX - lastPan.x);
+                setPanY(e.clientY - lastPan.y);
+              }
+            }}
+            onMouseUp={() => setIsPanning(false)}
+            onMouseLeave={() => setIsPanning(false)}
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                  touch1.clientX - touch2.clientX,
+                  touch1.clientY - touch2.clientY
+                );
+                setLastPan({ x: distance, y: 0 });
+              } else if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                if (zoomLevel > 1) {
+                  setIsPanning(true);
+                  setLastPan({ x: touch.clientX - panX, y: touch.clientY - panY });
+                }
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                  touch1.clientX - touch2.clientX,
+                  touch1.clientY - touch2.clientY
+                );
+                const lastDistance = lastPan.x;
+                const scale = distance / lastDistance;
+                setZoomLevel(prev => Math.max(0.5, Math.min(3, prev * scale)));
+                setLastPan({ x: distance, y: 0 });
+              } else if (e.touches.length === 1 && isPanning && zoomLevel > 1) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                setPanX(touch.clientX - lastPan.x);
+                setPanY(touch.clientY - lastPan.y);
+              }
+            }}
+            onTouchEnd={() => setIsPanning(false)}
           >
             <Box
               component="img"
@@ -418,11 +483,80 @@ export default function ProductDetail() {
                 maxWidth: '100%',
                 maxHeight: '100%',
                 objectFit: 'contain',
-                transform: `scale(${zoomLevel})`,
-                transition: 'transform 0.2s ease'
+                transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                transition: isPanning ? 'none' : 'transform 0.2s ease'
               }}
             />
           </Box>
+
+          {/* Thumbnail Navigation */}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              p: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              overflowX: 'auto',
+              justifyContent: 'center',
+              alignItems: 'center',
+              '&::-webkit-scrollbar': {
+                height: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'rgba(255,255,255,0.1)',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'rgba(255,255,255,0.3)',
+                borderRadius: '3px',
+              },
+            }}
+          >
+            {product?.images?.map((image, index) => (
+              <Box
+                key={index}
+                component="img"
+                src={image}
+                alt={`thumbnail ${index + 1}`}
+                onClick={() => {
+                  setZoomImageIndex(index);
+                  setZoomLevel(1);
+                  setPanX(0);
+                  setPanY(0);
+                }}
+                sx={{
+                  width: 60,
+                  height: 60,
+                  objectFit: 'cover',
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  border: index === zoomImageIndex ? '2px solid #fff' : '2px solid transparent',
+                  opacity: index === zoomImageIndex ? 1 : 0.6,
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0,
+                  '&:hover': {
+                    opacity: 1,
+                  }
+                }}
+              />
+            ))}
+          </Box>
+
+          {/* Zoom Info */}
+          <Typography
+            sx={{
+              position: 'absolute',
+              bottom: 80,
+              left: 16,
+              color: 'white',
+              bgcolor: 'rgba(0,0,0,0.5)',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 1,
+              fontSize: '0.875rem'
+            }}
+          >
+            {(zoomLevel * 100).toFixed(0)}%
+          </Typography>
         </DialogContent>
       </Dialog>
     </Container>
