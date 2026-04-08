@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useWishlist } from "../contexts/WishlistContext";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShareIcon from "@mui/icons-material/Share";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -186,6 +187,17 @@ export default function ProductDetail() {
     }
   };
 
+  const handleShare = (e) => {
+    e.preventDefault();
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} for ₹${product.price}`,
+        url: window.location.href
+      }).catch(() => {});
+    }
+  };
+
   return (
     <Container sx={{ py: 4 }}>
       <Grid container spacing={4}>
@@ -220,22 +232,21 @@ export default function ProductDetail() {
 
         <Grid item xs={12} md={5}>
           <Paper sx={{ p: 3 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "start",
-              }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
                 {product.name}
               </Typography>
-              <IconButton
-                onClick={toggleWishlist}
-                color={isInWishlist(product._id) ? "error" : "default"}
-              >
-                <FavoriteIcon />
-              </IconButton>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton onClick={handleShare}>
+                  <ShareIcon />
+                </IconButton>
+                <IconButton
+                  onClick={toggleWishlist}
+                  color={isInWishlist(product._id) ? "error" : "default"}
+                >
+                  <FavoriteIcon />
+                </IconButton>
+              </Box>
             </Box>
 
             {product.isNew && <Chip label="New" color="error" sx={{ mt: 1 }} />}

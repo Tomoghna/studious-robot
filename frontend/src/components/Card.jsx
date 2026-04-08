@@ -57,7 +57,7 @@ const ProductCard = ({product}) => {
             navigator.share({
                 title: product.name,
                 text: `Check out ${product.name} for ₹${product.price}`,
-                url: window.location.href
+                url: `${window.location.origin}/product/${product._id}`
             }).catch(() => {});
         }
     };
