@@ -958,10 +958,8 @@ function OrdersTab({ onNotify }) {
   const fetchOrders = async () => {
     try {
       const res = await api.get(`/api/v1/admin/orders`);
-      console.log(res)
       if (res.status === 200) {
         setOrders(res.data.data);
-        console.log("order", orders)
       } else
         onNotify && onNotify(res.data.message || "Failed to fetch orders", "error");
     } catch (err) {
@@ -1000,6 +998,7 @@ function OrdersTab({ onNotify }) {
               </TableRow>
             </TableHead>
             <TableBody>
+              {orders.map((o) => console.log(o.items))}
               {orders.map((o) => (
                 <React.Fragment key={o._id}>
                   <TableRow hover>
@@ -1073,7 +1072,7 @@ function OrdersTab({ onNotify }) {
                                 <TableBody>
                                   {o.items.map((item, index) => (
                                     <TableRow key={index}>
-                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product?._id || 'N/A'}</TableCell>
+                                      <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.product || 'N/A'}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.name}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.quantity}</TableCell>
                                       <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" } }}>{item.price}</TableCell>
@@ -1091,13 +1090,10 @@ function OrdersTab({ onNotify }) {
                               Shipping Address
                             </Typography>
                             <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
-                              {o.address?.street}, {o.address?.city}
+                              {(o.shippingAddress)}
                             </Typography>
-                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
-                              {o.address?.state} - {o.address?.zip}
-                            </Typography>
-                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{o.address?.country}</Typography>
-                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone: {o.address?.phone}</Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>country:{o.shippingAddress?.country || "India"}</Typography>
+                            <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone: {o.user?.phone}</Typography>
                           </Box>
                         </Paper>
                       </Collapse>

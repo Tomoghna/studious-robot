@@ -104,7 +104,6 @@ const getOrders = asyncHandler(async (req, res) => {
 
 const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({})
-    .populate("items.product")
     .populate("user", "name email phone");
   return res
     .status(200)
