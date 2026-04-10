@@ -18,6 +18,7 @@ import {
   getCategory,
   updateCategory
 } from "../controllers/category-controller.js";
+import { createBanner, deleteBanner, getBanners } from "../controllers/banner-controller.js";
 import upload from "../middlewares/multer-middleware.js";
 
 const router = express.Router();
@@ -69,5 +70,25 @@ router
 router
   .route("/category")
   .get(getCategory);
+
+router
+  .route("/banner")
+  .get(getBanners)
+
+router
+  .route("/banner/create")
+  .post(
+    authMiddleware,
+    authorizeRoles("admin"),
+    upload.array("images", 5),
+    createBanner
+  )
+router
+  .route("/banner/delete/:id")
+  .delete(
+    authMiddleware,
+    authorizeRoles("admin"),
+    deleteBanner
+  )
 
 export default router;

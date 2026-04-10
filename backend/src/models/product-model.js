@@ -21,6 +21,10 @@ const productSchema = new Schema({
         ref: 'Category',
         required: [true, 'Product category is required'],
     },
+    productDetails:{
+        type: String,
+        trim: true
+    },
     brand:{
         type: String,
         required: [true, 'Product brand is required'],
