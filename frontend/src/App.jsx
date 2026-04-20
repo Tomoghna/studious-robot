@@ -6,7 +6,7 @@ import { WishlistProvider } from "./contexts/WishlistContext";
 import { CartProvider } from "./contexts/CartContext";
 import { BannerProvider, useBanners } from "./contexts/BannerContext";
 import { useCategories } from "./contexts/CategoryContext";
-import { Box, Container, Typography, Card, CardMedia, CardContent, Link as MuiLink, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Container, Typography, Card, CardMedia, CardContent, Link as MuiLink, useTheme, useMediaQuery, Skeleton } from "@mui/material";
 import Banner from "./components/Banner";
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
@@ -14,7 +14,7 @@ import SearchResults from "./components/SearchResults";
 import RequireAdmin from "./components/RequireAdmin";
 import BackToTop from "./components/BackToTop";
 import BottomNav from "./components/BottomNav";
-import { Skeleton, Fade, Button } from "@mui/material";
+import { Fade, Button } from "@mui/material";
 
 const Products = lazy(() => import("./components/Products"));
 const Wishlist = lazy(() => import("./components/Wishlist"));
@@ -33,7 +33,7 @@ function AppContent() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const { categories, loading: loadingCategories, error, refreshCategories } = useCategories();
-  const { banners } = useBanners();
+  const { banners, loading: loadingBanners } = useBanners();
 
   // Extract all images from banners
   const images = useMemo(() => {
@@ -120,7 +120,18 @@ function AppContent() {
                         <Container maxWidth="lg" sx={{ py: 4 }}>
                           {/* Hero Carousel */}
                           <Box sx={{ my: 4, width: '100vw', position: 'relative', left: '50%', right: '50%', mx: '-50vw' }}>
-                            <Carousel images={images} />
+                            {loadingBanners ? (
+                              <Skeleton
+                                variant="rectangular"
+                                sx={{
+                                  width: "100%",
+                                  height: { xs: 240, sm: 320, md: 420 },
+                                  borderRadius: 1,
+                                }}
+                              />
+                            ) : images.length > 0 ? (
+                              <Carousel images={images} />
+                            ) : null}
                           </Box>
 
                           {/* Categories */}
