@@ -224,6 +224,8 @@ function ProductsTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
   const [form, setForm] = useState({
     name: "",
@@ -234,6 +236,18 @@ function ProductsTab({ onNotify }) {
     stock: 0,
     images: [],
     newImages: [],
+  });
+
+  // Filter products based on search term and category
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = filterCategory === "" || product.category.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
   });
 
   const fetchProducts = async () => {
@@ -573,8 +587,51 @@ function ProductsTab({ onNotify }) {
         </Box>
       </Paper>
 
+      <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Search & Filter Products
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
+            alignItems: "flex-start",
+          }}
+        >
+          <TextField
+            label="Search by name, brand, or description"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            fullWidth
+            variant="outlined"
+            placeholder="Type to search..."
+          />
+          <FormControl fullWidth>
+            <InputLabel>Filter by Category</InputLabel>
+            <Select
+              label="Filter by Category"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>All Categories</em>
+              </MenuItem>
+              {categories?.map((cat) => (
+                <MenuItem key={cat._id} value={cat.category}>
+                  {cat.category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
       <Paper elevation={1} sx={{ p: 2, overflowX: "auto" }}>
         <Box sx={{ minWidth: { xs: "100%", sm: "100%" }, overflowX: "auto" }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Products List ({filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''})
+          </Typography>
           <Table sx={{ minWidth: { xs: 300, sm: "100%" } }}>
             <TableHead>
               <TableRow>
@@ -586,7 +643,7 @@ function ProductsTab({ onNotify }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <TableRow key={p._id} hover>
                   <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.name}</TableCell>
                   <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.price}</TableCell>
