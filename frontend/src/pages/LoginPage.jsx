@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import LoginForm from "../components/LoginForm";
 import { Box, Tabs, Tab, Typography, Avatar, Button, Grid, TextField, MenuItem, Card, CardContent, CardActions } from '@mui/material';
+import { Logout as LogoutIcon } from '@mui/icons-material';
 import { getAvatarFromEmail } from "../utils/getAvatarFromEmail";
 import api from "../utils/api";
 import { State, City } from "country-state-city";
@@ -21,9 +22,10 @@ const states = State.getStatesOfCountry("IN");
 
 
 const LoginPage = () => {
-  const { user, fetchUser } = useAuth();
+  const { user, fetchUser, logout } = useAuth();
   const { showSnackbar } = useSnackbar();
   const location = useLocation();
+  const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(location.state?.tab || 0);
   const [formChanged, setFormChanged] = useState(false);
 
@@ -149,6 +151,17 @@ const LoginPage = () => {
     } catch (err) { console.error(err); showSnackbar('Network error', 'error'); }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showSnackbar('Logged out successfully', 'success');
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      showSnackbar(err.message || 'Logout failed', 'error');
+    }
+  };
+
   if (!user) {
     return (
       <Box sx={{ maxWidth: { xs: '100%', md: 640 }, mx: 'auto', px: { xs: 1, sm: 2 }, py: 6 }}>
@@ -161,7 +174,17 @@ const LoginPage = () => {
 
   return (
     <Box sx={{ maxWidth: { xs: '100%', md: 960 }, mx: 'auto', px: { xs: 1, sm: 2 }, py: 4 }}>
-      <Typography variant="h5" gutterBottom>Account Management</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5">Account Management</Typography>
+        <Button 
+          variant="outlined" 
+          color="error"
+          startIcon={<LogoutIcon />}
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
       <Card elevation={2} sx={{ width: '100%' }}>
         <CardContent>
           <Tabs 

@@ -1,11 +1,12 @@
-import React, { useContext, Suspense, lazy } from 'react'
+import React, { useContext, Suspense, lazy, useMemo } from 'react'
 import { Link as RouterLink } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import { CartProvider } from "./contexts/CartContext";
+import { BannerProvider, useBanners } from "./contexts/BannerContext";
 import { useCategories } from "./contexts/CategoryContext";
-import { Box, Container, Typography, Card, CardMedia, CardContent, Link as MuiLink, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Container, Typography, Card, CardMedia, CardContent, Link as MuiLink, useTheme, useMediaQuery, Skeleton } from "@mui/material";
 import Banner from "./components/Banner";
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
@@ -13,7 +14,7 @@ import SearchResults from "./components/SearchResults";
 import RequireAdmin from "./components/RequireAdmin";
 import BackToTop from "./components/BackToTop";
 import BottomNav from "./components/BottomNav";
-import { Skeleton, Fade, Button } from "@mui/material";
+import { Fade, Button } from "@mui/material";
 
 const Products = lazy(() => import("./components/Products"));
 const Wishlist = lazy(() => import("./components/Wishlist"));
@@ -27,15 +28,17 @@ const LoginPage = lazy(() => import("./pages/LoginPage"));
 const Orders = lazy(() => import("./pages/OrdersPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 
-export default function App() {
+function AppContent() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const { categories, loading: loadingCategories, error, refreshCategories } = useCategories();
+  const { banners, loading: loadingBanners } = useBanners();
 
-  const images = [
-    "/products/product-1.jpg",
-  ];
+  // Extract all images from banners
+  const images = useMemo(() => {
+    return banners.flatMap(banner => (Array.isArray(banner.image) ? banner.image : [banner.image])).filter(img => img);
+  }, [banners]);
 
   const PageSkeleton = () => {
   return (
@@ -100,10 +103,7 @@ export default function App() {
 
 
   return (
-    <ProductProvider>
-      <WishlistProvider>
-        <CartProvider>
-          <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
             <Router>
               <Navbar />
               {/* Global horizontal margin wrapper */}
@@ -120,7 +120,18 @@ export default function App() {
                         <Container maxWidth="lg" sx={{ py: 4 }}>
                           {/* Hero Carousel */}
                           <Box sx={{ my: 4, width: '100vw', position: 'relative', left: '50%', right: '50%', mx: '-50vw' }}>
-                            <Carousel images={images} />
+                            {loadingBanners ? (
+                              <Skeleton
+                                variant="rectangular"
+                                sx={{
+                                  width: "100%",
+                                  height: { xs: 240, sm: 320, md: 420 },
+                                  borderRadius: 1,
+                                }}
+                              />
+                            ) : images.length > 0 ? (
+                              <Carousel images={images} autoplay={true} autoplayInterval={4000} />
+                            ) : null}
                           </Box>
 
                           {/* Categories */}
@@ -226,6 +237,17 @@ export default function App() {
               <BackToTop />
             </Router>
           </Box>
+  );
+}
+
+export default function App() {
+  return (
+    <ProductProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <BannerProvider>
+            <AppContent />
+          </BannerProvider>
         </CartProvider>
       </WishlistProvider>
     </ProductProvider>

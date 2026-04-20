@@ -4,25 +4,73 @@ import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const Carousel = ({ images, currentIndex, onIndexChange, onImageClick }) => {
+const Carousel = ({ images, currentIndex, onIndexChange, onImageClick, autoplay = false, autoplayInterval = 4000 }) => {
     const [internalIndex, setInternalIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(0);
     const [touchEnd, setTouchEnd] = useState(0);
+    const autoplayTimerRef = useRef(null);
+    const restartTimerRef = useRef(null);
 
     const isControlled = currentIndex !== undefined && onIndexChange !== undefined;
     const index = isControlled ? currentIndex : internalIndex;
     const setIndex = isControlled ? onIndexChange : setInternalIndex;
 
+    const stopAutoplay = () => {
+        if (autoplayTimerRef.current) {
+            clearInterval(autoplayTimerRef.current);
+            autoplayTimerRef.current = null;
+        }
+    };
+
+    const startAutoplay = () => {
+        if (!autoplay || images.length <= 1) return;
+
+        stopAutoplay();
+        autoplayTimerRef.current = setInterval(() => {
+            setIndex((prevIndex) => (prevIndex + 1) % images.length);
+        }, autoplayInterval);
+    };
+
+    const resetAutoplay = () => {
+        if (!autoplay) return;
+        
+        stopAutoplay();
+        
+        if (restartTimerRef.current) {
+            clearTimeout(restartTimerRef.current);
+        }
+        
+        restartTimerRef.current = setTimeout(() => {
+            startAutoplay();
+        }, 2000);
+    };
+
+    useEffect(() => {
+        if (autoplay && images.length > 1) {
+            startAutoplay();
+        }
+
+        return () => {
+            stopAutoplay();
+            if (restartTimerRef.current) {
+                clearTimeout(restartTimerRef.current);
+            }
+        };
+    }, [autoplay, images.length, autoplayInterval]);
+
     const goToPrevious = () => {
         setIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
+        resetAutoplay();
     };
 
     const goToNext = () => {
         setIndex((prevIndex) => (prevIndex + 1) % images.length);
+        resetAutoplay();
     };
 
     const goToSlide = (index) => {
         setIndex(index);
+        resetAutoplay();
     };
 
     const handleTouchStart = (e) => {

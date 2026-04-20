@@ -51,55 +51,110 @@ const TABS = [
 function BannersTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(false);
   const [banners, setBanners] = useState([]);
-  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
-    image: null,
-    preview: null,
+    images: [],
+    previews: [],
   });
 
   const handleChange = (k) => (e) =>
     setForm((s) => ({ ...s, [k]: e.target.value }));
 
   const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
+    const files = Array.from(event.target.files || []);
+    const newPreviews = [];
+    let loadedCount = 0;
+
+    if (files.length === 0) return;
+
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setForm((prev) => ({
-          ...prev,
-          image: file,
+        newPreviews.push({
+          file,
           preview: reader.result,
-        }));
+        });
+        loadedCount++;
+        if (loadedCount === files.length) {
+          setForm((prev) => ({
+            ...prev,
+            images: [...prev.images, ...files],
+            previews: [...prev.previews, ...newPreviews],
+          }));
+        }
       };
       reader.readAsDataURL(file);
+    });
+  };
+
+  const removePreview = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+      previews: prev.previews.filter((_, i) => i !== index),
+    }));
+  };
+
+  const fetchBanners = async () => {
+    try {
+      const res = await api.get(`/api/v1/admin/banner`);
+      if (res.status === 200) {
+        setBanners(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching banners:", error);
     }
   };
 
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
   const handleCreate = async () => {
-    // Placeholder for create banner
-    onNotify && onNotify("Create banner functionality coming soon", "info");
+    if (form.images.length === 0) {
+      onNotify && onNotify("Please select at least one image", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    form.images.forEach((img) => {
+      formData.append("images", img);
+    });
+
+    setIsLoading(true);
+    try {
+      const res = await api.post(`/api/v1/admin/banner/create`, formData);
+      if (res.status === 201) {
+        onNotify && onNotify("Banners created successfully", "success");
+        setForm({ images: [], previews: [] });
+        fetchBanners();
+      } else throw new Error(res.data.message || "Failed to create banners");
+    } catch (err) {
+      console.error(err);
+      onNotify && onNotify(err.message || "Failed to create banners", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDelete = async (id) => {
-    // Placeholder for delete banner
-    onNotify && onNotify("Delete banner functionality coming soon", "info");
-  };
-
-  const startEdit = (banner) => {
-    // Placeholder for edit banner
-    onNotify && onNotify("Edit banner functionality coming soon", "info");
-  };
-
-  const handleUpdate = async () => {
-    // Placeholder for update banner
-    onNotify && onNotify("Update banner functionality coming soon", "info");
+    if (!confirm("Delete this banner?")) return;
+    try {
+      const res = await api.delete(`/api/v1/admin/banner/delete/${id}`);
+      if (res.status === 200) {
+        onNotify && onNotify("Banner deleted successfully", "success");
+        fetchBanners();
+      } else throw new Error(res.data.message || "Failed to delete banner");
+    } catch (err) {
+      console.error(err);
+      onNotify && onNotify(err.message || "Failed to delete banner", "error");
+    }
   };
 
   return (
     <Box>
       <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Create / Edit Banner
+          Upload Banners
         </Typography>
         <Box
           sx={{
@@ -109,74 +164,68 @@ function BannersTab({ onNotify }) {
         >
           <Box>
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              Banner Image
+              Banner Images
             </Typography>
 
-            {form.preview && (
+            {form.previews.length > 0 && (
               <Box sx={{ mb: 3 }}>
-                <Card sx={{ maxWidth: 300 }}>
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={form.preview}
-                    alt="Preview"
-                  />
-                  {form.image && (
-                    <CardActions sx={{ p: 1 }}>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() =>
-                          setForm((prev) => ({
-                            ...prev,
-                            image: null,
-                            preview: null,
-                          }))
-                        }
-                      >
-                        Remove
-                      </Button>
-                    </CardActions>
-                  )}
-                </Card>
+                <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+                  Selected Images ({form.previews.length})
+                </Typography>
+                <Grid container spacing={2}>
+                  {form.previews.map((preview, idx) => (
+                    <Grid item xs={6} sm={4} md={3} key={idx}>
+                      <Card>
+                        <CardMedia
+                          component="img"
+                          height="150"
+                          image={preview.preview}
+                          alt={`Preview ${idx + 1}`}
+                        />
+                        <CardActions sx={{ p: 1 }}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => removePreview(idx)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
               </Box>
             )}
 
             <input
               accept="image/*"
-              id="upload-banner-image"
+              id="upload-banner-images"
               type="file"
+              multiple
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
-            <label htmlFor="upload-banner-image">
+            <label htmlFor="upload-banner-images">
               <Button variant="contained" component="span">
-                {form.preview ? "Change Image" : "Upload Image"}
+                {form.previews.length > 0 ? "Add More Images" : "Select Images"}
               </Button>
             </label>
           </Box>
         </Box>
 
         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
-          {!editing ? (
-            <Button variant="contained" onClick={handleCreate} disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Banner"}
+          <Button variant="contained" onClick={handleCreate} disabled={isLoading || form.images.length === 0}>
+            {isLoading ? "Uploading..." : `Upload ${form.previews.length} Banner${form.previews.length !== 1 ? 's' : ''}`}
+          </Button>
+          {form.previews.length > 0 && (
+            <Button
+              variant="outlined"
+              onClick={() => setForm({ images: [], previews: [] })}
+              disabled={isLoading}
+            >
+              Clear All
             </Button>
-          ) : (
-            <>
-              <Button variant="contained" onClick={handleUpdate} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  setEditing(null);
-                  setForm({ image: null, preview: null });
-                }}
-              >
-                Cancel
-              </Button>
-            </>
           )}
         </Box>
       </Paper>
@@ -195,13 +244,10 @@ function BannersTab({ onNotify }) {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={banner.image}
+                    image={Array.isArray(banner.image) ? banner.image[0] : banner.image}
                     alt="Banner"
                   />
                   <CardActions sx={{ justifyContent: "flex-end", p: 1 }}>
-                    <IconButton size="small" onClick={() => startEdit(banner)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
                     <IconButton
                       size="small"
                       color="error"
@@ -224,6 +270,8 @@ function ProductsTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const { categories, loading: categoriesLoading, refreshCategories } = useCategories();
   const [form, setForm] = useState({
     name: "",
@@ -234,6 +282,18 @@ function ProductsTab({ onNotify }) {
     stock: 0,
     images: [],
     newImages: [],
+  });
+
+  // Filter products based on search term and category
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = filterCategory === "" || product.category.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
   });
 
   const fetchProducts = async () => {
@@ -573,8 +633,51 @@ function ProductsTab({ onNotify }) {
         </Box>
       </Paper>
 
+      <Paper sx={{ p: 2, mb: 3 }} elevation={2}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Search & Filter Products
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
+            alignItems: "flex-start",
+          }}
+        >
+          <TextField
+            label="Search by name, brand, or description"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            fullWidth
+            variant="outlined"
+            placeholder="Type to search..."
+          />
+          <FormControl fullWidth>
+            <InputLabel>Filter by Category</InputLabel>
+            <Select
+              label="Filter by Category"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>All Categories</em>
+              </MenuItem>
+              {categories?.map((cat) => (
+                <MenuItem key={cat._id} value={cat.category}>
+                  {cat.category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
       <Paper elevation={1} sx={{ p: 2, overflowX: "auto" }}>
         <Box sx={{ minWidth: { xs: "100%", sm: "100%" }, overflowX: "auto" }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Products List ({filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''})
+          </Typography>
           <Table sx={{ minWidth: { xs: 300, sm: "100%" } }}>
             <TableHead>
               <TableRow>
@@ -586,7 +689,7 @@ function ProductsTab({ onNotify }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <TableRow key={p._id} hover>
                   <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.name}</TableCell>
                   <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{p.price}</TableCell>
