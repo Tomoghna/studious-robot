@@ -48,6 +48,8 @@ export default function ProductDetail() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   // Reviews state (start from product.reviews if available)
   const [reviews, setReviews] = useState([]);
@@ -198,11 +200,34 @@ export default function ProductDetail() {
     }
   };
 
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    setTouchEnd(e.changedTouches[0].clientX);
+    if (touchStart !== null) {
+      handleSwipe(touchStart, e.changedTouches[0].clientX);
+    }
+  };
+
+  const handleSwipe = (startX, endX) => {
+    const distance = startX - endX;
+    const isLeftSwipe = distance > 50; // Swipe threshold
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentImageIndex < product.images.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    } else if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   return (
     <Container sx={{ py: 4 }}>
       <Grid container spacing={4}>
         <Grid item xs={12} md={7}>
-          <Paper sx={{ overflow: "hidden" }}>
+          <Paper sx={{ overflow: "hidden" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
             <Carousel images={product.images} currentIndex={currentImageIndex} onIndexChange={setCurrentImageIndex} onImageClick={(index) => { setZoomImageIndex(index); setZoomOpen(true); }} />
           </Paper>
           <Grid container spacing={2} sx={{ mt: 2 }}>
