@@ -130,7 +130,7 @@ function AppContent() {
                                 }}
                               />
                             ) : images.length > 0 ? (
-                              <Carousel images={images} />
+                              <Carousel images={images} autoplay={true} autoplayInterval={4000} />
                             ) : null}
                           </Box>
 
